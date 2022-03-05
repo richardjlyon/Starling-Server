@@ -26,7 +26,9 @@ class StarlingTransactionSchema(BaseModel):
 
     feedItemUid: str
     transactionTime: datetime
+    counterPartyUid: str
     counterPartyName: str
+    counterPartyType: str
     direction: str
     sourceAmount: SourceAmount
     reference: Optional[str] = None

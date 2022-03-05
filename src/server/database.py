@@ -75,7 +75,11 @@ def transaction_helper(t: StarlingTransactionSchema) -> dict:
     return {
         "_id": t.feedItemUid,
         "transactionTime": t.transactionTime,
-        "counterPartyName": t.counterPartyName,
+        "counterParty": {
+            "counterPartyUid": t.counterPartyUid,
+            "counterPartyName": t.counterPartyName,
+            "counterPartyType": t.counterPartyType,
+        },
         "direction": t.direction,
         "sourceAmount": {
             "currency": t.sourceAmount.currency,
