@@ -1,6 +1,7 @@
+import re
 from datetime import datetime
 from typing import Optional, List
-import re
+
 from pydantic.main import BaseModel
 
 
@@ -58,10 +59,9 @@ class TransactionSchema(BaseModel):
         )
 
 
-def clean_string(the_string: str) -> str:
+def clean_string(the_string: Optional[str]) -> Optional[str]:
     """Replace multiple spaces with a single space."""
-    try:
-        return re.sub(" +", " ", the_string).strip()
-
-    except:
-        return the_string
+    if the_string:
+        return str(re.sub(" +", " ", the_string).strip())
+    else:
+        return None
