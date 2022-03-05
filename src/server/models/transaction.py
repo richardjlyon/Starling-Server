@@ -4,6 +4,8 @@ from typing import Optional, List
 
 from pydantic.main import BaseModel
 
+# = STARLING SCHEMAS ================================================================================================
+
 
 class SourceAmount(BaseModel):
     """Currency dcit"""
@@ -37,6 +39,9 @@ class StarlingTransactionSchema(BaseModel):
 
 class StarlingTransactionsSchema(BaseModel):
     feedItems: List[StarlingTransactionSchema]
+
+
+# = SERVER SCHEMAS ================================================================================================
 
 
 class TransactionSchema(BaseModel):

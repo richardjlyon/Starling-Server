@@ -13,7 +13,11 @@ from config_path import ConfigPath
 from pydantic import parse_obj_as
 from pydantic.errors import PydanticTypeError
 
-from server.models.account import StarlingAccountsSchema, StarlingMainAccountsSchema
+from server.models.account import (
+    StarlingAccountsSchema,
+    StarlingMainAccountsSchema,
+    StarlingBalanceSchema,
+)
 from server.models.transaction import (
     StarlingTransactionSchema,
     StarlingTransactionsSchema,
@@ -22,8 +26,58 @@ from server.models.transaction import (
 T = TypeVar("T")
 
 
+# = API functions ====================================================================================
+
+
 async def api_get_accounts(token: str) -> StarlingAccountsSchema:
     return await get(token, "/accounts", None, StarlingAccountsSchema)
+
+
+async def api_get_transactions_between(
+    token: str,
+    account_uid: str,
+    default_category_id: str,
+    start_date: str,
+    end_date: str,
+) -> Optional[List[StarlingTransactionSchema]]:
+    path = f"/feed/account/{account_uid}/category/{default_category_id}/transactions-between"
+    params = {
+        "minTransactionTimestamp": start_date,
+        "maxTransactionTimestamp": end_date,
+    }
+    try:
+        data = await get(token, path, params, StarlingTransactionsSchema)
+        return [item for item in data.feedItems]
+
+    except HTTPError:
+        raise RuntimeError(
+            f"failed to get transactions for Starling account id '{account_uid}'"
+        )
+
+    except PydanticTypeError:
+        raise RuntimeError(
+            f"Pydantic type error for Starling account iod '{account_uid}'"
+        )
+
+
+async def api_get_balance(token: str, account_uid: str) -> StarlingBalanceSchema:
+    path = f"/accounts/{account_uid}/balance"
+    try:
+        data = await get(token, path, None, StarlingBalanceSchema)
+        return data
+
+    except HTTPError:
+        raise RuntimeError(
+            f"failed to get transactions for Starling account id '{account_uid}'"
+        )
+
+    except PydanticTypeError:
+        raise RuntimeError(
+            f"Pydantic type error for Starling account iod '{account_uid}'"
+        )
+
+
+# = HELPERS ==========================================================================================
 
 
 async def get(
@@ -87,30 +141,3 @@ async def get_main_accounts_from_starling() -> List[StarlingMainAccountsSchema]:
         )
 
     return result
-
-
-async def api_get_transactions_between(
-    token: str,
-    account_uid: str,
-    default_category_id: str,
-    start_date: str,
-    end_date: str,
-) -> Optional[List[StarlingTransactionSchema]]:
-    path = f"/feed/account/{account_uid}/category/{default_category_id}/transactions-between"
-    params = {
-        "minTransactionTimestamp": start_date,
-        "maxTransactionTimestamp": end_date,
-    }
-    try:
-        data = await get(token, path, params, StarlingTransactionsSchema)
-        return [item for item in data.feedItems]
-
-    except HTTPError:
-        raise RuntimeError(
-            f"failed to get transactions for Starling account id '{account_uid}'"
-        )
-
-    except PydanticTypeError:
-        raise RuntimeError(
-            f"Pydantic type error for Starling account iod '{account_uid}'"
-        )
