@@ -4,7 +4,6 @@
 """
 
 import os
-from pprint import pprint
 from typing import List, Optional
 from typing import Type, TypeVar, Any
 from urllib.error import HTTPError

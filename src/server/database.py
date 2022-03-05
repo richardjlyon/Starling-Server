@@ -38,11 +38,10 @@ async def retrieve_transactions_for_account(
     type_name: str, account_name: str, start_date: datetime, end_date: datetime
 ) -> List[StarlingTransactionSchema]:
     """Get transactions from all Starling accounts, update the database, and return them."""
-
-    new_transactions = await get_new_transactions(
-        account_name, type_name, start_date, end_date
-    )
-    await update_transactions_collection(new_transactions)
+    token = get_token_for_type_name(type_name)
+    account = await get_account_for_type_and_account_name(type_name, account_name)
+    new_transactions = await get_new_transactions(token, account, start_date, end_date)
+    await update_transactions_collection(account["id"], new_transactions)
     return new_transactions
 
 
@@ -70,10 +69,11 @@ def account_helper(main_accounts: List[StarlingMainAccountsSchema]) -> List[dict
     ]
 
 
-def transaction_helper(t: StarlingTransactionSchema) -> dict:
+def transaction_helper(account_id: str, t: StarlingTransactionSchema) -> dict:
     """Convert transactions into mongodb-insertable objects."""
     return {
         "_id": t.feedItemUid,
+        "accountUid": account_id,
         "transactionTime": t.transactionTime,
         "counterParty": {
             "counterPartyUid": t.counterPartyUid,
@@ -104,11 +104,10 @@ async def get_account_for_type_and_account_name(
         return None
 
 
-async def get_new_transactions(account_name, type_name, start_date, end_date):
+async def get_new_transactions(token, account, start_date, end_date):
     start_date = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
     end_date = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-    token = get_token_for_type_name(type_name)
-    account = await get_account_for_type_and_account_name(type_name, account_name)
+
     if token and account:
         new_transactions = await api_get_transactions_between(
             token=token,
@@ -122,12 +121,14 @@ async def get_new_transactions(account_name, type_name, start_date, end_date):
     return new_transactions
 
 
-async def update_transactions_collection(transactions: List[StarlingTransactionSchema]):
+async def update_transactions_collection(
+    account_id: str, transactions: List[StarlingTransactionSchema]
+):
     for t in transactions:
         t_db = await transactions_collection.find_one({"_id": {"$eq": t.feedItemUid}})
         if t_db is not None:
             await transactions_collection.replace_one(
-                {"_id": t.feedItemUid}, transaction_helper(t)
+                {"_id": t.feedItemUid}, transaction_helper(account_id, t)
             )
         else:
-            await transactions_collection.insert_one(transaction_helper(t))
+            await transactions_collection.insert_one(transaction_helper(account_id, t))
