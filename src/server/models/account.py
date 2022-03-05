@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class StarlingAccountSchema(BaseModel):
-    """ "Represents a Starling Bank account."""
+    """Represents a Starling Bank account."""
 
     accountUid: str
     name: str
