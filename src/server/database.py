@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional
 
 import motor.motor_asyncio
@@ -35,12 +35,13 @@ async def retrieve_accounts() -> List[StarlingMainAccountsSchema]:
 
 
 async def retrieve_transactions_for_account(
-    type_name: str,
-    account_name: str,
+    type_name: str, account_name: str, start_date: datetime, end_date: datetime
 ) -> List[StarlingTransactionSchema]:
     """Get transactions from all Starling accounts, update the database, and return them."""
 
-    new_transactions = await get_new_transactions(account_name, type_name)
+    new_transactions = await get_new_transactions(
+        account_name, type_name, start_date, end_date
+    )
     transactions_collection.drop()  # FIXME REMOVE THIS!! debug only
     await transactions_collection.insert_many(transaction_helper(new_transactions))
 
@@ -104,12 +105,9 @@ async def get_account_for_type_and_account_name(
         return None
 
 
-async def get_new_transactions(account_name, type_name):
-    default_interval_days = 7
-    end_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    start_date = (datetime.now() - timedelta(days=default_interval_days)).strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
-    )
+async def get_new_transactions(account_name, type_name, start_date, end_date):
+    start_date = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+    end_date = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
     token = get_token_for_type_name(type_name)
     account = await get_account_for_type_and_account_name(type_name, account_name)
     if token and account:
