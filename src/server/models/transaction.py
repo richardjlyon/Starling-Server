@@ -46,7 +46,7 @@ class TransactionSchema(BaseModel):
     time: datetime
     counterparty_name: str
     amount: float
-    reference: str
+    reference: Optional[str]
 
     @staticmethod
     def from_StarlingTransactionSchema(
