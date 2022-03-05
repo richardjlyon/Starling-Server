@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-
+import re
 from pydantic.main import BaseModel
 
 
@@ -34,3 +34,34 @@ class StarlingTransactionSchema(BaseModel):
 
 class StarlingTransactionsSchema(BaseModel):
     feedItems: List[StarlingTransactionSchema]
+
+
+class TransactionSchema(BaseModel):
+    """Defines the server transaction response model."""
+
+    uuid: str
+    time: datetime
+    counterparty_name: str
+    amount: float
+    reference: str
+
+    @staticmethod
+    def from_StarlingTransactionSchema(
+        t: StarlingTransactionSchema,
+    ) -> "TransactionSchema":
+        return TransactionSchema(
+            uuid=t.feedItemUid,
+            time=t.transactionTime,
+            counterparty_name=t.counterPartyName,
+            amount=t.sourceAmount.compute_amount(t.direction),
+            reference=clean_string(t.reference),
+        )
+
+
+def clean_string(the_string: str) -> str:
+    """Replace multiple spaces with a single space."""
+    try:
+        return re.sub(" +", " ", the_string).strip()
+
+    except:
+        return the_string
