@@ -42,9 +42,7 @@ async def retrieve_transactions_for_account(
     new_transactions = await get_new_transactions(
         account_name, type_name, start_date, end_date
     )
-    transactions_collection.drop()  # FIXME REMOVE THIS!! debug only
-    await transactions_collection.insert_many(transaction_helper(new_transactions))
-
+    await update_transactions_collection(new_transactions)
     return new_transactions
 
 
@@ -72,23 +70,20 @@ def account_helper(main_accounts: List[StarlingMainAccountsSchema]) -> List[dict
     ]
 
 
-def transaction_helper(transactions: List[StarlingTransactionSchema]) -> List[dict]:
+def transaction_helper(t: StarlingTransactionSchema) -> dict:
     """Convert transactions into mongodb-insertable objects."""
-    return [
-        {
-            "_id": t.feedItemUid,
-            "transactionTime": t.transactionTime,
-            "counterPartyName": t.counterPartyName,
-            "direction": t.direction,
-            "sourceAmount": {
-                "currency": t.sourceAmount.currency,
-                "minorUnits": t.sourceAmount.minorUnits,
-            },
-            "reference": t.reference,
-            "status": t.status,
-        }
-        for t in transactions
-    ]
+    return {
+        "_id": t.feedItemUid,
+        "transactionTime": t.transactionTime,
+        "counterPartyName": t.counterPartyName,
+        "direction": t.direction,
+        "sourceAmount": {
+            "currency": t.sourceAmount.currency,
+            "minorUnits": t.sourceAmount.minorUnits,
+        },
+        "reference": t.reference,
+        "status": t.status,
+    }
 
 
 async def get_account_for_type_and_account_name(
@@ -121,3 +116,14 @@ async def get_new_transactions(account_name, type_name, start_date, end_date):
     else:
         new_transactions = []
     return new_transactions
+
+
+async def update_transactions_collection(transactions: List[StarlingTransactionSchema]):
+    for t in transactions:
+        t_db = await transactions_collection.find_one({"_id": {"$eq": t.feedItemUid}})
+        if t_db is not None:
+            await transactions_collection.replace_one(
+                {"_id": t.feedItemUid}, transaction_helper(t)
+            )
+        else:
+            await transactions_collection.insert_one(transaction_helper(t))
