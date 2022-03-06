@@ -23,6 +23,7 @@ from providers.starling.schemas import (
     StarlingAccountSchema,
 )
 from server.schemas.account import AccountSchema, AccountBalanceSchema
+from server.schemas.transaction import TransactionSchema
 
 T = TypeVar("T")
 
@@ -76,6 +77,11 @@ class API(BaseAPI):
                 f"Pydantic type error for Starling account id '{account_uuid}'"
             )
 
+    async def get_transactions_for_accountid(
+        self, account_uuid: str
+    ) -> List[TransactionSchema]:
+        pass
+
     def to_server_account_schema(self, account: StarlingAccountSchema) -> AccountSchema:
         return AccountSchema(
             uuid=account.accountUid,
@@ -94,6 +100,9 @@ class API(BaseAPI):
             pending_transactions=balance.pendingTransactions.minorUnits / 100.0,
             effective_balance=balance.effectiveBalance.minorUnits / 100.0,
         )
+
+    def to_server_transaction_schema(self, account_uuid: str, transaction):
+        pass
 
     # Class methods ########################
 
