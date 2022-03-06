@@ -3,15 +3,36 @@ from typing import List
 
 from fastapi import APIRouter
 
-from ..database import retrieve_transactions_for_account, retrieve_accounts
-from ..models.transaction import TransactionSchema
+from providers.starling.schemas import StarlingMainAccountsSchema
+from server.database import retrieve_accounts, retrieve_transactions_for_account
+from server.models.transaction import TransactionSchema
+from .controller import Controller
+from .models.account import (
+    AccountBalanceSchema,
+)
 
-router = APIRouter()
+account_router = APIRouter()
+transaction_router = APIRouter()
+
+controller = Controller()
 
 default_interval_days = 7
 
 
-@router.get(
+@account_router.get(
+    "/",
+    response_model=List[StarlingMainAccountsSchema],
+)
+async def get_accounts():
+    return await controller.get_accounts()
+
+
+@account_router.get("/balance", response_model=List[AccountBalanceSchema])
+async def get_account_balances() -> List[AccountBalanceSchema]:
+    return await controller.get_account_balances()
+
+
+@transaction_router.get(
     "/",
     response_model=List[
         TransactionSchema,
@@ -33,9 +54,8 @@ async def get_transactions() -> List[TransactionSchema]:
     return transactions
 
 
-@router.get(
+@transaction_router.get(
     "/{type_name}/{account_name}",
-    response_description="Transactions retrieved",
     response_model=List[TransactionSchema],
 )
 async def get_transactions_for_account_type_and_name(

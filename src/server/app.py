@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from .routes.account import router as AccountRouter
-from .routes.transaction import router as TransactionRouter
+from .routes import account_router, transaction_router
 
 app = FastAPI()
 
@@ -15,8 +14,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(AccountRouter, tags=["Accounts"], prefix="/accounts")
-app.include_router(TransactionRouter, tags=["Transactions"], prefix="/transactions")
+app.include_router(account_router, tags=["Accounts"], prefix="/accounts")
+app.include_router(transaction_router, tags=["Transactions"], prefix="/transactions")
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
