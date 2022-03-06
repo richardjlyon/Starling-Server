@@ -5,3 +5,4 @@ dist
 .venv
 *.sqlite3
 secrets.py
+notes.taskpaper

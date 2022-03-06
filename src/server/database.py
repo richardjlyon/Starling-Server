@@ -13,6 +13,7 @@ from providers.starling.schemas import (
     StarlingMainAccountsSchema,
     StarlingTransactionSchema,
 )
+from .schemas.account import AccountSchema
 from .secrets import username, password
 
 MONGO_DETAILS = f"mongodb+srv://{username}:{password}@cluster0.mzv8p.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
@@ -26,6 +27,19 @@ db = client.starling_client
 
 accounts_collection = db.get_collection("accounts")
 transactions_collection = db.get_collection("transactions")
+
+
+async def save_accounts(accounts: List[AccountSchema]):
+    for account in accounts:
+        account_record = await accounts_collection.find_one(
+            {"_id": {"$eq": account.uuid}}
+        )
+        if account_record is not None:
+            await accounts_collection.replace_one(
+                {"_id": account.uuid}, account_helper(account)
+            )
+        else:
+            await accounts_collection.insert_one(account_helper(account))
 
 
 # = ROUTE METHODS ====================================================================================
@@ -54,25 +68,37 @@ async def retrieve_transactions_for_account(
 # = HELPERS ==========================================================================================
 
 
-def account_helper(main_accounts: List[StarlingMainAccountsSchema]) -> List[dict]:
-    """Convert main_accounts into mongodb-insertable objects."""
-    return [
-        {
-            "type_name": main_account.type_name,
-            "accounts": [
-                {
-                    "id": account.accountUid,
-                    "name": account.name,
-                    "type": account.accountType,
-                    "currency": account.currency,
-                    "createdAt": account.createdAt,
-                    "defaultCategory": account.defaultCategory,
-                }
-                for account in main_account.accounts
-            ],
-        }
-        for main_account in main_accounts
-    ]
+def account_helper(account: AccountSchema) -> dict:
+    """Convert AccountSchema into a mongodb-insertable object."""
+
+    return {
+        "_id": account.uuid,
+        "bank_name": account.bank_name,
+        "account_name": account.account_name,
+        "currency": account.currency,
+        "created_at": account.created_at,
+    }
+
+
+# def account_helper(main_accounts: List[StarlingMainAccountsSchema]) -> List[dict]:
+#     """Convert main_accounts into mongodb-insertable objects."""
+#     return [
+#         {
+#             "type_name": main_account.type_name,
+#             "accounts": [
+#                 {
+#                     "id": account.accountUid,
+#                     "name": account.name,
+#                     "type": account.accountType,
+#                     "currency": account.currency,
+#                     "createdAt": account.createdAt,
+#                     "defaultCategory": account.defaultCategory,
+#                 }
+#                 for account in main_account.accounts
+#             ],
+#         }
+#         for main_account in main_accounts
+#     ]
 
 
 def transaction_helper(account_id: str, t: StarlingTransactionSchema) -> dict:

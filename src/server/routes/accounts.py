@@ -2,9 +2,8 @@ from typing import List
 
 from fastapi import APIRouter
 
-from providers.starling.schemas import StarlingMainAccountsSchema
 from server.controller import Controller
-from server.schemas.account import AccountBalanceSchema
+from server.schemas.account import AccountBalanceSchema, AccountSchema
 
 router = APIRouter()
 controller = Controller()
@@ -12,9 +11,9 @@ controller = Controller()
 
 @router.get(
     "/",
-    response_model=List[StarlingMainAccountsSchema],
+    response_model=List[AccountSchema],
 )
-async def get_accounts():
+async def get_accounts() -> List[AccountSchema]:
     return await controller.get_accounts()
 
 
