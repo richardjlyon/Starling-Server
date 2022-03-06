@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
+import asyncio
 import motor.motor_asyncio
 
 from providers.starling.api import (
@@ -17,6 +18,9 @@ from .secrets import username, password
 MONGO_DETAILS = f"mongodb+srv://{username}:{password}@cluster0.mzv8p.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
+client.get_io_loop = (
+    asyncio.get_event_loop
+)  # see: https://github.com/tiangolo/fastapi/issues/3855#issuecomment-1013148113
 
 db = client.starling_client
 
