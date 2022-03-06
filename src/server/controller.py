@@ -1,6 +1,9 @@
+from providers.starling.api import API as StarlingAPI
 from providers.starling.api import get_token_for_type_name, api_get_balance
 from server.database import retrieve_accounts
 from server.models.account import AccountBalanceSchema
+
+api = StarlingAPI()
 
 
 class Controller:

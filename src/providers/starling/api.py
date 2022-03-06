@@ -24,6 +24,12 @@ from providers.starling.schemas import (
 T = TypeVar("T")
 
 
+class API:
+    """Provides the API methods for the Starling Bank."""
+
+    pass
+
+
 # = API functions ====================================================================================
 
 

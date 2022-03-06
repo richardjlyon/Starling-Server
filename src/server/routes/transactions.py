@@ -1,38 +1,17 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from fastapi import APIRouter
 
-from providers.starling.schemas import StarlingMainAccountsSchema
 from server.database import retrieve_accounts, retrieve_transactions_for_account
 from server.models.transaction import TransactionSchema
-from .controller import Controller
-from .models.account import (
-    AccountBalanceSchema,
-)
-
-account_router = APIRouter()
-transaction_router = APIRouter()
-
-controller = Controller()
 
 default_interval_days = 7
 
-
-@account_router.get(
-    "/",
-    response_model=List[StarlingMainAccountsSchema],
-)
-async def get_accounts():
-    return await controller.get_accounts()
+router = APIRouter()
 
 
-@account_router.get("/balance", response_model=List[AccountBalanceSchema])
-async def get_account_balances() -> List[AccountBalanceSchema]:
-    return await controller.get_account_balances()
-
-
-@transaction_router.get(
+@router.get(
     "/",
     response_model=List[
         TransactionSchema,
@@ -54,7 +33,7 @@ async def get_transactions() -> List[TransactionSchema]:
     return transactions
 
 
-@transaction_router.get(
+@router.get(
     "/{type_name}/{account_name}",
     response_model=List[TransactionSchema],
 )
