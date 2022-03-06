@@ -1,7 +1,13 @@
+# schemas.py
+#
+# Starling Bank schema definitions
+
 from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
+
+# = ACCOUNTS ==========================================================================================================
 
 
 class StarlingAccountSchema(BaseModel):
@@ -33,6 +39,9 @@ class StarlingBalanceSchema(BaseModel):
     clearedBalance: StarlingSignedCurrencyAndAmountSchema
     pendingTransactions: StarlingSignedCurrencyAndAmountSchema
     effectiveBalance: StarlingSignedCurrencyAndAmountSchema
+
+
+# = TRANSACTIONS  ======================================================================================================
 
 
 class SourceAmount(BaseModel):

@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter
 
 from server.database import retrieve_accounts, retrieve_transactions_for_account
-from server.models.transaction import TransactionSchema
+from server.schemas.transaction import TransactionSchema
 
 default_interval_days = 7
 

@@ -1,3 +1,7 @@
+# account.py
+#
+# Server account schema definitions.
+
 from pydantic import BaseModel
 
 from providers.starling.schemas import StarlingBalanceSchema

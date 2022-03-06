@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from providers.starling.schemas import StarlingMainAccountsSchema
 from server.controller import Controller
-from server.models.account import AccountBalanceSchema
+from server.schemas.account import AccountBalanceSchema
 
 router = APIRouter()
 controller = Controller()

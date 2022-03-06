@@ -1,3 +1,7 @@
+# transaction.py
+#
+# Server transaction schema definitions.
+
 import re
 from datetime import datetime
 from typing import Optional
