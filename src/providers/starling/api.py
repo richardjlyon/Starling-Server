@@ -13,12 +13,10 @@ from config_path import ConfigPath
 from pydantic import parse_obj_as
 from pydantic.errors import PydanticTypeError
 
-from server.models.account import (
+from providers.starling.schemas import (
     StarlingAccountsSchema,
     StarlingMainAccountsSchema,
     StarlingBalanceSchema,
-)
-from server.models.transaction import (
     StarlingTransactionSchema,
     StarlingTransactionsSchema,
 )

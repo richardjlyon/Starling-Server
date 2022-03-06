@@ -1,44 +1,6 @@
-from datetime import datetime
-from typing import List
-
 from pydantic import BaseModel
 
-
-# = STARLING SCHEMAS ================================================================================================
-
-
-class StarlingAccountSchema(BaseModel):
-    """Represents a Starling Bank account."""
-
-    accountUid: str
-    name: str
-    accountType: str
-    currency: str
-    createdAt: datetime
-    defaultCategory: str
-
-
-class StarlingAccountsSchema(BaseModel):
-    accounts: List[StarlingAccountSchema]
-
-
-class StarlingMainAccountsSchema(BaseModel):
-    type_name: str
-    accounts: List[StarlingAccountSchema]
-
-
-class StarlingSignedCurrencyAndAmountSchema(BaseModel):
-    currency: str
-    minorUnits: int
-
-
-class StarlingBalanceSchema(BaseModel):
-    clearedBalance: StarlingSignedCurrencyAndAmountSchema
-    pendingTransactions: StarlingSignedCurrencyAndAmountSchema
-    effectiveBalance: StarlingSignedCurrencyAndAmountSchema
-
-
-# = SERVER SCHEMAS ================================================================================================
+from providers.starling.schemas import StarlingBalanceSchema
 
 
 class AccountBalanceSchema(BaseModel):

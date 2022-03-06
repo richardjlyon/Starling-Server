@@ -2,10 +2,10 @@ from typing import List
 
 from fastapi import APIRouter
 
-from ..api.starling_api import get_token_for_type_name, api_get_balance
+from providers.starling.api import get_token_for_type_name, api_get_balance
+from providers.starling.schemas import StarlingMainAccountsSchema
 from ..database import retrieve_accounts
 from ..models.account import (
-    StarlingMainAccountsSchema,
     AccountBalanceSchema,
 )
 

@@ -3,13 +3,15 @@ from typing import List, Optional
 
 import motor.motor_asyncio
 
-from .api.starling_api import (
+from providers.starling.api import (
     get_main_accounts_from_starling,
     api_get_transactions_between,
     get_token_for_type_name,
 )
-from .models.account import StarlingMainAccountsSchema
-from .models.transaction import StarlingTransactionSchema
+from providers.starling.schemas import (
+    StarlingMainAccountsSchema,
+    StarlingTransactionSchema,
+)
 from .secrets import username, password
 
 MONGO_DETAILS = f"mongodb+srv://{username}:{password}@cluster0.mzv8p.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
