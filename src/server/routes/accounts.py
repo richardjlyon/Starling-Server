@@ -17,6 +17,6 @@ async def get_accounts() -> List[AccountSchema]:
     return await controller.get_accounts()
 
 
-@router.get("/balance", response_model=List[AccountBalanceSchema])
+@router.get("/balances", response_model=List[AccountBalanceSchema])
 async def get_account_balances() -> List[AccountBalanceSchema]:
     return await controller.get_account_balances()

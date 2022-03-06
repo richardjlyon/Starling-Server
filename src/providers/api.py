@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from server.schemas.account import AccountSchema
+from server.schemas.account import AccountSchema, AccountBalanceSchema
 
 
 class BaseAPI(ABC):
@@ -17,9 +17,15 @@ class BaseAPI(ABC):
         pass
 
     @abstractmethod
-    def get_account_balances(self):
+    def get_account_balance(self, account_uuid: str) -> List[AccountBalanceSchema]:
         pass
 
     @abstractmethod
     def to_server_account_schema(self, account):  # FIXME - type?
+        pass
+
+    @abstractmethod
+    def to_server_account_balance_schema(
+        self, account_uuid, balance
+    ) -> AccountBalanceSchema:  # FIXME - type?
         pass

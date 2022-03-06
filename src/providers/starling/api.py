@@ -22,7 +22,7 @@ from providers.starling.schemas import (
     StarlingAccountsSchema,
     StarlingAccountSchema,
 )
-from server.schemas.account import AccountSchema
+from server.schemas.account import AccountSchema, AccountBalanceSchema
 
 T = TypeVar("T")
 
@@ -34,15 +34,47 @@ class API(BaseAPI):
         super().__init__()
         self.bank_name = bank_name
         self.token = self._initialise_token(bank_name)
+        self.accounts = None
 
     # Abstract method implementations #######################
 
     async def get_accounts(self) -> List[AccountSchema]:
-        response = await self._get("/accounts", None, StarlingAccountsSchema)
-        return [self.to_server_account_schema(account) for account in response.accounts]
+        if self.accounts is None:
+            path = "/accounts"
+            try:
+                response = await self._get(path, None, StarlingAccountsSchema)
+                self.accounts = [
+                    self.to_server_account_schema(account)
+                    for account in response.accounts
+                ]
 
-    def get_account_balances(self):
-        raise NotImplementedError
+            except HTTPError:
+                raise RuntimeError(
+                    f"HTTP Error getting accounts for Starling '{self.bank_name}'"
+                )
+
+            except PydanticTypeError:
+                raise RuntimeError(
+                    f"Pydantic type error for Starling '{self.bank_name}'"
+                )
+
+        return self.accounts
+
+    async def get_account_balance(self, account_uuid) -> AccountBalanceSchema:
+        path = f"/accounts/{account_uuid}/balance"
+        try:
+            balance = await self._get(path, None, StarlingBalanceSchema)
+            return self.to_server_account_balance_schema(account_uuid, balance)
+
+        except HTTPError:
+            raise RuntimeError(
+                f"HTTP Error getting transactions for Starling account id '{account_uuid}'"
+            )
+
+        except PydanticTypeError:
+            raise RuntimeError(
+                f"Pydantic type error for Starling account id '{account_uuid}'"
+            )
 
     def to_server_account_schema(self, account: StarlingAccountSchema) -> AccountSchema:
         return AccountSchema(
@@ -51,6 +83,16 @@ class API(BaseAPI):
             account_name=account.name,
             currency=account.currency,
             created_at=account.createdAt,
+        )
+
+    def to_server_account_balance_schema(
+        self, account_uuid: str, balance: StarlingBalanceSchema
+    ) -> AccountBalanceSchema:
+        return AccountBalanceSchema(
+            account_uuid=account_uuid,
+            cleared_balance=balance.clearedBalance.minorUnits / 100.0,
+            pending_transactions=balance.pendingTransactions.minorUnits / 100.0,
+            effective_balance=balance.effectiveBalance.minorUnits / 100.0,
         )
 
     # Class methods ########################
