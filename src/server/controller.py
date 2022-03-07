@@ -1,15 +1,17 @@
 from datetime import datetime
 from typing import List, Optional
 
-import server.database as db
+from db.edgedb.database import Database
 from providers.starling.api import API as StarlingAPI
 from server.schemas.account import AccountBalanceSchema, AccountSchema
 from server.schemas.transaction import TransactionSchema
 
 banks = [
-    StarlingAPI(bank_name="personal"),
-    StarlingAPI(bank_name="business"),
+    StarlingAPI(bank_name="Starling Personal"),
+    StarlingAPI(bank_name="Starling Business"),
 ]
+
+db = Database()
 
 
 class Controller:
@@ -26,7 +28,8 @@ class Controller:
                 accounts.append(account)
 
         # update database
-        await db.save_accounts(accounts)
+        for account in accounts:
+            db.save_account(account)
 
         return accounts
 

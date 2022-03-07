@@ -119,6 +119,23 @@ trio = ["trio (>=0.14,<0.20)"]
 wmi = ["wmi (>=1.5.1,<2.0.0)"]
 
 [[package]]
+name = "edgedb"
+version = "0.22.0"
+description = "EdgeDB Python driver"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+certifi = {version = ">=2021.5.30", markers = "platform_system == \"Windows\""}
+typing-extensions = ">=3.10.0"
+
+[package.extras]
+dev = ["Cython (>=0.29.24,<0.30.0)", "pytest (>=3.6.0)", "sphinx (>=2.3.1,<2.4.0)", "sphinxcontrib-asyncio (>=0.2.0,<0.3.0)", "sphinx-rtd-theme (>=0.4.3,<0.5.0)", "pycodestyle (>=2.6.0,<2.7.0)", "pyflakes (>=2.2.0,<2.3.0)", "flake8-bugbear (>=21.4.3,<21.5.0)", "flake8 (>=3.8.1,<3.9.0)", "uvloop (>=0.15.1)"]
+docs = ["sphinx (>=2.3.1,<2.4.0)", "sphinxcontrib-asyncio (>=0.2.0,<0.3.0)", "sphinx-rtd-theme (>=0.4.3,<0.5.0)"]
+test = ["pycodestyle (>=2.6.0,<2.7.0)", "pyflakes (>=2.2.0,<2.3.0)", "flake8-bugbear (>=21.4.3,<21.5.0)", "flake8 (>=3.8.1,<3.9.0)", "uvloop (>=0.15.1)"]
+
+[[package]]
 name = "email-validator"
 version = "1.1.3"
 description = "A robust email syntax and deliverability validation library for Python 2.x/3.x."
@@ -471,7 +488,7 @@ standard = ["websockets (>=10.0)", "httptools (>=0.2.0,<0.4.0)", "watchgod (>=0.
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "6711c10d7fddd8d2699a16467bbe3c26c7df4d60dacd0c567671a633954440c2"
+content-hash = "dae21769b81fc52d0db29d56af14ce23ed4153198d8f8a040834f6339d8bc8f8"
 
 [metadata.files]
 anyio = [
@@ -519,6 +536,23 @@ config-path = [
 dnspython = [
     {file = "dnspython-2.2.0-py3-none-any.whl", hash = "sha256:081649da27ced5e75709a1ee542136eaba9842a0fe4c03da4fb0a3d3ed1f3c44"},
     {file = "dnspython-2.2.0.tar.gz", hash = "sha256:e79351e032d0b606b98d38a4b0e6e2275b31a5b85c873e587cc11b73aca026d6"},
+]
+edgedb = [
+    {file = "edgedb-0.22.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0586e5c62a33b41638017cafce00f83aa2358988803ec7a66b60779336ebbefe"},
+    {file = "edgedb-0.22.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8fe370d3effadc082db97dc2e57854c141ff626790425a71c5ff6ed28ca066bf"},
+    {file = "edgedb-0.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:4c745019cf51f533374db663222c4f390b0c05a26da33e79fa042161b28b4570"},
+    {file = "edgedb-0.22.0-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8c15dd990a368717e774f4dc6be325363f4a7c279aa1b15017377f9b039669e9"},
+    {file = "edgedb-0.22.0-cp36-cp36m-win_amd64.whl", hash = "sha256:2e3879790261cb739c4d3d82b433e7ec29b22b3ee4bbf61a4741b386484a2792"},
+    {file = "edgedb-0.22.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:19450656f94f53f5bc787a427337276ba3f0442e5d71f80c286ae9a47b67b7d7"},
+    {file = "edgedb-0.22.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b731c792d933b04f35f49ec8e91464fc3aaba9edc9033726a383e2a67176aaa3"},
+    {file = "edgedb-0.22.0-cp37-cp37m-win_amd64.whl", hash = "sha256:bcb0b62097e4d6d6174444265d8b37e425e258a2c75fa32453fb35addb9a7c1d"},
+    {file = "edgedb-0.22.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:12aca429fab474bd70cffe5240d2d12a068375755d84231509f8403aaaa3292e"},
+    {file = "edgedb-0.22.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:60e14a1d6950f7ff916530a7becca46a569320e386a1aaf063a8dd6defa1a183"},
+    {file = "edgedb-0.22.0-cp38-cp38-win_amd64.whl", hash = "sha256:71b99c0cf2d1837078162a2306e0fa8b3880512d7d36f995157766bce4e1f39e"},
+    {file = "edgedb-0.22.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:b8e21ef27ac45b645de5c54f5b3a9a7dc2aae072911c857bec8d0b2283760196"},
+    {file = "edgedb-0.22.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8a45e8f8d035dec5c6fadf8739cd892a3f5c3bae326709d73eccf529a5a13b36"},
+    {file = "edgedb-0.22.0-cp39-cp39-win_amd64.whl", hash = "sha256:3bba78c3c62bcdfc4be5e84282e91a85ce6703a897012933d9aa2280953851af"},
+    {file = "edgedb-0.22.0.tar.gz", hash = "sha256:ead71f722ec65c30f1478e504cae43fe00bec2cc1414093b1b436b949814605e"},
 ]
 email-validator = [
     {file = "email_validator-1.1.3-py2.py3-none-any.whl", hash = "sha256:5675c8ceb7106a37e40e2698a57c056756bf3f272cfa8682a4f87ebd95d8440b"},

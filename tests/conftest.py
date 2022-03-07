@@ -14,7 +14,7 @@ def event_loop():
 
 @pytest.fixture
 def api():
-    return StarlingAPI(bank_name="personal")
+    return StarlingAPI(bank_name="Starling Personal")
 
 
 @pytest.fixture
