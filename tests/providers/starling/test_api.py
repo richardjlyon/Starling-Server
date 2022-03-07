@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from server.schemas.account import AccountSchema, AccountBalanceSchema
+from server.schemas.transaction import TransactionSchema
 
 
 class TestAccount:
@@ -20,4 +23,13 @@ class TestAccount:
 
 
 class TestTransaction:
-    pass
+    @pytest.mark.asyncio
+    async def test_get_transactions_between(self, api, account):
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+
+        transactions = await api.get_transactions_between(
+            account.uuid, start_date, end_date
+        )
+        assert isinstance(transactions, list)
+        assert isinstance(transactions[0], TransactionSchema)

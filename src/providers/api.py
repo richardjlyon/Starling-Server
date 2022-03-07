@@ -3,6 +3,7 @@
 # Defines an abstract API base class
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List
 
 from server.schemas.account import AccountSchema, AccountBalanceSchema
@@ -24,11 +25,8 @@ class BaseAPI(ABC):
         pass
 
     @abstractmethod
-    def get_transactions_for_account_id(
-        self, account_uuid: str
+    def get_transactions_between(
+        self, account_uuid: str, start_date: datetime, end_date: datetime
     ) -> List[TransactionSchema]:
-        """Get the transactions for the account with the given id.
-
-        This function is expected to return transactions over a defined number of days up
-        to the present time."""
+        """Get the transactions for the account with the given id between the given dates."""
         pass

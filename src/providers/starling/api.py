@@ -4,6 +4,8 @@
 """
 
 import os
+import re
+from datetime import datetime
 from typing import List, Optional
 from typing import Type, TypeVar, Any
 from urllib.error import HTTPError
@@ -36,14 +38,23 @@ class API(BaseAPI):
         self.bank_name = bank_name
         self.token = self._initialise_token(bank_name)
         self.accounts = None
+        # a lookup dictionary to get default_category for account_uuid, used in Starling API
+        self.default_categories = {}
 
-    # Abstract method implementations #######################
+    # = ACCOUNTS ====================================================================================================
 
     async def get_accounts(self) -> List[AccountSchema]:
         if self.accounts is None:
             path = "/accounts"
             try:
                 response = await self._get(path, None, StarlingAccountsSchema)
+                # populate the default_categories dictionary
+                for account in response.accounts:
+                    self.default_categories[
+                        account.accountUid
+                    ] = account.defaultCategory
+
+                # convert to the server schema
                 self.accounts = [
                     self.to_server_account_schema(account)
                     for account in response.accounts
@@ -77,10 +88,40 @@ class API(BaseAPI):
                 f"Pydantic type error for Starling account id '{account_uuid}'"
             )
 
-    async def get_transactions_for_accountid(
-        self, account_uuid: str
+    # = TRANSACTIONS ==================================================================================================
+
+    async def get_transactions_between(
+        self, account_uuid: str, start_date: datetime, end_date: datetime
     ) -> List[TransactionSchema]:
-        pass
+
+        if self.default_categories == {}:
+            await self.default_categories()
+
+        default_category_id = self.default_categories[account_uuid]
+
+        path = f"/feed/account/{account_uuid}/category/{default_category_id}/transactions-between"
+        params = {
+            "minTransactionTimestamp": start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "maxTransactionTimestamp": end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }
+        try:
+            response = await self._get(path, params, StarlingTransactionsSchema)
+            return [
+                self.to_server_transaction_schema(account_uuid, transaction)
+                for transaction in response.feedItems
+            ]
+
+        except HTTPError as e:
+            raise RuntimeError(
+                f"HTTP Error getting transactions for Starling account id '{account_uuid}' : {e}"
+            )
+
+        except PydanticTypeError:
+            raise RuntimeError(
+                f"Pydantic type error for Starling account id '{account_uuid}'"
+            )
+
+    # = CONVERTER =====================================================================================================
 
     def to_server_account_schema(self, account: StarlingAccountSchema) -> AccountSchema:
         return AccountSchema(
@@ -101,10 +142,26 @@ class API(BaseAPI):
             effective_balance=balance.effectiveBalance.minorUnits / 100.0,
         )
 
-    def to_server_transaction_schema(self, account_uuid: str, transaction):
-        pass
+    def to_server_transaction_schema(
+        self, account_uuid: str, transaction
+    ) -> TransactionSchema:
+        def clean_string(the_string: Optional[str]) -> Optional[str]:
+            """Replace multiple spaces with a single space."""
+            if the_string:
+                return str(re.sub(" +", " ", the_string).strip())
+            else:
+                return None
 
-    # Class methods ########################
+        return TransactionSchema(
+            uuid=transaction.feedItemUid,
+            account_uuid=account_uuid,
+            time=transaction.transactionTime,
+            counterparty_name=transaction.counterPartyName,
+            amount=transaction.sourceAmount.compute_amount(transaction.direction),
+            reference=clean_string(transaction.reference),  # FIXME clean
+        )
+
+    # = Class methods ================================================================================================
 
     async def _get(
         self, path: str, params: dict = None, return_type: Type[T] = Any
@@ -140,7 +197,7 @@ class API(BaseAPI):
         return file.read().strip()
 
 
-# = API functions ====================================================================================
+# = OLD CODE (REMOVE!!)  ====================================================================================
 
 # async def api_get_accounts(token: str) -> StarlingAccountsSchema:
 #     return await get(token, "/accounts", None, StarlingAccountsSchema)

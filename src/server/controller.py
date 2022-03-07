@@ -1,8 +1,10 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 import server.database as db
 from providers.starling.api import API as StarlingAPI
 from server.schemas.account import AccountBalanceSchema, AccountSchema
+from server.schemas.transaction import TransactionSchema
 
 banks = [
     StarlingAPI(bank_name="personal"),
@@ -35,7 +37,43 @@ class Controller:
         balances = []
         for bank in banks:
             for account in await bank.get_accounts():
-                print(account)
                 balances.append(await bank.get_account_balance(account.uuid))
 
         return balances
+
+    async def get_transactions_between(
+        self, account_id: str, start_date: datetime, end_date: datetime
+    ) -> Optional[List[TransactionSchema]]:
+        """Get transactions for the specified account for the default time interval."""
+
+        # get latest transactions
+        bank = await get_bank_for_account_id(account_id)
+        if bank is None:
+            return
+        transactions = await bank.get_transactions_between(
+            account_id, start_date, end_date
+        )
+
+        # save to the database
+
+        return transactions
+
+
+# = HELPERS ===========================================================================================================
+
+
+async def get_bank_for_account_id(account_id: str) -> Optional[StarlingAPI]:
+    the_bank = None
+    for bank in banks:  # TODO Ask Alex - shorter way of doing this?
+        accounts = await bank.get_accounts() if bank.accounts is None else bank.accounts
+        if (
+            next(
+                (account for account in accounts if account.uuid == account_id),
+                None,
+            )
+            is not None
+        ):
+            the_bank = bank
+            break
+
+    return the_bank

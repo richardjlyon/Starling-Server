@@ -15,6 +15,7 @@ class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
 
     uuid: str
+    account_uuid: str
     time: datetime
     counterparty_name: str
     amount: float
