@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from server.schemas.account import AccountSchema, AccountBalanceSchema
+from server.schemas.transaction import TransactionSchema
 
 
 class BaseAPI(ABC):
@@ -14,18 +15,20 @@ class BaseAPI(ABC):
 
     @abstractmethod
     def get_accounts(self) -> List[AccountSchema]:
+        """Get the accounts held at the bank."""
         pass
 
     @abstractmethod
     def get_account_balance(self, account_uuid: str) -> List[AccountBalanceSchema]:
+        """Get the balances of the account with the given id."""
         pass
 
     @abstractmethod
-    def to_server_account_schema(self, account):  # FIXME - type?
-        pass
+    def get_transactions_for_account_id(
+        self, account_uuid: str
+    ) -> List[TransactionSchema]:
+        """Get the transactions for the account with the given id.
 
-    @abstractmethod
-    def to_server_account_balance_schema(
-        self, account_uuid, balance
-    ) -> AccountBalanceSchema:  # FIXME - type?
+        This function is expected to return transactions over a defined number of days up
+        to the present time."""
         pass
