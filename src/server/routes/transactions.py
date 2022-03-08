@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter
 
-from server.controller import Controller
-from server.schemas.transaction import TransactionSchema
+from src.server.controller import Controller
+from src.server.schemas.transaction import TransactionSchema
 
 default_interval_days = 7
 

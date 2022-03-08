@@ -6,8 +6,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List
 
-from server.schemas.account import AccountSchema, AccountBalanceSchema
-from server.schemas.transaction import TransactionSchema
+from src.server.schemas.account import AccountSchema, AccountBalanceSchema
+from src.server.schemas.transaction import TransactionSchema
 
 
 class BaseAPI(ABC):

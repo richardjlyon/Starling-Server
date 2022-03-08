@@ -3,7 +3,7 @@
 # Defines a base class for a database provider
 from abc import ABC, abstractmethod
 
-from server.schemas.account import AccountSchema
+from src.server.schemas.account import AccountSchema
 
 
 class DBBase(ABC):

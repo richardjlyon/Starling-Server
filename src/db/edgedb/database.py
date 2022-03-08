@@ -4,8 +4,8 @@
 
 import edgedb
 
-from db.db_base import DBBase
-from server.schemas.account import AccountSchema
+from src.db.db_base import DBBase
+from src.server.schemas.account import AccountSchema
 
 client = edgedb.create_client()
 

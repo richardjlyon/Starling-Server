@@ -2,8 +2,8 @@ from typing import List
 
 from fastapi import APIRouter
 
-from server.controller import Controller
-from server.schemas.account import AccountBalanceSchema, AccountSchema
+from src.server.controller import Controller
+from src.server.schemas.account import AccountBalanceSchema, AccountSchema
 
 router = APIRouter()
 controller = Controller()

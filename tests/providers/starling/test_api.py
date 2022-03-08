@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from server.schemas.account import AccountSchema, AccountBalanceSchema
-from server.schemas.transaction import TransactionSchema
+from src.server.schemas.account import AccountSchema, AccountBalanceSchema
+from src.server.schemas.transaction import TransactionSchema
 
 
 class TestAccount:

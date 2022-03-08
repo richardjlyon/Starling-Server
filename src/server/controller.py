@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
 
-from db.edgedb.database import Database
-from providers.starling.api import API as StarlingAPI
-from server.schemas.account import AccountBalanceSchema, AccountSchema
-from server.schemas.transaction import TransactionSchema
+from src.db.edgedb.database import Database
+from src.providers.starling.api import API as StarlingAPI
+from src.server.schemas.account import AccountBalanceSchema, AccountSchema
+from src.server.schemas.transaction import TransactionSchema
 
 banks = [
     StarlingAPI(bank_name="Starling Personal"),

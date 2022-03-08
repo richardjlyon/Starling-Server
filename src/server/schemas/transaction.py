@@ -8,7 +8,7 @@ from typing import Optional
 
 from pydantic.main import BaseModel
 
-from providers.starling.schemas import StarlingTransactionSchema
+from src.providers.starling.schemas import StarlingTransactionSchema
 
 
 class TransactionSchema(BaseModel):
@@ -23,7 +23,7 @@ class TransactionSchema(BaseModel):
 
     @staticmethod
     def from_StarlingTransactionSchema(
-        t: StarlingTransactionSchema,
+            t: StarlingTransactionSchema,
     ) -> "TransactionSchema":
         return TransactionSchema(
             uuid=t.feedItemUid,

@@ -14,15 +14,15 @@ from config_path import ConfigPath
 from pydantic import parse_obj_as
 from pydantic.errors import PydanticTypeError
 
-from providers.api_base import BaseAPI
-from providers.starling.schemas import (
+from src.providers.api_base import BaseAPI
+from src.providers.starling.schemas import (
     StarlingBalanceSchema,
     StarlingTransactionsSchema,
     StarlingAccountsSchema,
     StarlingAccountSchema,
 )
-from server.schemas.account import AccountSchema, AccountBalanceSchema
-from server.schemas.transaction import TransactionSchema
+from src.server.schemas.account import AccountSchema, AccountBalanceSchema
+from src.server.schemas.transaction import TransactionSchema
 
 T = TypeVar("T")
 
@@ -32,11 +32,11 @@ class API(BaseAPI):
 
     def __init__(self, bank_name: str = None):
         super().__init__()
-        self.bank_name = bank_name
-        self.token = self._initialise_token(bank_name)
-        self.accounts = None
+        self.bank_name: Optional[str] = bank_name
+        self.token: str = self._initialise_token(bank_name)
+        self.accounts: Optional[List[AccountSchema]] = None
         # a lookup dictionary to get default_category for account_uuid, used in Starling API
-        self.default_categories = {}
+        self.default_categories: Optional[dict] = None
 
     # = ACCOUNTS ABSTRACT METHODS =====================================================================================
 
@@ -46,6 +46,7 @@ class API(BaseAPI):
             try:
                 response = await self._get(path, None, StarlingAccountsSchema)
                 # populate the default_categories dictionary
+                self.default_categories = {}
                 for account in response.accounts:
                     self.default_categories[
                         account.accountUid
@@ -59,13 +60,11 @@ class API(BaseAPI):
 
             except HTTPError:
                 raise RuntimeError(
-                    f"HTTP Error getting accounts for Starling '{self.bank_name}'"
+                    f"HTTP Error getting accounts for '{self.bank_name}'"
                 )
 
             except PydanticTypeError:
-                raise RuntimeError(
-                    f"Pydantic type error for Starling '{self.bank_name}'"
-                )
+                raise RuntimeError(f"Pydantic type error for '{self.bank_name}'")
 
         return self.accounts
 
@@ -90,9 +89,6 @@ class API(BaseAPI):
     async def get_transactions_between(
         self, account_uuid: str, start_date: datetime, end_date: datetime
     ) -> List[TransactionSchema]:
-
-        if self.default_categories == {}:
-            await self.default_categories()
 
         default_category_id = self.default_categories[account_uuid]
 
@@ -182,7 +178,7 @@ class API(BaseAPI):
                 return r.json()
 
     @staticmethod
-    def _initialise_token(account_type: str) -> str:
+    def _initialise_token(account_type: Optional[str]) -> str:
         config_path = ConfigPath("starling_server", "rjlyon.com", ".json")
         tokens_folder = config_path.saveFolderPath() / "tokens"
         file_path = tokens_folder / account_type

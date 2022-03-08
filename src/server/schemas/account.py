@@ -5,7 +5,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from providers.starling.schemas import StarlingBalanceSchema
+from src.providers.starling.schemas import StarlingBalanceSchema
 
 
 class AccountSchema(BaseModel):
