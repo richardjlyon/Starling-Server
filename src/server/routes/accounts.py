@@ -13,8 +13,8 @@ controller = Controller()
     "/",
     response_model=List[AccountSchema],
 )
-async def get_accounts() -> List[AccountSchema]:
-    return await controller.get_accounts()
+async def get_accounts(force_refresh: bool = False) -> List[AccountSchema]:
+    return await controller.get_accounts(force_refresh)
 
 
 @router.get("/balances", response_model=List[AccountBalanceSchema])

@@ -18,11 +18,21 @@ class Controller:
     """Controls server operations to coordinate fetch, storage, and publishing."""
 
     @staticmethod
-    async def get_accounts() -> List[AccountSchema]:
-        """Get a list of accounts from the provider and save to the database."""
+    async def get_accounts(force_refresh: bool = False) -> List[AccountSchema]:
+        """
+        Get a list of accounts from the provider and save to the database.
 
-        # fetch data from bank
-        accounts = []
+        If we have stored account data in the database, fetch and return it. Otherwise, get it from the bank, update
+        the database, and then return it.
+
+        Args:
+            force_refresh (): If true, force update of account details from the provider
+
+        Returns:
+            A list of accounts.
+
+        """
+
         for bank in banks:
             for account in await bank.get_accounts():
                 accounts.append(account)
