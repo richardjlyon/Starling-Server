@@ -3,13 +3,12 @@ from typing import List, Optional
 
 from fastapi import APIRouter
 
-from src.server.controller import Controller
+from src.main import controller
 from src.server.schemas.transaction import TransactionSchema
 
 default_interval_days = 7
 
 router = APIRouter()
-controller = Controller()
 
 
 @router.get(

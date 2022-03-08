@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from src.db.edgedb.database import Database
+from db.db_base import DBBase
 from src.providers.starling.api import API as StarlingAPI
 from src.server.schemas.account import AccountBalanceSchema, AccountSchema
 from src.server.schemas.transaction import TransactionSchema
@@ -11,14 +11,14 @@ banks = [
     StarlingAPI(bank_name="Starling Business"),
 ]
 
-db = Database()
-
 
 class Controller:
     """Controls server operations to coordinate fetch, storage, and publishing."""
 
-    @staticmethod
-    async def get_accounts(force_refresh: bool = False) -> List[AccountSchema]:
+    def __init__(self, db: DBBase):
+        self._db = db
+
+    async def get_accounts(self, force_refresh: bool = False) -> List[AccountSchema]:
         """
         Get a list of accounts from the provider and save to the database.
 
@@ -32,14 +32,14 @@ class Controller:
             A list of accounts.
 
         """
-
+        accounts = []
         for bank in banks:
             for account in await bank.get_accounts():
                 accounts.append(account)
 
         # update database
         for account in accounts:
-            db.save_account(account)
+            self._db.save_account(account)
 
         return accounts
 

@@ -3,6 +3,12 @@ from pathlib import Path
 
 import uvicorn
 
+from src.db.edgedb.database import Database
+from src.server.controller import Controller
+
+db = Database()
+controller = Controller(db=db)
+
 
 def set_path():
     """Add project root to system path for submodule searching."""
