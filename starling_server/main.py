@@ -1,13 +1,16 @@
 import uvicorn
 
 from starling_server.db.edgedb.database import Database
-from starling_server.server.controller import Controller
+from starling_server.server.route_dispatcher import RouteDispatcher
 
 db = Database()
-controller = Controller(db=db)
+dispatcher = RouteDispatcher(db=db)
+
 
 def run():
-    uvicorn.run("starling_server.server.app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "starling_server.server.app:app", host="0.0.0.0", port=8000, reload=True
+    )
 
 
 if __name__ == "__main__":

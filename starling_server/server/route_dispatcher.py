@@ -8,13 +8,13 @@ from starling_server.providers.starling.api import API as StarlingAPI
 from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
-banks = [
+banks: List[StarlingAPI] = [
     # StarlingAPI(bank_name="Starling Personal"),
     # StarlingAPI(bank_name="Starling Business"),
 ]
 
 
-class Controller:
+class RouteDispatcher:
     """Controls server operations to coordinate fetch, storage, and publishing."""
 
     def __init__(self, db: DBBase):
@@ -62,14 +62,18 @@ class Controller:
         return balances
 
     async def get_transactions_between(
-        self, account_id: str, start_date: datetime, end_date: datetime
+        self,
+        account_id: str,
+        start_date: Optional[datetime],
+        end_date: Optional[datetime],
     ) -> Optional[List[TransactionSchema]]:
+
         """Get transactions for the specified account for the default time interval."""
 
         # get latest transactions
         bank = await get_bank_for_account_id(account_id)
         if bank is None:
-            return
+            return []
         transactions = await bank.get_transactions_between(
             account_id, start_date, end_date
         )

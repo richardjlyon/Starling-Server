@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter
 
-from starling_server.main import controller
+from starling_server.main import dispatcher
 from starling_server.server.schemas.transaction import TransactionSchema
 
 default_interval_days = 7
@@ -27,4 +27,4 @@ async def get_transactions_between(
         end_date = datetime.now()
         start_date = end_date - timedelta(days=default_interval_days)
 
-    return await controller.get_transactions_between(account_id, start_date, end_date)
+    return await dispatcher.get_transactions_between(account_id, start_date, end_date)
