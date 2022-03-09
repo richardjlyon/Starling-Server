@@ -30,43 +30,37 @@ T = TypeVar("T")
 class API(BaseAPI):
     """Provides the API methods for the Starling Bank."""
 
-    def __init__(self, bank_name: str = None):
+    def __init__(self, bank_name: str):
         super().__init__()
-        self.bank_name: Optional[str] = bank_name
+        self.bank_name: str = bank_name
         self.token: str = self._initialise_token(bank_name)
-        self.accounts: Optional[List[AccountSchema]] = None
         # a lookup dictionary to get default_category for account_uuid, used in Starling API
         self.default_categories: Optional[dict] = None
 
     # = ACCOUNTS ABSTRACT METHODS =====================================================================================
 
     async def get_accounts(self) -> Coroutine[Any, Any, List[AccountSchema]]:
-        if self.accounts is None:
-            path = "/accounts"
-            try:
-                response = await self._get(path, None, StarlingAccountsSchema)
-                # populate the default_categories dictionary
-                self.default_categories = {}
-                for account in response.accounts:
-                    self.default_categories[
-                        account.accountUid
-                    ] = account.defaultCategory
+        """Get the accounts held at the bank."""
+        path = "/accounts"
+        try:
+            response = await self._get(path, None, StarlingAccountsSchema)
+            # populate the default_categories dictionary
+            self.default_categories = {}
+            for account in response.accounts:
+                self.default_categories[account.accountUid] = account.defaultCategory
 
-                # convert to the server schema
-                self.accounts = [
-                    self.to_server_account_schema(account)
-                    for account in response.accounts
-                ]
+            # convert to the server schema
+            accounts = [
+                self.to_server_account_schema(account) for account in response.accounts
+            ]
 
-            except HTTPError:
-                raise RuntimeError(
-                    f"HTTP Error getting accounts for '{self.bank_name}'"
-                )
+        except HTTPError:
+            raise RuntimeError(f"HTTP Error getting accounts for '{self.bank_name}'")
 
-            except PydanticTypeError:
-                raise RuntimeError(f"Pydantic type error for '{self.bank_name}'")
+        except PydanticTypeError:
+            raise RuntimeError(f"Pydantic type error for '{self.bank_name}'")
 
-        return self.accounts
+        return accounts
 
     async def get_account_balance(
         self, account_uuid

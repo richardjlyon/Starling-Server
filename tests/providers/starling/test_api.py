@@ -8,6 +8,7 @@ from starling_server.server.schemas.transaction import TransactionSchema
 
 class TestAccount:
     def test_initialise_token(self, api):
+        assert api.bank_name == "Starling Personal"
         assert isinstance(api.token, str)
 
     @pytest.mark.asyncio

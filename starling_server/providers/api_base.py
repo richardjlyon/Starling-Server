@@ -16,7 +16,6 @@ class BaseAPI(ABC):
 
     @abstractmethod
     async def get_accounts(self) -> Coroutine[Any, Any, List[AccountSchema]]:
-        """Get the accounts held at the bank."""
         pass
 
     @abstractmethod
