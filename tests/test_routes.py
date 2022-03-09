@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from src.server.app import app
+from starling_server.server.app import app
 
 client = TestClient(app)
 

@@ -5,9 +5,9 @@ from typing import List
 
 import edgedb
 
-from server.schemas.transaction import TransactionSchema
-from src.db.db_base import DBBase
-from src.server.schemas.account import AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.db.db_base import DBBase
+from starling_server.server.schemas.account import AccountSchema
 
 
 class Database(DBBase):

@@ -2,8 +2,8 @@ from typing import List
 
 from fastapi import APIRouter
 
-from src.main import controller
-from src.server.schemas.account import AccountBalanceSchema, AccountSchema
+from starling_server.main import controller
+from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
 
 router = APIRouter()
 

@@ -14,7 +14,7 @@ class TestAccount:
         # THEN two accounts are added
         accounts = make_accounts(2)
         for account in accounts:
-            db.insert_or_update_account(account)
+            starling_server.db.insert_or_update_account(account)
 
         accounts_db = select_accounts()
         assert len(accounts_db) == 2
@@ -30,7 +30,7 @@ class TestAccount:
         # insert two accounts
         accounts = make_accounts(2)
         for account in accounts:
-            db.insert_or_update_account(account)
+            starling_server.db.insert_or_update_account(account)
 
         # accounts_db = select_accounts()
         # show(accounts_db, "Accounts before update")
@@ -39,7 +39,7 @@ class TestAccount:
         modified_bank_name = f"{accounts[0].bank_name} **MODIFIED**"
         accounts[0].bank_name = modified_bank_name
         for account in accounts:
-            db.insert_or_update_account(account)
+            starling_server.db.insert_or_update_account(account)
 
         # check only modified account has changed
         accounts_db = select_accounts()
@@ -58,10 +58,10 @@ class TestAccount:
         # configure the database
         accounts = make_accounts(2)
         for account in accounts:
-            db.insert_or_update_account(account)
+            starling_server.db.insert_or_update_account(account)
 
         # test
-        accounts = db.get_accounts(as_schema=True)
+        accounts = starling_server.db.get_accounts(as_schema=True)
         assert isinstance(accounts, list)
         # assert isinstance(accounts[0], AccountSchema) # FIXME Why does this fail?
 
@@ -81,7 +81,7 @@ class TestTransaction:
         for account_db in accounts_db:
             transactions = make_transactions(2, account_uuid=account_db.uuid)
             for transaction in transactions:
-                db.insert_or_update_transaction(transaction)
+                starling_server.db.insert_or_update_transaction(transaction)
 
         accounts_db = select_accounts()
         transactions_db = select_transactions()
@@ -113,7 +113,7 @@ class TestTransaction:
             account_transactions = make_transactions(2, account_uuid=account_db.uuid)
             transactions.extend(account_transactions)
             for transaction in account_transactions:
-                db.insert_or_update_transaction(transaction)
+                starling_server.db.insert_or_update_transaction(transaction)
 
         transactions_db = select_transactions()
 
@@ -121,7 +121,7 @@ class TestTransaction:
         modified_transaction_reference = f"{transactions_db[0].reference} **MODIFIED**"
         transactions[0].reference = modified_transaction_reference
         for transaction in transactions:
-            db.insert_or_update_transaction(transaction)
+            starling_server.db.insert_or_update_transaction(transaction)
 
         # verify only modified transaction has changed
         transactions_db = select_transactions()

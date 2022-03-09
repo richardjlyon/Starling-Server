@@ -4,8 +4,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from server.schemas.transaction import TransactionSchema
-from src.server.schemas.account import AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.account import AccountSchema
 
 
 class DBBase(ABC):
