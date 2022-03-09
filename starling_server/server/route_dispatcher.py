@@ -9,8 +9,8 @@ from starling_server.server.schemas.account import AccountBalanceSchema, Account
 from starling_server.server.schemas.transaction import TransactionSchema
 
 banks: List[StarlingAPI] = [
-    # StarlingAPI(bank_name="Starling Personal"),
-    # StarlingAPI(bank_name="Starling Business"),
+    StarlingAPI(bank_name="Starling Personal"),
+    StarlingAPI(bank_name="Starling Business"),
 ]
 
 
@@ -40,7 +40,6 @@ class RouteDispatcher:
 
         # if there are none, or a refresh is forced, get from the bank and update database
         if len(accounts) == 0 or force_refresh:
-
             for bank in banks:
                 accounts = await bank.get_accounts()
                 for account in accounts:
@@ -50,14 +49,16 @@ class RouteDispatcher:
 
         return self._db.get_accounts(as_schema=True)
 
-    @staticmethod
-    async def get_account_balances() -> List[AccountBalanceSchema]:
+    async def get_account_balances(self) -> List[AccountBalanceSchema]:
         """Get a list of account balances from the provider."""
 
         balances = []
-        for bank in banks:
-            for account in await bank.get_accounts():
-                balances.append(await bank.get_account_balance(account.uuid))
+        # for bank in banks:
+        #     for account in await bank.get_accounts():
+        #         balances.append(await bank.get_account_balance(account.uuid))
+
+        for account in await self.get_accounts():
+            print(account)
 
         return balances
 
