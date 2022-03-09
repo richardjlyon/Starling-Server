@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from providers.starling.api import API as StarlingAPI
+from starling_server.providers.starling.api import API as StarlingAPI
 
 
 @pytest.fixture(scope="module")

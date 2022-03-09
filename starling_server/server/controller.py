@@ -3,14 +3,14 @@ from typing import List, Optional
 
 from loguru import logger
 
-from db.db_base import DBBase
-from src.providers.starling.api import API as StarlingAPI
-from src.server.schemas.account import AccountBalanceSchema, AccountSchema
-from src.server.schemas.transaction import TransactionSchema
+from starling_server.db.db_base import DBBase
+from starling_server.providers.starling.api import API as StarlingAPI
+from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 banks = [
-    StarlingAPI(bank_name="Starling Personal"),
-    StarlingAPI(bank_name="Starling Business"),
+    # StarlingAPI(bank_name="Starling Personal"),
+    # StarlingAPI(bank_name="Starling Business"),
 ]
 
 

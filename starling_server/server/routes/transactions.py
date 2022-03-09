@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter
 
-from src.main import controller
-from src.server.schemas.transaction import TransactionSchema
+from starling_server.main import controller
+from starling_server.server.schemas.transaction import TransactionSchema
 
 default_interval_days = 7
 

@@ -14,15 +14,15 @@ from config_path import ConfigPath
 from pydantic import parse_obj_as
 from pydantic.errors import PydanticTypeError
 
-from src.providers.api_base import BaseAPI
-from src.providers.starling.schemas import (
+from starling_server.providers.api_base import BaseAPI
+from starling_server.providers.starling.schemas import (
     StarlingBalanceSchema,
     StarlingTransactionsSchema,
     StarlingAccountsSchema,
     StarlingAccountSchema,
 )
-from src.server.schemas.account import AccountSchema, AccountBalanceSchema
-from src.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 T = TypeVar("T")
 

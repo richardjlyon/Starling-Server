@@ -6,9 +6,9 @@ from typing import List
 import pytest
 import pytz
 
-from db.edgedb.database import Database
-from server.schemas.account import AccountSchema
-from server.schemas.transaction import TransactionSchema
+from starling_server.db.edgedb.database import Database
+from starling_server.server.schemas.account import AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 testdb = Database(database="test")
 
