@@ -1,16 +1,14 @@
-import sys
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
 import uvicorn
 
-from db.edgedb.database import Database
-from server.controller import Controller
+from starling_server.db.edgedb.database import Database
+from starling_server.server.controller import Controller
 
 db = Database()
 controller = Controller(db=db)
 
+def run():
+    uvicorn.run("starling_server.server.app:app", host="0.0.0.0", port=8000, reload=True)
+
+
 if __name__ == "__main__":
-    uvicorn.run("server.app:app", host="0.0.0.0", port=8000, reload=True)
+    run()
