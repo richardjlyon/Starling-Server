@@ -1,5 +1,11 @@
 module default {
+    type Bank {
+        required property name -> str;
+        multi link accounts := .<bank[is Account];
+    }
+
     type Account {
+        required link bank -> Bank;
         required property uuid -> uuid {constraint exclusive};
         required property bank_name -> str {constraint exclusive};
         required property account_name -> str;
@@ -14,17 +20,17 @@ module default {
         required property time -> datetime;
         required property counterparty_name -> str;
         required property amount -> float32;
-        link category -> Category;
         property reference -> str;
-    }
-
-    type Category {
-        required property name -> str;
-        multi link transactions -> Transaction;
+        link category -> Category;
     }
 
     type CategoryGroup {
         required property name -> str;
-        multi link categories -> Category;
+        multi link categories -> Category { constraint exclusive };
+    }
+
+    type Category {
+        required property name -> str;
+        multi link transactions := .<category[is Transaction];
     }
 }
