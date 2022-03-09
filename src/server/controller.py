@@ -33,26 +33,17 @@ class Controller:
 
         """
 
-        # if force_refresh:
-        #     for bank in banks:
-        #         bank_db = self._db.select_or_insert_bank(bank.bank_name)
-        #         print(f">>> {bank_db[0].name}")
-        #         for account in await bank.get_accounts():
-        #             self._db.insert_or_update_account(bank_db[0].name, account)
-        #
-        #     return
+        # try and get accounts from the database
+        accounts = self._db.get_accounts(as_schema=True)
 
-        # accounts = []
-        # if force_refresh or len(banks_db) == 0:
-        #     for bank in banks:
-        #         for account in await bank.get_accounts():
-        #             self._db.insert_account(account)
-        #
-        # accounts_db = self._db.get_banks()
-        # print(f">>> {accounts_db}")
-        #
-        # return accounts
-        pass
+        # if there are none, or a refresh is forced, get from the bank and update database
+        if len(accounts) == 0 or force_refresh:
+            for bank in banks:
+                accounts = await bank.get_accounts()
+                for account in accounts:
+                    self._db.insert_or_update_account(account)
+
+        return self._db.get_accounts(as_schema=True)
 
     @staticmethod
     async def get_account_balances() -> List[AccountBalanceSchema]:

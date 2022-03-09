@@ -24,7 +24,7 @@ def insert_2_accounts(thedb) -> None:
     """A database with two accounts, no transactions."""
     accounts = make_accounts(2)
     for account in accounts:
-        thedb.insert_or_update_account(account.bank_name, account)
+        thedb.insert_or_update_account(account)
 
 
 def reset():

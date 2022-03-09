@@ -14,7 +14,7 @@ class TestAccount:
         # THEN two accounts are added
         accounts = make_accounts(2)
         for account in accounts:
-            db.insert_or_update_account(account.bank_name, account)
+            db.insert_or_update_account(account)
 
         accounts_db = select_accounts()
         assert len(accounts_db) == 2
@@ -30,7 +30,7 @@ class TestAccount:
         # insert two accounts
         accounts = make_accounts(2)
         for account in accounts:
-            db.insert_or_update_account(account.bank_name, account)
+            db.insert_or_update_account(account)
 
         # accounts_db = select_accounts()
         # show(accounts_db, "Accounts before update")
@@ -39,7 +39,7 @@ class TestAccount:
         modified_bank_name = f"{accounts[0].bank_name} **MODIFIED**"
         accounts[0].bank_name = modified_bank_name
         for account in accounts:
-            db.insert_or_update_account(account.bank_name, account)
+            db.insert_or_update_account(account)
 
         # check only modified account has changed
         accounts_db = select_accounts()
@@ -48,6 +48,22 @@ class TestAccount:
         assert accounts_db[1].bank_name == accounts[1].bank_name
 
         # show(accounts_db, "Accounts after update")
+
+    def test_get_accounts(self, db):
+        # GIVEN a database with two accounts
+        # WHEN I get the accounts
+        # THEN the accounts are correct
+        # insert two accounts
+
+        # configure the database
+        accounts = make_accounts(2)
+        for account in accounts:
+            db.insert_or_update_account(account)
+
+        # test
+        accounts = db.get_accounts(as_schema=True)
+        assert isinstance(accounts, list)
+        # assert isinstance(accounts[0], AccountSchema) # FIXME Why does this fail?
 
 
 class TestTransaction:
