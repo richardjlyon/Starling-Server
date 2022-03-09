@@ -8,6 +8,7 @@ import pytz
 
 from db.edgedb.database import Database
 from server.schemas.account import AccountSchema
+from server.schemas.transaction import TransactionSchema
 
 testdb = Database(database="test")
 
@@ -19,24 +20,22 @@ def db():
     reset()
 
 
-@pytest.fixture
-def db_2_accounts(db):
+def insert_2_accounts(thedb) -> None:
     """A database with two accounts, no transactions."""
     accounts = make_accounts(2)
     for account in accounts:
-        db.insert_or_update_account(account.bank_name, account)
-    return accounts
+        thedb.insert_or_update_account(account.bank_name, account)
 
 
 def reset():
     testdb.client.query(
         """
-        delete Account;
+        delete Transaction;
         """
     )
     testdb.client.query(
         """
-        delete Transaction;
+        delete Account;
         """
     )
     testdb.client.close()
@@ -46,14 +45,28 @@ def select_accounts():
     accounts = testdb.client.query(
         """
         select Account {
+            uuid,
             bank_name,
             account_name,
-            transactions
+            transactions: { reference }
         };
         """
     )
     testdb.client.close()
     return accounts
+
+
+def select_transactions():
+    transactions = testdb.client.query(
+        """
+        select Transaction {
+            account: { uuid, account_name },
+            reference
+        };
+        """
+    )
+    testdb.client.close()
+    return transactions
 
 
 def show(things: List, message=None) -> None:
@@ -77,14 +90,15 @@ def make_accounts(number) -> List[AccountSchema]:
     ]
 
 
-def make_transactions(account: int, total: int) -> List[dict]:
+def make_transactions(number: int, account_uuid: str) -> List[TransactionSchema]:
     return [
-        {
-            "uuid": uuid.uuid4(),
-            "time": datetime.now(pytz.timezone("Europe/London")),
-            "counterparty_name": f"Counterparty {i}",
-            "amount": random() * 10000,
-            "reference": f"Account {account} Transaction {i}",
-        }
-        for i in range(total)
+        TransactionSchema(
+            uuid=str(uuid.uuid4()),
+            account_uuid=str(account_uuid),
+            time=datetime.now(pytz.timezone("Europe/London")),
+            counterparty_name=f"Counterparty {i}",
+            amount=random() * 10000,
+            reference=f"{str(account_uuid)[-4:]}/{i}",
+        )
+        for i in range(number)
     ]

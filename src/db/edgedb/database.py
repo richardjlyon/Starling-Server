@@ -4,6 +4,7 @@
 
 import edgedb
 
+from server.schemas.transaction import TransactionSchema
 from src.db.db_base import DBBase
 from src.server.schemas.account import AccountSchema
 
@@ -42,17 +43,36 @@ class Database(DBBase):
         self.client.close()
         return account
 
-    def select_banks(self):
-        accounts = self.client.query(
+    # noinspection SqlNoDataSourceInspection
+    def insert_or_update_transaction(self, transaction: TransactionSchema):
+        transaction = self.client.query(
             """
-            select Bank { 
-                name, 
-                accounts: {
-                    uuid,
-                    name,    
+            with account := (
+                select Account filter .uuid = <uuid>$account_uuid
+            )
+            insert Transaction {
+                account := account,
+                uuid := <uuid>$uuid,
+                time := <datetime>$time,
+                counterparty_name := <str>$counterparty_name,
+                amount := <float32>$amount,
+                reference := <str>$reference
+            } unless conflict on .uuid else (
+                update Transaction
+                set {
+                    time := <datetime>$time,
+                    counterparty_name := <str>$counterparty_name,
+                    amount := <float32>$amount,
+                    reference := <str>$reference
                 }
-            }
-            """
+            )
+            """,
+            account_uuid=transaction.account_uuid,
+            uuid=transaction.uuid,
+            time=transaction.time,
+            counterparty_name=transaction.counterparty_name,
+            amount=transaction.amount,
+            reference=transaction.reference,
         )
         self.client.close()
-        return accounts
+        return transaction

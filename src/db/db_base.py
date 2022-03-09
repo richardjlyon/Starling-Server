@@ -3,6 +3,7 @@
 # Defines a base class for a database provider
 from abc import ABC, abstractmethod
 
+from server.schemas.transaction import TransactionSchema
 from src.server.schemas.account import AccountSchema
 
 
@@ -15,5 +16,5 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def select_banks(self):
+    def insert_or_update_transaction(self, transaction: TransactionSchema):
         pass
