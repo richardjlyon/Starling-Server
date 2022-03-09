@@ -1,7 +1,7 @@
 module default {
     type Account {
         required property uuid -> uuid {constraint exclusive};
-        required property bank_name -> str;
+        required property bank_name -> str {constraint exclusive};
         required property account_name -> str;
         required property currency -> str;
         property created_at -> datetime;
