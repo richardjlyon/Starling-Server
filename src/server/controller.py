@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
+from loguru import logger
+
 from db.db_base import DBBase
 from src.providers.starling.api import API as StarlingAPI
 from src.server.schemas.account import AccountBalanceSchema, AccountSchema
@@ -38,10 +40,13 @@ class Controller:
 
         # if there are none, or a refresh is forced, get from the bank and update database
         if len(accounts) == 0 or force_refresh:
+
             for bank in banks:
                 accounts = await bank.get_accounts()
                 for account in accounts:
                     self._db.insert_or_update_account(account)
+
+            logger.info(f"Retrieved accounts from bank, force_refresh={force_refresh}")
 
         return self._db.get_accounts(as_schema=True)
 

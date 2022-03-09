@@ -15,6 +15,7 @@ config-path = "^1.0.2"
 httpx = "^0.22.0"
 edgedb = "^0.22.0"
 pytz = "^2021.3"
+loguru = "^0.6.0"
 
 
 [tool.poetry.dev-dependencies]
