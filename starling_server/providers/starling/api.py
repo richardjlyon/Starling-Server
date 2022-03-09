@@ -5,7 +5,7 @@
 
 import re
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Coroutine
 from typing import Type, TypeVar, Any
 from urllib.error import HTTPError
 
@@ -40,7 +40,7 @@ class API(BaseAPI):
 
     # = ACCOUNTS ABSTRACT METHODS =====================================================================================
 
-    async def get_accounts(self) -> List[AccountSchema]:
+    async def get_accounts(self) -> Coroutine[Any, Any, List[AccountSchema]]:
         if self.accounts is None:
             path = "/accounts"
             try:
@@ -68,7 +68,9 @@ class API(BaseAPI):
 
         return self.accounts
 
-    async def get_account_balance(self, account_uuid) -> AccountBalanceSchema:
+    async def get_account_balance(
+        self, account_uuid
+    ) -> Coroutine[Any, Any, AccountBalanceSchema]:
         path = f"/accounts/{account_uuid}/balance"
         try:
             balance = await self._get(path, None, StarlingBalanceSchema)
@@ -87,8 +89,11 @@ class API(BaseAPI):
     # = TRANSACTIONS ABSTRACT METHODS ==================================================================================
 
     async def get_transactions_between(
-        self, account_uuid: str, start_date: datetime, end_date: datetime
-    ) -> List[TransactionSchema]:
+        self,
+        account_uuid: str,
+        start_date: Optional[datetime],
+        end_date: Optional[datetime],
+    ) -> Coroutine[Any, Any, List[TransactionSchema]]:
 
         default_category_id = self.default_categories[account_uuid]
 
@@ -157,7 +162,7 @@ class API(BaseAPI):
     # = UTILITIES ======================================================================================================
 
     async def _get(
-        self, path: str, params: dict = None, return_type: Type[T] = Any
+        self, path: str, params: dict = None, return_type: Optional[Type[T]] = None
     ) -> T:
         """Get an api call."""
         API_BASE_URL = "https://api.starlingbank.com/api/v2"
