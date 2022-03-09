@@ -8,8 +8,6 @@ from typing import Optional
 
 from pydantic.main import BaseModel
 
-from src.providers.starling.schemas import StarlingTransactionSchema
-
 
 class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
@@ -20,18 +18,6 @@ class TransactionSchema(BaseModel):
     counterparty_name: str
     amount: float
     reference: Optional[str]
-
-    @staticmethod
-    def from_StarlingTransactionSchema(
-            t: StarlingTransactionSchema,
-    ) -> "TransactionSchema":
-        return TransactionSchema(
-            uuid=t.feedItemUid,
-            time=t.transactionTime,
-            counterparty_name=t.counterPartyName,
-            amount=t.sourceAmount.compute_amount(t.direction),
-            reference=clean_string(t.reference),
-        )
 
 
 def clean_string(the_string: Optional[str]) -> Optional[str]:
