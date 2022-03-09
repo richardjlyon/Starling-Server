@@ -1,15 +1,11 @@
 module default {
-    type Bank {
-        required property name -> str {constraint exclusive;};
-        multi link accounts -> Account;
-    }
-
     type Account {
         required property uuid -> uuid {constraint exclusive;};
-        required property name -> str;
+        required property bank_name -> str {constraint exclusive;};
+        required property account_name -> str;
         required property currency -> str;
         property created_at -> datetime;
-        multi link transactions -> Transaction
+        multi link transactions -> Transaction {constraint exclusive};
     }
 
     type Transaction {

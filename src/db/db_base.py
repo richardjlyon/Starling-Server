@@ -11,6 +11,9 @@ class DBBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def save_account(self, account: AccountSchema):
-        """Save or upadte account to the database."""
+    def insert_or_update_account(self, bank_name: str, account: AccountSchema):
+        pass
+
+    @abstractmethod
+    def select_banks(self):
         pass

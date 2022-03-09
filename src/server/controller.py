@@ -32,16 +32,27 @@ class Controller:
             A list of accounts.
 
         """
-        accounts = []
-        for bank in banks:
-            for account in await bank.get_accounts():
-                accounts.append(account)
 
-        # update database
-        for account in accounts:
-            self._db.save_account(account)
+        # if force_refresh:
+        #     for bank in banks:
+        #         bank_db = self._db.select_or_insert_bank(bank.bank_name)
+        #         print(f">>> {bank_db[0].name}")
+        #         for account in await bank.get_accounts():
+        #             self._db.insert_or_update_account(bank_db[0].name, account)
+        #
+        #     return
 
-        return accounts
+        # accounts = []
+        # if force_refresh or len(banks_db) == 0:
+        #     for bank in banks:
+        #         for account in await bank.get_accounts():
+        #             self._db.insert_account(account)
+        #
+        # accounts_db = self._db.get_banks()
+        # print(f">>> {accounts_db}")
+        #
+        # return accounts
+        pass
 
     @staticmethod
     async def get_account_balances() -> List[AccountBalanceSchema]:
