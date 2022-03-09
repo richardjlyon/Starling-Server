@@ -1,11 +1,9 @@
-CREATE MIGRATION m1vrt77zbn7eh642s2j4x7ubhexm4hbyiokiu4h7zftagq5tfhry2a
+CREATE MIGRATION m15hi4lqboaqvz27czzp5b6frncoq34gszprq4d5rwi7ihliisp3fq
     ONTO initial
 {
   CREATE TYPE default::Account {
       CREATE REQUIRED PROPERTY account_name -> std::str;
-      CREATE REQUIRED PROPERTY bank_name -> std::str {
-          CREATE CONSTRAINT std::exclusive;
-      };
+      CREATE REQUIRED PROPERTY bank_name -> std::str;
       CREATE PROPERTY created_at -> std::datetime;
       CREATE REQUIRED PROPERTY currency -> std::str;
       CREATE REQUIRED PROPERTY uuid -> std::uuid {
@@ -13,6 +11,7 @@ CREATE MIGRATION m1vrt77zbn7eh642s2j4x7ubhexm4hbyiokiu4h7zftagq5tfhry2a
       };
   };
   CREATE TYPE default::Transaction {
+      CREATE REQUIRED LINK account -> default::Account;
       CREATE REQUIRED PROPERTY amount -> std::float32;
       CREATE REQUIRED PROPERTY counterparty_name -> std::str;
       CREATE PROPERTY reference -> std::str;
@@ -22,7 +21,7 @@ CREATE MIGRATION m1vrt77zbn7eh642s2j4x7ubhexm4hbyiokiu4h7zftagq5tfhry2a
       };
   };
   ALTER TYPE default::Account {
-      CREATE MULTI LINK transactions -> default::Transaction;
+      CREATE MULTI LINK transactions := (.<account[IS default::Transaction]);
   };
   CREATE TYPE default::Category {
       CREATE MULTI LINK transactions -> default::Transaction;
