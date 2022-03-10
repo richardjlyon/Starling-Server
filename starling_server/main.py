@@ -4,7 +4,7 @@ from starling_server.db.edgedb.database import Database
 from starling_server.server.route_dispatcher import RouteDispatcher
 
 db = Database()
-dispatcher = RouteDispatcher(db=db)
+dispatcher = RouteDispatcher(database=db)
 
 
 def run():

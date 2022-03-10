@@ -8,46 +8,34 @@ from starling_server.providers.starling.api import API as StarlingAPI
 from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
-banks: List[StarlingAPI] = [
-    StarlingAPI(bank_name="Starling Personal"),
-    StarlingAPI(bank_name="Starling Business"),
-]
-
 
 class RouteDispatcher:
-    """Controls server operations to coordinate fetch, storage, and publishing."""
+    """Controls server operations to coordinate fetching, storage, and publishing."""
 
-    def __init__(self, db: DBBase):
-        self._db = db
+    def __init__(self, database: DBBase, banks: Optional[List[StarlingAPI]] = None):
+        self.db = database
+        self.banks = banks
 
     async def get_accounts(self, force_refresh: bool = False) -> List[AccountSchema]:
         """
-        Get a list of accounts from the provider and save to the database.
-
-        If we have stored account data in the database, fetch and return it. Otherwise, get it from the bank, update
-        the database, and then return it.
+        Get a list of accounts from the database.
 
         Args:
             force_refresh (): If true, force update of account details from the provider
-
-        Returns:
-            A list of accounts.
-
         """
-
-        # try and get accounts from the database
-        accounts = self._db.get_accounts(as_schema=True)
-
-        # if there are none, or a refresh is forced, get from the bank and update database
+        accounts = self.db.get_accounts()
         if len(accounts) == 0 or force_refresh:
-            for bank in banks:
-                accounts = await bank.get_accounts()
-                for account in accounts:
-                    self._db.insert_or_update_account(account)
+            await self.update_banks_and_accounts()
 
-            logger.info(f"Retrieved accounts from bank, force_refresh={force_refresh}")
+        return self.db.get_accounts(as_schema=True)
 
-        return self._db.get_accounts(as_schema=True)
+    async def update_banks_and_accounts(self):
+        for bank in self.banks:
+            accounts = await bank.get_accounts()
+            for account in accounts:
+                self.db.insert_or_update_account(account)
+
+        logger.info(f"Updated accounts from bank details")
 
     async def get_account_balances(self) -> List[AccountBalanceSchema]:
         """Get a list of account balances from the provider."""
@@ -89,7 +77,7 @@ class RouteDispatcher:
 
 async def get_bank_for_account_id(account_id: str) -> Optional[StarlingAPI]:
     the_bank = None
-    for bank in banks:  # TODO Ask Alex - shorter way of doing this?
+    for bank in self.banks:  # TODO Ask Alex - shorter way of doing this?
         accounts = await bank.get_accounts() if bank.accounts is None else bank.accounts
         if (
             next(
