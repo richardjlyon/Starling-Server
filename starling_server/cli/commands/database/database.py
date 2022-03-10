@@ -4,6 +4,7 @@
 
 from cleo import Command
 
+from .database_initialise import DatabaseInitialise
 from .database_list import DatabaseList
 from .database_reset import DatabaseReset
 
@@ -15,7 +16,7 @@ class DatabaseCommand(Command):
     db
     """
 
-    commands = [DatabaseReset(), DatabaseList()]
+    commands = [DatabaseReset(), DatabaseList(), DatabaseInitialise()]
 
     def handle(self):
         return self.call("help", self._config.name)

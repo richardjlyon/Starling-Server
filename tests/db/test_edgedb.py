@@ -1,3 +1,9 @@
+# test_edgedb.py
+#
+# Tests the functions of the database class
+#
+# NOTE: These tests assume valid token configuration files in the file system: see docs
+
 from tests.db.conftest import (
     make_accounts,
     select_accounts,

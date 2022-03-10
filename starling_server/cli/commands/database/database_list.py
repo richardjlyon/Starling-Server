@@ -20,4 +20,9 @@ class DatabaseList(Command):
     async def handle_async(self):
         database = self.option("database")
         db = Database(database=database)
-        self.line(f"Listing banks from '{database}'")
+
+        self.line(f"<info>Listing banks from '{database}'</info>")
+
+        accounts = db.get_accounts(as_schema=True)
+        for account in accounts:
+            self.line(f"<info>- {account.bank_name}: {account.account_name}</info>")

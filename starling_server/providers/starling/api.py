@@ -10,10 +10,10 @@ from typing import Type, TypeVar, Any
 from urllib.error import HTTPError
 
 import httpx
-from config_path import ConfigPath
 from pydantic import parse_obj_as
 from pydantic.errors import PydanticTypeError
 
+from starling_server.config import tokens_folder
 from starling_server.providers.api_base import BaseAPI
 from starling_server.providers.starling.schemas import (
     StarlingBalanceSchema,
@@ -177,13 +177,11 @@ class API(BaseAPI):
                 return r.json()
 
     @staticmethod
-    def _initialise_token(account_type: Optional[str]) -> str:
-        config_path = ConfigPath("starling_server", "rjlyon.com", ".json")
-        tokens_folder = config_path.saveFolderPath() / "tokens"
-        file_path = tokens_folder / account_type
+    def _initialise_token(bank_name: Optional[str]) -> str:
+        file_path = tokens_folder / bank_name
         try:
             file = open(file_path, "r")
         except FileNotFoundError:
-            raise FileNotFoundError(f"No token for account type '{account_type}'")
+            raise FileNotFoundError(f"No token for account type '{bank_name}'")
 
         return file.read().strip()
