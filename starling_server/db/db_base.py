@@ -4,13 +4,17 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.server.schemas.account import AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 
 class DBBase(ABC):
     def __init__(self):
         super().__init__()
+
+    @abstractmethod
+    def reset(self, accounts: List[AccountSchema]):
+        pass
 
     @abstractmethod
     def insert_or_update_account(self, account: AccountSchema):

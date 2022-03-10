@@ -17,7 +17,7 @@ testdb = Database(database="test")
 def db():
     reset()
     yield testdb
-    reset()
+    # reset()
 
 
 def insert_2_accounts(thedb) -> None:
@@ -36,6 +36,11 @@ def reset():
     testdb.client.query(
         """
         delete Account;
+        """
+    )
+    testdb.client.query(
+        """
+        delete Bank;
         """
     )
     testdb.client.close()

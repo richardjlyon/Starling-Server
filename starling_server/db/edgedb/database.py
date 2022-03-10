@@ -1,19 +1,33 @@
 # database.py
 #
 # Defines an edgedb database manager
+
 from typing import List
 
 import edgedb
 
-from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.db.db_base import DBBase
 from starling_server.server.schemas.account import AccountSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 
 class Database(DBBase):
     def __init__(self, database: str = None):
         super().__init__()
         self.client = edgedb.create_client(database=database)
+
+    def reset(self, accounts: List[AccountSchema]):
+        """Drop Bank and Account tables and reconfigure from a list of accounts."""
+
+        print("RESET")
+        self.client.query(
+            """
+            delete Bank;
+            """
+        )
+
+        for account in accounts:
+            print(account)
 
     # noinspection SqlNoDataSourceInspection
     def insert_or_update_account(self, account: AccountSchema):
