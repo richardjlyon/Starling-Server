@@ -45,9 +45,9 @@ def select_accounts():
     accounts = testdb.client.query(
         """
         select Account {
+            bank: { name },
             uuid,
-            bank_name,
-            account_name,
+            name,
             transactions: { reference }
         };
         """
@@ -60,7 +60,7 @@ def select_transactions():
     transactions = testdb.client.query(
         """
         select Transaction {
-            account: { uuid, account_name },
+            account: { uuid, name },
             reference
         };
         """

@@ -1,14 +1,13 @@
 module default {
     type Bank {
-        required property name -> str;
+        required property name -> str {constraint exclusive};
         multi link accounts := .<bank[is Account];
     }
 
     type Account {
         required link bank -> Bank;
         required property uuid -> uuid {constraint exclusive};
-        required property bank_name -> str {constraint exclusive};
-        required property account_name -> str;
+        required property name -> str;
         required property currency -> str;
         property created_at -> datetime;
         multi link transactions := .<account[is Transaction];

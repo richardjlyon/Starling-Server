@@ -18,7 +18,7 @@ class TestAccount:
 
         accounts_db = select_accounts()
         assert len(accounts_db) == 2
-        assert accounts_db[0].bank_name == accounts[0].bank_name
+        assert accounts_db[0].bank.name == accounts[0].bank_name
 
         # show(accounts_db, "Accounts")
 
@@ -36,18 +36,17 @@ class TestAccount:
         # show(accounts_db, "Accounts before update")
 
         # change 1 account name and update database
-        modified_bank_name = f"{accounts[0].bank_name} **MODIFIED**"
-        accounts[0].bank_name = modified_bank_name
+        modified_account_name = f"{accounts[0].account_name} **MODIFIED**"
+        accounts[0].account_name = modified_account_name
         for account in accounts:
             db.insert_or_update_account(account)
 
         # check only modified account has changed
         accounts_db = select_accounts()
-        assert len(accounts_db) == 2
-        assert accounts_db[0].bank_name == modified_bank_name
-        assert accounts_db[1].bank_name == accounts[1].bank_name
-
         # show(accounts_db, "Accounts after update")
+
+        assert len(accounts_db) == 2
+        assert accounts_db[0].name == modified_account_name
 
     def test_get_accounts(self, db):
         # GIVEN a database with two accounts

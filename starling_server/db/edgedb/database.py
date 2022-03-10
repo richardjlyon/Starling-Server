@@ -17,41 +17,54 @@ class Database(DBBase):
 
     # noinspection SqlNoDataSourceInspection
     def insert_or_update_account(self, account: AccountSchema):
-        account = self.client.query(
+
+        # ensure Bank exists: note - this can probably be combined with the `insert Account` query
+        self.client.query(
             """
+            insert Bank {
+                name := <str>$name
+            } unless conflict
+            """,
+            name=account.bank_name,
+        )
+
+        account_db = self.client.query(
+            """
+            with bank := (
+                select Bank filter .name = <str>$bank_name
+            )
             insert Account {
+                bank := bank,
                 uuid := <uuid>$uuid,
-                bank_name := <str>$bank_name,
-                account_name := <str>$account_name,
+                name := <str>$name,
                 currency := <str>$currency,
                 created_at := <datetime>$created_at
             } unless conflict on .uuid else (
                 update Account 
                 set {
-                    bank_name := <str>$bank_name,
-                    account_name := <str>$account_name,
+                    name := <str>$name,
                     currency := <str>$currency,
                     created_at := <datetime>$created_at,
                 }
             );
             """,
-            uuid=account.uuid,
             bank_name=account.bank_name,
-            account_name=account.account_name,
+            uuid=account.uuid,
+            name=account.account_name,
             currency=account.currency,
             created_at=account.created_at,
         )
         self.client.close()
-        return account
+        return account_db
 
     # noinspection SqlNoDataSourceInspection
     def get_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
         accounts_db = self.client.query(
             """
             select Account {
+                bank: { name },
                 uuid,
-                bank_name,
-                account_name,
+                name,
                 currency,
                 created_at
             }
@@ -61,8 +74,8 @@ class Database(DBBase):
             return [
                 AccountSchema(
                     uuid=str(account_db.uuid),
-                    bank_name=account_db.bank_name,
-                    account_name=account_db.account_name,
+                    bank_name=account_db.bank.name,
+                    account_name=account_db.name,
                     currency=account_db.currency,
                     created_at=account_db.created_at,
                 )
