@@ -25,10 +25,12 @@ class TestAccount:
 
 class TestTransaction:
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="not implemented")
     async def test_get_transactions_between(self, api, account):
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
 
+        print(account)
         transactions = await api.get_transactions_between(
             account.uuid, start_date, end_date
         )

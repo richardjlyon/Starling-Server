@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import List, Optional, Coroutine
 from typing import Type, TypeVar, Any
 from urllib.error import HTTPError
+from uuid import UUID
 
 import httpx
 from pydantic import parse_obj_as
@@ -84,7 +85,7 @@ class API(BaseAPI):
 
     async def get_transactions_between(
         self,
-        account_uuid: str,
+        account_uuid: UUID,
         start_date: Optional[datetime],
         end_date: Optional[datetime],
     ) -> Coroutine[Any, Any, List[TransactionSchema]]:
@@ -128,7 +129,7 @@ class API(BaseAPI):
         self, account_uuid: str, balance: StarlingBalanceSchema
     ) -> AccountBalanceSchema:
         return AccountBalanceSchema(
-            account_uuid=account_uuid,
+            uuid=account_uuid,
             cleared_balance=balance.clearedBalance.minorUnits / 100.0,
             pending_transactions=balance.pendingTransactions.minorUnits / 100.0,
             effective_balance=balance.effectiveBalance.minorUnits / 100.0,

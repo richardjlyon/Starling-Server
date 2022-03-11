@@ -12,7 +12,7 @@ from pydantic.main import BaseModel
 class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
 
-    uuid: str
+    uuid: str  # FIXME convert to uuid
     account_uuid: str
     time: datetime
     counterparty_name: str

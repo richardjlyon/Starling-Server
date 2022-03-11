@@ -17,8 +17,7 @@ class RouteDispatcher:
         self.banks = banks
 
     async def get_accounts(self, force_refresh: bool = False) -> List[AccountSchema]:
-        """
-        Get a list of accounts from the database.
+        """Get a list of accounts from the database.
 
         Args:
             force_refresh (): If true, force update of account details from the provider
@@ -30,6 +29,7 @@ class RouteDispatcher:
         return self.db.get_accounts(as_schema=True)
 
     async def update_banks_and_accounts(self):
+        """Update the database with bank and account details obtained from the provider."""
         for bank in self.banks:
             accounts = await bank.get_accounts()
             for account in accounts:
@@ -40,13 +40,12 @@ class RouteDispatcher:
     async def get_account_balances(self) -> List[AccountBalanceSchema]:
         """Get a list of account balances from the provider."""
 
+        accounts = self.db.get_accounts()
         balances = []
-        # for bank in banks:
-        #     for account in await bank.get_accounts():
-        #         balances.append(await bank.get_account_balance(account.uuid))
-
-        for account in await self.get_accounts():
+        for account in accounts:
             print(account)
+            bank = StarlingAPI(bank_name=account.bank.name)
+            balances.append(await bank.get_account_balance(account_uuid=account.uuid))
 
         return balances
 
