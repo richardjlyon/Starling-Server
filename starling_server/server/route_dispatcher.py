@@ -16,6 +16,8 @@ class RouteDispatcher:
         self.db = database
         self.banks = banks
 
+    # = ACCOUNTS =======================================================================================================
+
     async def get_accounts(self, force_refresh: bool = False) -> List[AccountSchema]:
         """Get a list of accounts from the database.
 
@@ -43,11 +45,12 @@ class RouteDispatcher:
         accounts = self.db.get_accounts()
         balances = []
         for account in accounts:
-            print(account)
             bank = StarlingAPI(bank_name=account.bank.name)
             balances.append(await bank.get_account_balance(account_uuid=account.uuid))
 
         return balances
+
+    # = TRANSACTIONS ===================================================================================================
 
     async def get_transactions_between(
         self,
@@ -55,13 +58,13 @@ class RouteDispatcher:
         start_date: Optional[datetime],
         end_date: Optional[datetime],
     ) -> Optional[List[TransactionSchema]]:
-
         """Get transactions for the specified account for the default time interval."""
 
         # get latest transactions
-        bank = await get_bank_for_account_id(account_id)
+        bank = await self.get_bank_for_account_id(account_id)
         if bank is None:
-            return []
+            return None
+
         transactions = await bank.get_transactions_between(
             account_id, start_date, end_date
         )
@@ -70,22 +73,15 @@ class RouteDispatcher:
 
         return transactions
 
+    # = HELPERS ========================================================================================================
 
-# = HELPERS ===========================================================================================================
-
-
-async def get_bank_for_account_id(account_id: str) -> Optional[StarlingAPI]:
-    the_bank = None
-    for bank in self.banks:  # TODO Ask Alex - shorter way of doing this?
-        accounts = await bank.get_accounts() if bank.accounts is None else bank.accounts
-        if (
-            next(
-                (account for account in accounts if account.uuid == account_id),
-                None,
-            )
-            is not None
-        ):
-            the_bank = bank
-            break
-
-    return the_bank
+    async def get_bank_for_account_id(self, account_id: str) -> Optional[StarlingAPI]:
+        accounts = self.db.get_accounts(as_schema=True)
+        account = next(
+            (account for account in accounts if str(account.uuid) == account_id),
+            None,
+        )
+        if account is not None:
+            return StarlingAPI(bank_name=account.bank_name)
+        else:
+            return None

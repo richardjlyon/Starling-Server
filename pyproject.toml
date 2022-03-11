@@ -19,6 +19,7 @@ loguru = "^0.6.0"
 Sphinx = "^4.4.0"
 sphinx-rtd-theme = "^1.0.0"
 cleo = "^0.8.1"
+toml = "^0.10.2"
 
 [tool.poetry.scripts]
 bank_server = 'starling_server.cli.cli:cli'

@@ -12,6 +12,11 @@ class TestAccount:
         assert isinstance(api.token, str)
 
     @pytest.mark.asyncio
+    async def test_default_categories(self, api, account):
+        default_category = await api.default_category_for_account_uuid(account.uuid)
+        assert isinstance(default_category, str)
+
+    @pytest.mark.asyncio
     async def test_get_accounts(self, api):
         accounts = await api.get_accounts()
         assert isinstance(accounts, list)

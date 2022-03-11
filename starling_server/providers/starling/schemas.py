@@ -1,11 +1,12 @@
 # schemas.py
 #
 # Starling Bank schema definitions
-
+import uuid
 from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
+
 
 # = ACCOUNTS ==========================================================================================================
 
@@ -13,12 +14,12 @@ from pydantic import BaseModel
 class StarlingAccountSchema(BaseModel):
     """Represents a Starling Bank account."""
 
-    accountUid: str
+    accountUid: uuid.UUID
     name: str
     accountType: str
     currency: str
     createdAt: datetime
-    defaultCategory: str
+    defaultCategory: uuid.UUID  # FIXME UUID and -> uuid
 
 
 class StarlingAccountsSchema(BaseModel):
