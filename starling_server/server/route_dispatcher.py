@@ -1,8 +1,10 @@
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from loguru import logger
 
+from starling_server.config import default_interval_days
 from starling_server.db.db_base import DBBase
 from starling_server.providers.starling.api import API as StarlingAPI
 from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
@@ -52,16 +54,38 @@ class RouteDispatcher:
 
     # = TRANSACTIONS ===================================================================================================
 
+    async def get_transactions_between(
+        self, start_date: datetime = None, end_date: datetime = None
+    ) -> Optional[List[TransactionSchema]]:
+
+        transactions = []
+        accounts = self.db.get_accounts(as_schema=True)
+        for account in accounts:
+            result = await self.get_transactions_for_account_id_between(
+                account_id=account.uuid, start_date=start_date, end_date=end_date
+            )
+            transactions.extend(result)
+
+        transactions.sort(key=lambda t: t.time, reverse=True)
+        return transactions
+
     async def get_transactions_for_account_id_between(
         self,
-        account_id: str,
+        account_id: uuid.UUID,
         start_date: Optional[datetime],
         end_date: Optional[datetime],
     ) -> Optional[List[TransactionSchema]]:
         """Get transactions for the specified account for the default time interval."""
 
+        # FIXME Tidy this logic up include start_date OR end_date
+        if start_date or end_date is None:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=default_interval_days)
+
         # get latest transactions
         bank = await self.get_bank_for_account_id(account_id)
+        # logger.debug("Got bank: {}", bank.bank_name)
+
         if bank is None:
             return None
 
@@ -70,6 +94,7 @@ class RouteDispatcher:
         )
 
         # save to the database
+        # TODO IMPLEMENT PERSISTENCE
 
         return transactions
 
@@ -78,9 +103,10 @@ class RouteDispatcher:
     async def get_bank_for_account_id(self, account_id: str) -> Optional[StarlingAPI]:
         accounts = self.db.get_accounts(as_schema=True)
         account = next(
-            (account for account in accounts if str(account.uuid) == account_id),
+            (account for account in accounts if account.uuid == account_id),
             None,
         )
+
         if account is not None:
             return StarlingAPI(bank_name=account.bank_name)
         else:
