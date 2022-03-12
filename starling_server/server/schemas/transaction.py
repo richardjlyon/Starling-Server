@@ -5,6 +5,7 @@
 import re
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic.main import BaseModel
 
@@ -12,8 +13,8 @@ from pydantic.main import BaseModel
 class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
 
-    uuid: str  # FIXME convert to uuid
-    account_uuid: str
+    uuid: UUID
+    account_uuid: UUID
     time: datetime
     counterparty_name: str
     amount: float
