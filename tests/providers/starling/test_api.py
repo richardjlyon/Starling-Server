@@ -34,7 +34,7 @@ class TestTransaction:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
 
-        transactions = await api.get_transactions_between(
+        transactions = await api.get_transactions_for_account_id_between(
             account.uuid, start_date, end_date
         )
         assert isinstance(transactions, list)

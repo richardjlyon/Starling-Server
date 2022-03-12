@@ -17,7 +17,7 @@ router = APIRouter()
         TransactionSchema,
     ],
 )
-async def get_transactions_between(
+async def get_transactions_for_account_id_between(
     account_id: str, start_date: datetime = None, end_date: datetime = None
 ) -> Optional[List[TransactionSchema]]:
     """Get transactions for the specified account and time interval."""
@@ -27,4 +27,6 @@ async def get_transactions_between(
         end_date = datetime.now()
         start_date = end_date - timedelta(days=default_interval_days)
 
-    return await dispatcher.get_transactions_between(account_id, start_date, end_date)
+    return await dispatcher.get_transactions_for_account_id_between(
+        account_id, start_date, end_date
+    )

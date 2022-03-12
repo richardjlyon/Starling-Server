@@ -26,7 +26,7 @@ class BaseAPI(ABC):
         pass
 
     @abstractmethod
-    async def get_transactions_between(
+    async def get_transactions_for_account_id_between(
         self, account_uuid: str, start_date: datetime, end_date: datetime
     ) -> Coroutine[Any, Any, List[TransactionSchema]]:
         """Get the transactions for the account with the given id between the given dates."""

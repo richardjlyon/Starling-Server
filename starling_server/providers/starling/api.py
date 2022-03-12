@@ -119,7 +119,7 @@ class API(BaseAPI):
 
     # = TRANSACTIONS ABSTRACT METHODS ==================================================================================
 
-    async def get_transactions_between(
+    async def get_transactions_for_account_id_between(
         self,
         account_uuid: UUID,
         start_date: Optional[datetime],

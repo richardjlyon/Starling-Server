@@ -52,7 +52,7 @@ class RouteDispatcher:
 
     # = TRANSACTIONS ===================================================================================================
 
-    async def get_transactions_between(
+    async def get_transactions_for_account_id_between(
         self,
         account_id: str,
         start_date: Optional[datetime],
@@ -65,7 +65,7 @@ class RouteDispatcher:
         if bank is None:
             return None
 
-        transactions = await bank.get_transactions_between(
+        transactions = await bank.get_transactions_for_account_id_between(
             account_id, start_date, end_date
         )
 
