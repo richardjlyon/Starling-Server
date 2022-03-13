@@ -68,8 +68,6 @@ class RouteDispatcher:
 
     # = TRANSACTIONS ===================================================================================================
 
-    # FIXME refactor this to get the date of the last transaction, fetch new transactions from that date until
-    # now, then return transactions for the defined period
     async def get_transactions_for_account_id_between(
         self,
         account_id: uuid.UUID,
