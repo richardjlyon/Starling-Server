@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Any, Coroutine
 
 from loguru import logger
 
@@ -41,7 +41,9 @@ class RouteDispatcher:
 
         logger.info(f"Updated accounts from bank details")
 
-    async def get_account_balances(self) -> List[AccountBalanceSchema]:
+    async def get_account_balances(
+        self,
+    ) -> List[Coroutine[Any, Any, AccountBalanceSchema]]:
         """Get a list of account balances from the provider."""
 
         accounts = self.db.get_accounts()

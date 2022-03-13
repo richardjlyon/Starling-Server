@@ -21,7 +21,7 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def get_accounts(self, as_schema: bool) -> List[AccountSchema]:
+    def get_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
         pass
 
     @abstractmethod
