@@ -1,4 +1,4 @@
-# database.py
+# db/edgedb/database.py
 #
 # Defines an edgedb database manager
 
@@ -100,7 +100,7 @@ class Database(DBBase):
 
     # noinspection SqlNoDataSourceInspection
     def insert_or_update_transaction(self, transaction: TransactionSchema):
-        transaction = self.client.query(
+        transaction_db = self.client.query(
             """
             with account := (
                 select Account filter .uuid = <uuid>$account_uuid
@@ -130,4 +130,4 @@ class Database(DBBase):
             reference=transaction.reference,
         )
         self.client.close()
-        return transaction
+        return transaction_db

@@ -1,16 +1,17 @@
-# AccountHelper.py
+# providers/starling/AccountHelper.py
 #
 # A helper class to manage Starling API access tokens and default categories.
 
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import httpx
 import toml
 
 from starling_server.config import config_path, tokens_folder
+from starling_server.server.schemas.account import AccountSchema
 
 
 class AccountHelper:
@@ -27,7 +28,8 @@ class AccountHelper:
         Initialise a helper object.
 
         Args:
-            storage_filepath (): The filepath of the storage. If None, object will be initialised with a system path.
+            storage_filepath (pathlib.Path): The filepath of the storage. If None, initialise from filepath in 'config'.
+            initialise (bool): If True, rebuild the config file from available tokens
         """
 
         if storage_filepath is None:
@@ -36,13 +38,13 @@ class AccountHelper:
         if not storage_filepath.is_file():
             storage_filepath.touch()
 
-        self._filepath = storage_filepath
+        self._storage_filepath = storage_filepath
 
     @dataclass
     class AccountInfo:
         """A class for passing account information."""
 
-        bank_name: str
+        account_schema: AccountSchema
         token: str
         default_category: uuid.UUID
 
@@ -52,7 +54,7 @@ class AccountHelper:
 
         Args:
             bank_name (str): The name of the bank (corresponds with the name of the text file storing the access token)
-            default_category (uuid.UUID): The default category associated with this account
+            account_uuid (uuid.UUID): The id of the account to register
 
         Returns:
             An AccountInfo object with the access token and default category
@@ -61,13 +63,16 @@ class AccountHelper:
         token = self._fetch_token(bank_name)
 
         # get the default category
-        default_category = await self._fetch_default_category(
-            token=token, account_uuid=account_uuid
+        (
+            default_category,
+            account_schema,
+        ) = await self._fetch_schema_and_default_category(
+            token=token, account_uuid=account_uuid, bank_name=bank_name
         )
 
         # save the data to the configuration file
         data = {
-            "bank_name": bank_name,
+            "account_schema": account_schema,
             "token": token,
             "default_category": str(default_category),
         }
@@ -87,7 +92,7 @@ class AccountHelper:
             del config_file["str(account_uuid)"]
             self._save(config_file)
 
-    def get_for_account_id(self, account_id: uuid.UUID) -> Optional[AccountInfo]:
+    def get_info_for_account_id(self, account_id: uuid.UUID) -> Optional[AccountInfo]:
         """
         Get the account information for the account with the given uuid.
 
@@ -98,25 +103,82 @@ class AccountHelper:
             An AccountInfo object with the access token and default category
         """
         config_data = self._load()
-        account_data = config_data.get(str(account_id))
+        data = config_data.get(str(account_id))
 
-        if account_data is None:
+        if data is None:
             return None
 
         return self.AccountInfo(
-            bank_name=account_data.get("bank_name"),
-            token=account_data.get("token"),
-            default_category=uuid.UUID(account_data.get("default_category")),
+            account_schema=AccountSchema(
+                uuid=uuid.UUID(data["account_schema"]["uuid"]),
+                bank_name=data["account_schema"]["bank_name"],
+                account_name=data["account_schema"]["account_name"],
+                currency=data["account_schema"]["currency"],
+                created_at=data["account_schema"]["created_at"],
+            ),
+            token=data["token"],
+            default_category=data["default_category"],
         )
+
+    @property
+    def accounts(self) -> List[AccountInfo]:
+        """
+        Return the accounts in the configuration file.
+
+        Returns:
+            (List[AccountInfo]) The accounts.
+        """
+        data = self._load()
+        return [
+            self.AccountInfo(
+                account_schema=AccountSchema(
+                    uuid=uuid.UUID(data["account_schema"]["uuid"]),
+                    bank_name=data["account_schema"]["bank_name"],
+                    account_name=data["account_schema"]["account_name"],
+                    currency=data["account_schema"]["currency"],
+                    created_at=data["account_schema"]["created_at"],
+                ),
+                token=data["token"],
+                default_category=data["default_category"],
+            )
+            for account_uuid, data in data.items()
+        ]
+
+    async def initialise(self) -> int:
+        """
+        (Re)initialise the config file from tokens in the file system.
+        Returns:
+            (int) The number of accounts added
+        """
+
+        # delete current data from the config file
+        with open(self._storage_filepath, "w") as f:
+            pass
+
+        bank_names = [
+            f.name
+            for f in tokens_folder.iterdir()
+            if (f.is_file() and f.name != ".DS_Store")
+        ]
+
+        count = 0
+        for bank_name in bank_names:
+            token = self._fetch_token(bank_name)
+            accounts = await _get_accounts(token)
+            for account in accounts:
+                await self.register_account(bank_name, uuid.UUID(account["accountUid"]))
+                count += 1
+
+        return count
 
     def _load(self):
         """Load the data from the file system."""
-        with open(self._filepath, "r") as f:
+        with open(self._storage_filepath, "r") as f:
             return toml.load(f)
 
     def _save(self, config_file: dict):
         """Save the data to the file system."""
-        with open(self._filepath, "w") as f:
+        with open(self._storage_filepath, "w") as f:
             toml.dump(config_file, f)
 
     @staticmethod
@@ -131,32 +193,41 @@ class AccountHelper:
         return file.read().strip()
 
     @staticmethod
-    async def _fetch_default_category(
-        token: str, account_uuid: uuid.UUID
-    ) -> Optional[uuid.UUID]:
-        """Fetch the default categgry for the given account uuid."""
+    async def _fetch_schema_and_default_category(
+        token: str, account_uuid: uuid.UUID, bank_name: str
+    ) -> (Optional[uuid.UUID], str):
+        """Fetch the account schema and default category for the given account uuid."""
 
-        # FIXME - extract this from StarlingAPI .get() to avoid repetition
-
-        API_BASE_URL = "https://api.starlingbank.com/api/v2"
-        url = f"{API_BASE_URL}/accounts"
-        headers = {"Authorization": f"Bearer {token}", "User-Agent": "python"}
-
-        async with httpx.AsyncClient() as client:
-            try:
-                r = await client.get(url, headers=headers)
-                r.raise_for_status()
-            except httpx.HTTPError as e:
-                print(str(e))
-                raise Exception(e)
-
-        accounts = r.json()["accounts"]
+        accounts = await _get_accounts(token)
 
         # NOTE: in testing, using next(etc.) causes "RuntimeError: generator raised StopIteration"
-        default_category = None
         for account in accounts:
             if account["accountUid"] == str(account_uuid):
+                account_schema = {
+                    "uuid": str(account_uuid),
+                    "bank_name": bank_name,
+                    "account_name": account["name"],
+                    "currency": account["currency"],
+                    "created_at": account["createdAt"],
+                }
                 default_category = uuid.UUID(account["defaultCategory"])
-                break
+                return default_category, account_schema
 
-        return default_category
+
+async def _get_accounts(token: str):
+    """Get the endpoint from the API with the given authorisation."""
+    # FIXME - extract this from StarlingAPI .get() to avoid repetition
+
+    API_BASE_URL = "https://api.starlingbank.com/api/v2"
+    url = f"{API_BASE_URL}/accounts"
+    headers = {"Authorization": f"Bearer {token}", "User-Agent": "python"}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            r = await client.get(url, headers=headers)
+            r.raise_for_status()
+        except httpx.HTTPError as e:
+            print(str(e))
+            raise Exception(e)
+
+    return r.json()["accounts"]

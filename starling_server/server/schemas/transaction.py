@@ -1,4 +1,4 @@
-# transaction.py
+# server/schemas/transaction.py
 #
 # Server transaction schema definitions.
 
@@ -26,4 +26,4 @@ def clean_string(the_string: Optional[str]) -> Optional[str]:
     if the_string:
         return str(re.sub(" +", " ", the_string).strip())
     else:
-        return None
+        return ""

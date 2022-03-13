@@ -1,6 +1,7 @@
-# account.py
+# server/schemas/account.py
 #
 # Server account schema definitions.
+
 from datetime import datetime
 
 from pydantic import BaseModel, UUID4

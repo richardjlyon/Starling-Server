@@ -1,6 +1,7 @@
 # schemas.py
 #
 # Starling Bank schema definitions
+
 import uuid
 from datetime import datetime
 from typing import List, Optional

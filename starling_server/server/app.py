@@ -1,3 +1,7 @@
+# app.py
+#
+# the server FastApi app
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute

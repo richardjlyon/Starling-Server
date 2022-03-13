@@ -1,4 +1,4 @@
-# db_base.py
+# db/db_base.py
 #
 # Defines a base class for a database provider
 from abc import ABC, abstractmethod
