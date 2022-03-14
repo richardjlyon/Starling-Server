@@ -1,4 +1,4 @@
-# db.py
+# commands/database/database.py
 #
 # Implement commands for managing the EdgeDB database.
 

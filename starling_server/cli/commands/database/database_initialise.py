@@ -1,4 +1,4 @@
-# initialise.py
+# cli/commands/database/database_initialise.py
 #
 # Initialise the database.
 

@@ -4,11 +4,7 @@
 from cleo import Application as BaseApplication
 
 from starling_server import __version__
-from starling_server.cli.commands import (
-    ServerCommand,
-    AccountsCommand,
-    DatabaseCommand,
-)
+from starling_server.cli.commands import ServerCommand, DatabaseCommand, AccountCommand
 
 
 class Application(BaseApplication):
@@ -18,7 +14,7 @@ class Application(BaseApplication):
         super(Application, self).__init__("bank_server", __version__)
         commands = [
             ServerCommand(),
-            AccountsCommand(),
+            AccountCommand(),
             DatabaseCommand(),
         ]
         for command in commands:
