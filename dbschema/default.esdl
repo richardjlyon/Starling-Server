@@ -1,6 +1,7 @@
 module default {
     type Bank {
         required property name -> str {constraint exclusive};
+        required property auth_token_hash -> str;
         multi link accounts := .<bank[is Account];
     }
 

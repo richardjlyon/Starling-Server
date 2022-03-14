@@ -18,7 +18,9 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def insert_or_update_account(self, bank_name: str, account: AccountSchema):
+    def insert_or_update_account(
+        self, token: str, bank_name: str, account: AccountSchema
+    ):
         pass
 
     @abstractmethod

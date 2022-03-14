@@ -30,16 +30,26 @@ class Database(DBBase):
             print(account)
 
     # noinspection SqlNoDataSourceInspection
-    def insert_or_update_account(self, bank_name: str, account: AccountSchema):
+    def insert_or_update_account(
+        self, token: str, bank_name: str, account: AccountSchema
+    ):
 
         # ensure Bank exists: note - this can probably be combined with the `insert Account` query
         self.client.query(
             """
             insert Bank {
-                name := <str>$name
-            } unless conflict
+                name := <str>$name,
+                auth_token_hash := <str>$token,
+            } unless conflict on .name else (
+                update Bank
+                set {
+                    name := <str>$name,
+                    auth_token_hash := <str>$token,
+                }
+            );
             """,
             name=bank_name,
+            token=token,
         )
         account_db = self.client.query(
             """

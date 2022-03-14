@@ -45,7 +45,9 @@ class ConfigHelper:
 
         # insert
         for account in accounts:
-            self.db.insert_or_update_account(bank_name, account)
+            self.db.insert_or_update_account(
+                token=token, bank_name=bank_name, account=account
+            )
 
         return len(accounts)
 
