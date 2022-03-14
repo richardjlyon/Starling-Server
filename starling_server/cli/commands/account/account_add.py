@@ -32,7 +32,9 @@ class AccountAdd(Command):
             self.line(f"<error>{e}.</error>")
             return
 
-        config.initialise_bank(bank_name=bank_name, token=token)
+        accounts_added = await config.initialise_bank(bank_name=bank_name, token=token)
+
+        self.line(f"<info>Added {accounts_added} account(s)</info>")
 
     def get_bank_name(self) -> str:
         bank_names = list(bank_classes.keys())

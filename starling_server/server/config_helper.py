@@ -7,7 +7,11 @@ import importlib
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.api_base import BaseAPI
 
-bank_classes = {"Starling": "starling", "SpareBanken": "sparebanken"}
+bank_classes = {
+    "Starling Personal": "starling",
+    "Starling Business": "starling",
+    "SpareBanken": "sparebanken",
+}
 
 
 class ConfigHelper:
@@ -18,7 +22,7 @@ class ConfigHelper:
     def __init__(self, db: Database):
         self.db = db
 
-    async def initialise_bank(self, bank_name: str, token: str):
+    async def initialise_bank(self, bank_name: str, token: str) -> int:
         """
         Initialise a Bank and associated accounts.
 
@@ -30,13 +34,20 @@ class ConfigHelper:
             token (str): An authorisation token
 
         Returns:
-            A list of Account objects
+            The number of accounts added
 
         """
+
+        # get the accounts
         api_class = get_class_for_bank_name(bank_name)
         api = api_class(bank_name=bank_name, auth_token=token)
         accounts = await api.get_accounts()
-        print(accounts)
+
+        # insert
+        for account in accounts:
+            self.db.insert_or_update_account(bank_name, account)
+
+        return len(accounts)
 
 
 def get_class_for_bank_name(bank_name) -> BaseAPI:
