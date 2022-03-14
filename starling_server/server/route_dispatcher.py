@@ -2,7 +2,6 @@
 #
 # A class for coordinating data fetch, storage, and publishing
 
-
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Any, Coroutine
@@ -90,6 +89,7 @@ class RouteDispatcher:
         # save to the database
         for transaction in transactions:
             self.db.insert_or_update_transaction(transaction)
+            # TODO update server_last_updated
 
         return transactions
 

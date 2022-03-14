@@ -10,7 +10,6 @@ module default {
         required property name -> str;
         required property currency -> str;
         property created_at -> datetime;
-        property server_last_updated -> datetime;
         multi link transactions := .<account[is Transaction];
     }
 

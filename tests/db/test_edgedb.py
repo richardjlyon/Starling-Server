@@ -71,13 +71,8 @@ class TestTransaction:
                 reference = transaction_db.reference
                 assert account_uuid[-4:] == reference[0:4]  # see `make_transactions()`
 
-    def test_insert_or_update_transaction_update_1(self, db_with_two_accounts):
+    def test_insert_or_update_transaction_update_1(self, db_with_four_transactions):
         # GIVEN a database with 2 accounts of 2 transactions each
-        accounts_db = select_accounts()
-        for account_db in accounts_db:
-            transactions = make_transactions(2, account_uuid=account_db.uuid)
-            for transaction in transactions:
-                db_with_two_accounts.insert_or_update_transaction(transaction)
 
         # WHEN I update a transaction
         t = select_transactions()[0]
@@ -91,9 +86,37 @@ class TestTransaction:
             amount=t.amount,
             reference=modified_reference,
         )
-        db_with_two_accounts.insert_or_update_transaction(transaction)
+        db_with_four_transactions.insert_or_update_transaction(transaction)
 
         # THEN transaction is updated
         transactions = select_transactions()
         transaction = next(t for t in transactions if t.uuid == modified_uuid)
         assert "**MODIFIED**" in transaction.reference
+
+    def test_get_transactions_for_account(self, db_with_four_transactions):
+
+        # GIVEN a database with 2 accounts of 2 transactions each
+
+        # WHEN I select the transactions for the personal account
+        transactions = select_transactions()
+        t0_account_uuid = transactions[0].account.uuid
+        t0_uuid = transactions[0].uuid
+        transactions = db_with_four_transactions.get_transactions_for_account(
+            t0_account_uuid
+        )
+
+        # THEN I get the transactions
+        assert transactions[0].transactions[0].uuid == t0_uuid
+
+    def test_get_last_transaction_date_for_account(
+        self, db_with_four_transactions, personal_account_id
+    ):
+        # GIVEN a database with 2 accounts of 2 transactions each
+
+        # WHEN I get the last transaction date for the personal account
+        last_date = db_with_four_transactions.get_last_transaction_date_for_account(
+            personal_account_id
+        )
+
+        # THEN the date is for the last transaction
+        print(last_date)

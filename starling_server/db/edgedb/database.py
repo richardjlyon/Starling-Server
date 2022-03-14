@@ -1,7 +1,7 @@
 # db/edgedb/database.py
 #
 # Defines an edgedb database manager
-
+import uuid
 from typing import List
 
 import edgedb
@@ -131,3 +131,39 @@ class Database(DBBase):
         )
         self.client.close()
         return transaction_db
+
+    # noinspection SqlNoDataSourceInspection
+    def get_transactions_for_account(self, account_uuid: uuid.UUID):
+        transactions = self.client.query(
+            """
+            select Account {
+                transactions: {
+                    uuid,
+                    amount
+                }
+            }
+            filter Account.uuid = <uuid>$account_uuid
+            
+            """,
+            account_uuid=account_uuid,
+        )
+        self.client.close()
+        return transactions
+
+    # noinspection SqlNoDataSourceInspection
+    def get_last_transaction_date_for_account(self, account_uuid: uuid.UUID):
+
+        transaction = self.client.query(
+            """
+            with account := (
+                select Account filter .uuid = <uuid>$account_uuid
+            )
+            select Transaction { time }
+            filter account = account
+            order by .time desc;
+
+            """,
+            account_uuid=account_uuid,
+        )
+        self.client.close()
+        return transaction
