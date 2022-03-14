@@ -18,10 +18,14 @@ def response(response_model):
     """Decorator to convert to response_model."""
 
     def decorated(func):
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             try:
-                result = func(*args, **kwargs)
-                return result
+                response = await func(*args, **kwargs)
+                accounts = [
+                    StarlingAccountSchema.to_server_accountschema(account)
+                    for account in response.accounts
+                ]
+                return accounts
             except PydanticTypeError:
                 raise RuntimeError(f"Pydantic type error for ")  # FIXME add type
 
@@ -34,15 +38,12 @@ class APIV2(BaseAPIV2):
     def __init__(self, bank_name: str, auth_token: str):
         super().__init__(bank_name=bank_name, auth_token=auth_token)
 
-    # @response(response_model=AccountSchema)
+    @response(response_model=AccountSchema)
     async def get_accounts(self) -> list[AccountSchema]:
         """Get the accounts held at the bank."""
         path = "/accounts"
-        response = await _get(self.token, path, None, StarlingAccountsSchema)
-        accounts = [
-            StarlingAccountSchema.to_server_accountschema(self.bank_name, account)
-            for account in response.accounts
-        ]
+        accounts = await _get(self.token, path, None, StarlingAccountsSchema)
+
         return accounts
 
 
