@@ -11,6 +11,7 @@ import pytest
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.starling.account_helper import AccountHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.secrets import token_filepath
 
 testdb = Database(database="test")
 
@@ -39,6 +40,13 @@ def personal_account_bank_name():
 def personal_account_id():
     """Provides the id for the personal account."""
     return uuid.UUID(personal_account["account_uuid"])
+
+
+@pytest.fixture()
+def personal_auth_token():
+    """Provides the auth token for the personal account from the file system."""
+    with open(token_filepath, "r") as f:
+        return f.read().strip()
 
 
 @pytest.fixture
