@@ -1,4 +1,4 @@
-from typing import Optional, Type, TypeVar
+from typing import TypeVar
 
 import httpx
 from pydantic import PydanticTypeError, parse_obj_as
@@ -21,9 +21,11 @@ def response(response_model):
         async def wrapper(*args, **kwargs):
             try:
                 response = await func(*args, **kwargs)
+                parsed_response = parse_obj_as(response_model, response)
+                accounts = parsed_response.accounts
                 accounts = [
                     StarlingAccountSchema.to_server_accountschema(account)
-                    for account in response.accounts
+                    for account in accounts
                 ]
                 return accounts
             except PydanticTypeError:
@@ -38,21 +40,17 @@ class APIV2(BaseAPIV2):
     def __init__(self, bank_name: str, auth_token: str):
         super().__init__(bank_name=bank_name, auth_token=auth_token)
 
-    @response(response_model=AccountSchema)
+    @response(response_model=StarlingAccountsSchema)
     async def get_accounts(self) -> list[AccountSchema]:
         """Get the accounts held at the bank."""
         path = "/accounts"
-        accounts = await _get(self.token, path, None, StarlingAccountsSchema)
-
-        return accounts
+        return await _get(self.token, path, None)
 
 
 # = UTILITIES ======================================================================================================
 
 
-async def _get(
-    token: str, path: str, params: dict = None, return_type: Optional[Type[T]] = None
-) -> T:
+async def _get(token: str, path: str, params: dict = None) -> T:
     """Get an api call."""
 
     headers = {
@@ -68,7 +66,5 @@ async def _get(
         except httpx.HTTPError as e:
             print(str(e))
             raise Exception(e)
-        if return_type is not None:
-            return parse_obj_as(return_type, r.json())
-        else:
-            return r.json()
+
+        return r.json()
