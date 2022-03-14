@@ -31,3 +31,14 @@ class BaseAPI(ABC):
     ) -> Coroutine[Any, Any, List[TransactionSchema]]:
         """Get the transactions for the account with the given id between the given dates."""
         pass
+
+
+class BaseAPIV2(ABC):
+    def __init__(self, bank_name: str, auth_token: str):
+        super().__init__()
+        self.token = auth_token
+        self.bank_name = bank_name
+
+    @abstractmethod
+    def get_accounts(self) -> list[AccountSchema]:
+        pass

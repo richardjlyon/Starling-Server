@@ -157,7 +157,10 @@ class API(BaseAPI):
         """Get an api call."""
         API_BASE_URL = "https://api.starlingbank.com/api/v2"
 
-        headers = {"Authorization": f"Bearer {self.info.token}", "User-Agent": "python"}
+        headers = {
+            "Authorization": f"Bearer {self.info.token}",
+            "User-Agent": "python",
+        }
         url = f"{API_BASE_URL}{path}"
 
         async with httpx.AsyncClient() as client:
