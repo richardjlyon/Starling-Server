@@ -1,12 +1,12 @@
-from typing import TypeVar
+from typing import TypeVar, List
 
 import httpx
 from pydantic import PydanticTypeError, parse_obj_as
 
 from starling_server.providers.api_base import BaseAPIV2
 from starling_server.providers.starling.schemas import (
-    StarlingAccountsSchema,
     StarlingAccountSchema,
+    StarlingAccountsSchema,
 )
 from starling_server.server.schemas.account import AccountSchema
 
@@ -14,44 +14,22 @@ API_BASE_URL = "https://api.starlingbank.com/api/v2"
 T = TypeVar("T")
 
 
-def response(response_model):
-    """Decorator to convert to response_model."""
-
-    def decorated(func):
-        async def wrapper(*args, **kwargs):
-            try:
-                response = await func(*args, **kwargs)
-                parsed_response = parse_obj_as(response_model, response)
-                accounts = parsed_response.accounts
-                accounts = [
-                    StarlingAccountSchema.to_server_accountschema(account)
-                    for account in accounts
-                ]
-                return accounts
-            except PydanticTypeError:
-                raise RuntimeError(f"Pydantic type error for ")  # FIXME add type
-
-        return wrapper
-
-    return decorated
-
-
 class APIV2(BaseAPIV2):
     def __init__(self, bank_name: str, auth_token: str):
         super().__init__(bank_name=bank_name, auth_token=auth_token)
 
-    @response(response_model=StarlingAccountsSchema)
     async def get_accounts(self) -> list[AccountSchema]:
         """Get the accounts held at the bank."""
         path = "/accounts"
-        return await _get(self.token, path, None)
+        response = await get_endpoint(self.token, path)
+        return to_accountschema(response)
 
 
 # = UTILITIES ======================================================================================================
 
 
-async def _get(token: str, path: str, params: dict = None) -> T:
-    """Get an api call."""
+async def get_endpoint(token: str, path: str, params: dict = None) -> dict:
+    """Get an api endpoint."""
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -68,3 +46,18 @@ async def _get(token: str, path: str, params: dict = None) -> T:
             raise Exception(e)
 
         return r.json()
+
+
+def to_accountschema(response: dict) -> List[AccountSchema]:
+    """Validate response and convert to a list of AccountSchema."""
+    try:
+        parsed_response = parse_obj_as(StarlingAccountsSchema, response)
+    except PydanticTypeError:
+        raise RuntimeError(f"Pydantic type error")  # FIXME add type
+
+    accounts = parsed_response.accounts
+    accounts = [
+        StarlingAccountSchema.to_server_accountschema(account) for account in accounts
+    ]
+
+    return accounts
