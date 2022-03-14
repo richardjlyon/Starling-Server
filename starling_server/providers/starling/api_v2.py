@@ -1,5 +1,4 @@
 from typing import Optional, Type, TypeVar
-from urllib.error import HTTPError
 
 import httpx
 from pydantic import PydanticTypeError, parse_obj_as
@@ -15,18 +14,14 @@ API_BASE_URL = "https://api.starlingbank.com/api/v2"
 T = TypeVar("T")
 
 
-def get(response_model):
-    """Get endpoint decorator"""
+def response(response_model):
+    """Decorator to convert to response_model."""
 
     def decorated(func):
-        async def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):
             try:
-                result = await func(*args, **kwargs)
+                result = func(*args, **kwargs)
                 return result
-            except HTTPError:
-                raise RuntimeError(
-                    f"HTTP Error getting accounts for {self.bank_name}"
-                )  # FIXME add path
             except PydanticTypeError:
                 raise RuntimeError(f"Pydantic type error for ")  # FIXME add type
 
@@ -39,13 +34,13 @@ class APIV2(BaseAPIV2):
     def __init__(self, bank_name: str, auth_token: str):
         super().__init__(bank_name=bank_name, auth_token=auth_token)
 
-    @get(response_model=AccountSchema)
+    # @response(response_model=AccountSchema)
     async def get_accounts(self) -> list[AccountSchema]:
         """Get the accounts held at the bank."""
         path = "/accounts"
         response = await _get(self.token, path, None, StarlingAccountsSchema)
         accounts = [
-            to_server_account_schema(self.bank_name, account)
+            StarlingAccountSchema.to_server_accountschema(self.bank_name, account)
             for account in response.accounts
         ]
         return accounts
@@ -76,15 +71,3 @@ async def _get(
             return parse_obj_as(return_type, r.json())
         else:
             return r.json()
-
-
-def to_server_account_schema(
-    bank_name: str, account: StarlingAccountSchema
-) -> AccountSchema:
-    return AccountSchema(
-        uuid=account.accountUid,
-        bank_name=bank_name,
-        account_name=account.name,
-        currency=account.currency,
-        created_at=account.createdAt,
-    )

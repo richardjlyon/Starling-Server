@@ -8,8 +8,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-
 # = ACCOUNTS ==========================================================================================================
+from starling_server.server.schemas.account import AccountSchema
 
 
 class StarlingAccountSchema(BaseModel):
@@ -21,6 +21,18 @@ class StarlingAccountSchema(BaseModel):
     currency: str
     createdAt: datetime
     defaultCategory: uuid.UUID  # FIXME UUID and -> uuid
+
+    @staticmethod
+    def to_server_accountschema(
+        bank_name: str, account: "StarlingAccountSchema"
+    ) -> AccountSchema:
+        return AccountSchema(
+            uuid=account.accountUid,
+            bank_name=bank_name,
+            account_name=account.name,
+            currency=account.currency,
+            created_at=account.createdAt,
+        )
 
 
 class StarlingAccountsSchema(BaseModel):
