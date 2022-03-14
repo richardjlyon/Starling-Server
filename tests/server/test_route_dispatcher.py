@@ -5,9 +5,22 @@
 
 import pytest
 
+from starling_server.main import db
+from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 from tests.conftest import select_accounts, select_transactions
+
+
+def test_initialise():
+    # GIVEN a dispatcher and the live database
+    dispatcher = RouteDispatcher(db)
+
+    # WHEN I get the accounts
+    accounts = dispatcher.accounts
+
+    # THEN there are accounts
+    assert len(accounts) > 0
 
 
 class TestAccounts:

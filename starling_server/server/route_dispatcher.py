@@ -19,6 +19,9 @@ class RouteDispatcher:
 
     def __init__(self, database: DBBase, account_helper: AccountHelper = None):
         self.db = database
+        self.accounts = self.db.get_accounts(as_schema=True)
+
+        # FIXME deprecated - to remove
         if account_helper is None:
             account_helper = AccountHelper()
         self.helper = account_helper
@@ -109,15 +112,3 @@ class RouteDispatcher:
         return transactions
 
     # = HELPERS ========================================================================================================
-
-    # async def get_bank_for_account_id(self, account_id: str) -> Optional[StarlingAPI]:
-    #     accounts = self.db.get_accounts(as_schema=True)
-    #     account = next(
-    #         (account for account in accounts if account.uuid == account_id),
-    #         None,
-    #     )
-    #
-    #     if account is not None:
-    #         return StarlingAPI(bank_name=account.bank_name)
-    #     else:
-    #         return None
