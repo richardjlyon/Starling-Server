@@ -5,8 +5,9 @@ from typing import Optional
 from cleo import Command
 
 from starling_server.main import db
+from starling_server.providers.starling.api_v2 import CategoryHelper
 from starling_server.server.config_helper import ConfigHelper
-from starling_server.server.config_helper import bank_classes, get_class_for_bank_name
+from starling_server.server.config_helper import bank_classes
 
 config = ConfigHelper(db)
 
@@ -27,6 +28,7 @@ class AccountAdd(Command):
     async def handle_async(self):
         self.line("Adding account")
 
+        # get the bank name and authentication token
         bank_name = self.get_bank_name()
         try:
             token = self.get_token()
@@ -34,13 +36,22 @@ class AccountAdd(Command):
             self.line(f"<error>{e}.</error>")
             return
 
+        # add them to the database
         accounts = await config.initialise_bank(bank_name=bank_name, token=token)
-        print(accounts)
 
         # If it's a Starling bank, add the account's default category to the config file
-        # if
-        #
+        if bank_classes.get(bank_name) == "starling":
+            category_helper = CategoryHelper()
+            for account in accounts:
+                await category_helper.insert(
+                    token=token, account_uuid=account.uuid, bank_name=bank_name
+                )
+
         # self.line(f"<info>Added {accounts_added} account(s)</info>")
+        self.line("<info>Added account</info>")
+        for account in accounts:
+            self.line(f"<info> - {account.bank_name}: {account.account_name}</info>")
+        self.line("<info>Done</info>")
 
     def get_bank_name(self) -> str:
         bank_names = list(bank_classes.keys())
@@ -77,11 +88,11 @@ class AccountAdd(Command):
 
         return True
 
-    def get_accounts_for_bank_name(self, bank_name: str, auth_token: str):
-        """Get the accounts associated with the auth_token from the bank"""
-        api_class = get_class_for_bank_name(bank_name)
-
-        api = api_class()
+    # def get_accounts_for_bank_name(self, bank_name: str, auth_token: str):
+    #     """Get the accounts associated with the auth_token from the bank"""
+    #     api_class = get_class_for_bank_name(bank_name)
+    #
+    #     api = api_class()
 
 
 def get_token_from_file(filepath: str) -> str:

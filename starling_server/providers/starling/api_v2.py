@@ -34,8 +34,20 @@ class APIV2(BaseAPIV2):
     """Provides the API methods for a Starling Bank account."""
 
     def __init__(
-        self, auth_token: str, bank_name: str = None, account_uuid: uuid.UUID = None
+        self,
+        auth_token: str,
+        bank_name: str = None,
+        account_uuid: uuid.UUID = None,
+        category_check: bool = True,
     ):
+        """
+        Initialise an api account object.
+        Args:
+            auth_token (str): the bank's authorisation token for this account
+            bank_name (str): name of the bank, used in AccountSchema
+            account_uuid (str): uuid of the account
+            category_check (bool): if False, bypass initialising the default category (i.e when getting it)
+        """
         if account_uuid is not None and bank_name is None:
             raise ValueError("missing bank_name for account_uuid")
 
@@ -45,7 +57,14 @@ class APIV2(BaseAPIV2):
             bank_name=bank_name,
             account_uuid=account_uuid,
         )
-        self.default_category = CategoryHelper().category_for_account_id(account_uuid)
+
+        if category_check is True and account_uuid is not None:
+            default_category = CategoryHelper().category_for_account_id(account_uuid)
+            if default_category is None:
+                raise RuntimeError(
+                    f"No default category for {bank_name} account {account_uuid} - check configuration"
+                )
+            self.default_category = default_category
 
     # = ABSTRACT METHOD IMPLEMENTATIONS
 
@@ -154,11 +173,7 @@ class APIV2(BaseAPIV2):
 
 
 class CategoryHelper:
-    """A class to help manage default categories.
-
-    Starling associates transactions with categories. The default category must be provided to retrieve transactions.
-    This class maintains a dictionary of account id / default category pairs and persists it to the file system.
-    """
+    """A class to help manage Starling API default categories."""
 
     def __init__(self, storage_filepath: Path = None):
         if storage_filepath is None:
@@ -174,7 +189,12 @@ class CategoryHelper:
 
     async def insert(self, token: str, account_uuid: uuid.UUID, bank_name: str):
         """Add an account/category pair."""
-        api = APIV2(auth_token=token, account_uuid=account_uuid, bank_name=bank_name)
+        api = APIV2(
+            auth_token=token,
+            account_uuid=account_uuid,
+            bank_name=bank_name,
+            category_check=False,
+        )
         response = await api.get_accounts(raw=True)
 
         default_category = None
@@ -202,7 +222,7 @@ class CategoryHelper:
         """Retrieve the cateogry for the account id."""
         if account_uuid is not None:
             config_file = self._load()
-            return config_file[str(account_uuid)]
+            return config_file.get(str(account_uuid))
 
     def _load(self):
         """Load the data from the file system."""

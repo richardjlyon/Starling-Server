@@ -4,7 +4,7 @@
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Coroutine, Any
+from typing import List, Coroutine, Any, Optional
 
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
@@ -38,13 +38,17 @@ class BaseAPI(ABC):
 
 class BaseAPIV2(ABC):
     def __init__(
-        self, class_name: str, auth_token: str, bank_name: str, account_uuid: uuid.UUID
+        self,
+        class_name: str,
+        auth_token: str,
+        bank_name: str,
+        account_uuid: Optional[uuid.UUID],
     ):
         super().__init__()
+        self._class_name = class_name
         self.token = auth_token
         self.bank_name = bank_name
         self.account_uuid = account_uuid
-        self._class_name = class_name
 
     @abstractmethod
     def get_accounts(self) -> list[AccountSchema]:
