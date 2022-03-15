@@ -1,15 +1,17 @@
-# route_dispatcher.py
-#
-# A class for coordinating data fetch, storage, and publishing
+"""Comment at the top
+
+route_dispatcher.py
+
+A class for coordinating data fetch, storage, and publishing
+"""
 
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Any, Coroutine
 
 from starling_server.config import default_interval_days
-from starling_server.db.db_base import DBBase
-from starling_server.providers.starling.account_helper import AccountHelper
-from starling_server.providers.starling.api import API as StarlingAPI
+from starling_server.db.edgedb.database import Database
+from starling_server.server.config_helper import get_class_for_bank_name
 from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
@@ -17,30 +19,13 @@ from starling_server.server.schemas.transaction import TransactionSchema
 class RouteDispatcher:
     """Controls server operations to coordinate fetching, storage, and publishing."""
 
-    def __init__(self, database: DBBase, account_helper: AccountHelper = None):
+    def __init__(self, database: Database):
         self.db = database
-        self.accounts = self.db.get_accounts(as_schema=True)
-
-        # FIXME deprecated - to remove
-        if account_helper is None:
-            account_helper = AccountHelper()
-        self.helper = account_helper
+        self.accounts = self._build_account_list()
 
     # = ACCOUNTS =======================================================================================================
 
-    async def update_banks_and_accounts(self):
-        """Update the database with bank and account details obtained from the provider."""
-        for info in self.helper.accounts:
-            account = AccountSchema(
-                uuid=info.account_schema.uuid,
-                bank_name=info.account_schema.bank_name,
-                account_name=info.account_schema.account_name,
-                currency=info.account_schema.currency,
-                created_at=info.account_schema.created_at,
-            )
-            self.db.insert_or_update_account(account)
-
-    async def get_accounts(self, force_refresh: bool = False) -> List[AccountSchema]:
+    async def get_accounts(self) -> List[AccountSchema]:
         """Get a list of accounts from the database.
 
         Args:
@@ -49,23 +34,15 @@ class RouteDispatcher:
         Returns:
             A list of `AccountSchema` objects
         """
-        accounts = self.db.get_accounts()
-        if len(accounts) == 0 or force_refresh:
-            await self.update_banks_and_accounts()
-
         return self.db.get_accounts(as_schema=True)
 
     async def get_account_balances(
         self,
     ) -> List[Coroutine[Any, Any, AccountBalanceSchema]]:
         """Get a list of account balances from the provider."""
-
-        accounts = self.db.get_accounts()
         balances = []
-        for account_db in accounts:
-            account = StarlingAPI(account_uuid=account_db.uuid)
+        for account in self.accounts:
             balances.append(await account.get_account_balance())
-
         return balances
 
     # = TRANSACTIONS ===================================================================================================
@@ -84,16 +61,18 @@ class RouteDispatcher:
             start_date = end_date - timedelta(days=default_interval_days)
 
         # get latest transactions
-        account = StarlingAPI(account_uuid=account_id)
-        transactions = await account.get_transactions_for_account_id_between(
-            account_id, start_date, end_date
-        )
+        account = self._get_account_for_id(account_id)
+        if account is None:
+            return
+
+        transactions = await account.get_transactions_between(start_date, end_date)
 
         # save to the database
         for transaction in transactions:
             self.db.insert_or_update_transaction(transaction)
             # TODO update server_last_updated
 
+        print(len(transactions))
         return transactions
 
     async def get_transactions_between(
@@ -112,3 +91,37 @@ class RouteDispatcher:
         return transactions
 
     # = HELPERS ========================================================================================================
+
+    def _build_account_list(self):
+        """Returns a list of account api objects for each bank in the database."""
+        banks_db = self.db.client.query(
+            """
+            select Bank {
+                name,
+                auth_token_hash,
+                accounts: {
+                    uuid
+                }
+            }
+            """
+        )
+
+        accounts = []
+        for bank in banks_db:
+            for account in bank.accounts:
+                api_class = get_class_for_bank_name(bank.name)
+                accounts.append(
+                    api_class(
+                        auth_token=bank.auth_token_hash,
+                        account_uuid=account.uuid,
+                        bank_name=bank.name,
+                    )
+                )
+
+        return accounts
+
+    def _get_account_for_id(self, account_uuid: uuid.UUID) -> Optional[Any]:
+        """Returns the account with the given id, or None."""
+        return next(
+            account for account in self.accounts if account.account_uuid == account_uuid
+        )

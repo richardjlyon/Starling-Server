@@ -4,12 +4,13 @@
 
 import pathlib
 import uuid
+from dataclasses import dataclass
 from typing import List
 
 import pytest
 
 from starling_server.db.edgedb.database import Database
-from starling_server.providers.starling.account_helper import AccountHelper
+from starling_server.server.config_helper import ConfigHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.secrets import token_filepath
 
@@ -30,23 +31,23 @@ business_account = {
 }
 
 
-@pytest.fixture()
-def personal_account_bank_name():
-    """Provides the id for the personal account."""
-    return personal_account["bank_name"]
+@dataclass
+class Config:
+    bank_name: str
+    account_uuid: uuid.UUID
+    token: str
 
 
 @pytest.fixture()
-def personal_account_id():
-    """Provides the id for the personal account."""
-    return uuid.UUID(personal_account["account_uuid"])
-
-
-@pytest.fixture()
-def personal_auth_token():
-    """Provides the auth token for the personal account from the file system."""
+def config():
     with open(token_filepath, "r") as f:
-        return f.read().strip()
+        token = f.read().strip()
+
+    return Config(
+        bank_name=personal_account["bank_name"],
+        account_uuid=uuid.UUID(personal_account["account_uuid"]),
+        token=token,
+    )
 
 
 @pytest.fixture
@@ -57,27 +58,27 @@ def empty_db():
     # reset() # FIXME allows the database to be inspected - uncomment this when done
 
 
-@pytest.fixture()
-def live_helper():
-    """Provides an initialised account helper object."""
-    helper = AccountHelper()
-    helper.initialise()  # ensure it has account data # FIXME this test side effect acts on live data
-    return helper
-
-
-@pytest.fixture()
-def empty_dispatcher(empty_db, live_helper):
-    """Provides a dispatcher with no banks or accounts and a live helper."""
-    return RouteDispatcher(database=empty_db, account_helper=live_helper)
-
-
+@pytest.fixture
 @pytest.mark.asyncio
+async def testdb_with_real_accounts(empty_db, config):
+    """Returns a test database populated with live acounts (no transactions)."""
+    config_helper = ConfigHelper(db=empty_db)
+    await config_helper.initialise_bank(bank_name=config.bank_name, token=config.token)
+    return empty_db
+
+
 @pytest.fixture()
-async def live_dispatcher(empty_db, live_helper):
-    """Provides a dispatcher with banks and accounts populated and a live helper."""
-    dispatcher = RouteDispatcher(database=empty_db, account_helper=live_helper)
-    await dispatcher.update_banks_and_accounts()
-    return dispatcher
+def empty_dispatcher(empty_db):
+    """Provides a dispatcher with no banks or accounts and a live helper."""
+    return RouteDispatcher(database=empty_db)
+
+
+# @pytest.mark.asyncio
+# @pytest.fixture()
+# async def test_dispatcher_with_accounts(testdb_with_real_accounts):
+#     """Provides a dispatcher with banks and accounts populated and a live helper."""
+#     dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
+#     return dispatcher
 
 
 # = DATABASE UTILITY QUERIES =========================================================================================

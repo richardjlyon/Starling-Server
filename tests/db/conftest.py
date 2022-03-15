@@ -16,22 +16,22 @@ from tests.conftest import select_accounts
 
 
 @pytest.fixture
-def db_with_two_accounts(empty_db):
+def db_with_two_accounts(empty_db, config):
     """Make a clean database with two test accounts."""
     db = empty_db
     accounts = make_accounts(2)
     for account in accounts:
-        db.insert_or_update_account(account)
+        db.insert_or_update_account(config.token, account)
 
     return db
 
 
 @pytest.fixture
-def db_with_four_transactions(empty_db):
+def db_with_four_transactions(empty_db, config):
     """Make a clean database with two accounts of two transactions each."""
     accounts = make_accounts(2)
     for account in accounts:
-        empty_db.insert_or_update_account(account)
+        empty_db.insert_or_update_account(config.token, account)
 
     accounts_db = select_accounts()
     for account_db in accounts_db:

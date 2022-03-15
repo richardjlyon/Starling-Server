@@ -18,6 +18,8 @@ class AccountAdd(Command):
     add
     """
 
+    # FIXME This is broken until adapted to use Starling APIV2.
+
     def handle(self) -> None:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.handle_async())
@@ -32,9 +34,13 @@ class AccountAdd(Command):
             self.line(f"<error>{e}.</error>")
             return
 
-        accounts_added = await config.initialise_bank(bank_name=bank_name, token=token)
+        accounts = await config.initialise_bank(bank_name=bank_name, token=token)
+        print(accounts)
 
-        self.line(f"<info>Added {accounts_added} account(s)</info>")
+        # If it's a Starling bank, add the account's default category to the config file
+        # if
+        #
+        # self.line(f"<info>Added {accounts_added} account(s)</info>")
 
     def get_bank_name(self) -> str:
         bank_names = list(bank_classes.keys())

@@ -3,8 +3,8 @@
 from tests.server.routes.test_accounts import client
 
 
-def test_transactions_for_account_id(personal_account_id):
-    response = client.get(f"/transactions/{personal_account_id}")
+def test_transactions_for_account_id(config):
+    response = client.get(f"/transactions/{config.account_uuid}")
     transactions = response.json()
 
     assert response.status_code == 200

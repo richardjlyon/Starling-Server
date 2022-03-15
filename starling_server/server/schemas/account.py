@@ -11,7 +11,7 @@ class AccountSchema(BaseModel):
     """Defines the server account schema."""
 
     uuid: UUID4
-    # bank_name: str
+    bank_name: str
     account_name: str
     currency: str
     created_at: datetime

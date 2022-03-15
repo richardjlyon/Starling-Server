@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from starling_server.providers.starling.account_helper import AccountHelper
-from starling_server.providers.starling.api import API as StarlingAPI
+from starling_server.providers.starling.api_v2 import CategoryHelper
 from tests.conftest import TEST_FOLDER
 
 
@@ -22,9 +21,9 @@ def config_filepath():
 
 
 @pytest.fixture
-def dummy_helper(config_filepath):
+def category_helper(config_filepath):
     """Create a test config file and destroy it after testing."""
-    h = AccountHelper(config_filepath)
+    h = CategoryHelper(storage_filepath=config_filepath)
     yield h
     Path.unlink(config_filepath)
 

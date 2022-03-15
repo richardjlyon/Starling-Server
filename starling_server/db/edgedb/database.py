@@ -30,9 +30,7 @@ class Database(DBBase):
             print(account)
 
     # noinspection SqlNoDataSourceInspection
-    def insert_or_update_account(
-        self, token: str, bank_name: str, account: AccountSchema
-    ):
+    def insert_or_update_account(self, token: str, account: AccountSchema):
 
         # ensure Bank exists: note - this can probably be combined with the `insert Account` query
         self.client.query(
@@ -48,7 +46,7 @@ class Database(DBBase):
                 }
             );
             """,
-            name=bank_name,
+            name=account.bank_name,
             token=token,
         )
         account_db = self.client.query(
@@ -71,7 +69,7 @@ class Database(DBBase):
                 }
             );
             """,
-            bank_name=bank_name,
+            bank_name=account.bank_name,
             uuid=account.uuid,
             name=account.account_name,
             currency=account.currency,

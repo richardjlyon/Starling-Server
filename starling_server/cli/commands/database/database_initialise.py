@@ -8,7 +8,7 @@ from cleo import Command
 
 from starling_server.config import tokens_folder
 from starling_server.db.edgedb.database import Database
-from starling_server.providers.starling.api import API as StarlingAPI
+from starling_server.providers.starling.api_v2 import APIV2 as StarlingAPI
 from starling_server.server.route_dispatcher import RouteDispatcher
 
 

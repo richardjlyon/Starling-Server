@@ -10,11 +10,45 @@ from starling_server.server.schemas.account import AccountSchema, AccountBalance
 from starling_server.server.schemas.transaction import TransactionSchema
 
 
+class TestInitialisation:
+    def test_initialise_all_parameters(self, config):
+        # GIVEN a config file
+
+        # WHEN I initialise an api provider with all properties
+        api = APIV2(
+            auth_token=config.token,
+            bank_name=config.bank_name,
+            account_uuid=config.account_uuid,
+        )
+        # THEN the provider initialises properly
+        assert api.token == config.token
+        assert api.bank_name == config.bank_name
+        assert api.account_uuid == config.account_uuid
+
+    def test_initialise_token_only(self, config):
+        # GIVEN a config file
+
+        # WHEN I initialise an api provider only with a token
+        api = APIV2(auth_token=config.token)
+
+        # THEN provider initialises correctly
+        assert api.token == config.token
+        assert api.bank_name is None
+        assert api.account_uuid is None
+
+    def test_initialse_without_bank_name_raises(self, config):
+        # GIVEN a config file
+        # WHEN I initialise an api provider with an account id but not a bank name
+        # THEN it raises value error
+        with pytest.raises(ValueError) as e:
+            APIV2(auth_token=config.token, account_uuid=config.account_uuid)
+
+
 class TestAccount:
     @pytest.mark.asyncio
-    async def test_get_accounts(self, personal_auth_token):
+    async def test_get_accounts(self, config):
         # GIVEN an api initialised only with an access token
-        api = APIV2(auth_token=personal_auth_token)
+        api = APIV2(auth_token=config.token, bank_name=config.bank_name)
 
         # WHEN I get the accounts
         accounts = await api.get_accounts()
@@ -25,9 +59,13 @@ class TestAccount:
         assert isinstance(accounts[0], AccountSchema)
 
     @pytest.mark.asyncio
-    async def test_get_account_balance(self, personal_auth_token, personal_account_id):
+    async def test_get_account_balance(self, config):
         # GIVEN an api initialised with a personal account id
-        api = APIV2(auth_token=personal_auth_token, account_uuid=personal_account_id)
+        api = APIV2(
+            auth_token=config.token,
+            bank_name=config.bank_name,
+            account_uuid=config.account_uuid,
+        )
 
         # WHEN I get account balance
         balance = await api.get_account_balance()
@@ -38,11 +76,13 @@ class TestAccount:
 
 class TestTransaction:
     @pytest.mark.asyncio
-    async def test_get_transactions_between(
-        self, personal_auth_token, personal_account_id
-    ):
+    async def test_get_transactions_between(self, config):
         # GIVEN an api initialised with a personal account id
-        api = APIV2(auth_token=personal_auth_token, account_uuid=personal_account_id)
+        api = APIV2(
+            auth_token=config.token,
+            bank_name=config.bank_name,
+            account_uuid=config.account_uuid,
+        )
 
         # WHEN I fetch the transactions between two dates
         end_date = datetime.now()
@@ -57,43 +97,37 @@ class TestTransaction:
 
 class TestCategoryHelper:
     @pytest.mark.asyncio
-    async def test_insert(
-        self, category_helper, personal_auth_token, personal_account_id
-    ):
+    async def test_insert(self, category_helper, config):
         # GIVEN a config filepath
         helper = category_helper
 
         # WHEN I insert an account
-        await helper.insert(personal_auth_token, personal_account_id)
+        await helper.insert(config.token, config.account_uuid, config.bank_name)
 
         # THEN the config file is updated with a correct account id / default category pair
         expected_default_category = "b23c9e8b-4377-4d9a-bce3-e7ee5477af50"
         config_file = helper._load()
-        assert str(personal_account_id) in config_file
-        assert config_file[str(personal_account_id)] == expected_default_category
+        assert str(config.account_uuid) in config_file
+        assert config_file[str(config.account_uuid)] == expected_default_category
 
     @pytest.mark.asyncio
-    async def test_category_for_account_id(
-        self, category_helper, personal_auth_token, personal_account_id
-    ):
+    async def test_category_for_account_id(self, category_helper, config):
         # GIVEN a config file with a account id / default category pair
         helper = category_helper
-        await helper.insert(personal_auth_token, personal_account_id)
+        await helper.insert(config.token, config.account_uuid, config.bank_name)
 
         # WHEN I get the default category
-        default_category = helper.category_for_account_id(personal_account_id)
+        default_category = helper.category_for_account_id(config.account_uuid)
 
         # THEN the defualt category is corrrect
         expected_default_category = "b23c9e8b-4377-4d9a-bce3-e7ee5477af50"
         assert default_category == expected_default_category
 
     @pytest.mark.asyncio
-    async def test_category_for_account_id_none(
-        self, category_helper, personal_auth_token, personal_account_id
-    ):
+    async def test_category_for_account_id_none(self, category_helper, config):
         # GIVEN a config file with a account id / default category pair
         helper = category_helper
-        await helper.insert(personal_auth_token, personal_account_id)
+        await helper.insert(config.token, config.account_uuid, config.bank_name)
 
         # WHEN I get the default category for None
         default_category = helper.category_for_account_id(account_uuid=None)

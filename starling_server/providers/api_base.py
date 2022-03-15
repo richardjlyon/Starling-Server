@@ -37,10 +37,14 @@ class BaseAPI(ABC):
 
 
 class BaseAPIV2(ABC):
-    def __init__(self, auth_token: str, account_uuid: uuid.UUID):
+    def __init__(
+        self, class_name: str, auth_token: str, bank_name: str, account_uuid: uuid.UUID
+    ):
         super().__init__()
         self.token = auth_token
+        self.bank_name = bank_name
         self.account_uuid = account_uuid
+        self._class_name = class_name
 
     @abstractmethod
     def get_accounts(self) -> list[AccountSchema]:
@@ -57,3 +61,8 @@ class BaseAPIV2(ABC):
         end_date: datetime,
     ) -> List[TransactionSchema]:
         pass
+
+    @property
+    def class_name(self) -> str:
+        """Returns the class name of the instantiated object"""
+        return self._class_name

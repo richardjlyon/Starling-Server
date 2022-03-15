@@ -1,3 +1,7 @@
+"""
+dfsgdsfg
+"""
+
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -19,16 +23,26 @@ from starling_server.providers.starling.schemas import (
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
-API_BASE_URL = "https://api.starlingbank.com/api/v2"
+API_VERSION = "v2"
+API_BASE_URL = f"https://api.starlingbank.com/api/{API_VERSION}"
+CLASS_NAME = f"StarlingAPI{API_VERSION}"
+
 T = TypeVar("T")
 
 
 class APIV2(BaseAPIV2):
     """Provides the API methods for a Starling Bank account."""
 
-    def __init__(self, auth_token: str, account_uuid: uuid.UUID = None):
+    def __init__(
+        self, auth_token: str, bank_name: str = None, account_uuid: uuid.UUID = None
+    ):
+        if account_uuid is not None and bank_name is None:
+            raise ValueError("missing bank_name for account_uuid")
+
         super().__init__(
+            class_name=CLASS_NAME,
             auth_token=auth_token,
+            bank_name=bank_name,
             account_uuid=account_uuid,
         )
         self.default_category = CategoryHelper().category_for_account_id(account_uuid)
@@ -36,7 +50,14 @@ class APIV2(BaseAPIV2):
     # = ABSTRACT METHOD IMPLEMENTATIONS
 
     async def get_accounts(self, raw: bool = False) -> list[AccountSchema]:
-        """Get all of the accounts associated with the authorisation token."""
+        """
+        Get all of the accounts associated with the authorisation token.
+        Args:
+            raw (bool): If true, don't convert to AccountSchema
+
+        Returns:
+            A list of accounts
+        """
         path = "/accounts"
         response = await self.get_endpoint(path)
         if raw:
@@ -73,7 +94,9 @@ class APIV2(BaseAPIV2):
 
         accounts_raw = parsed_response.accounts
         accounts = [
-            StarlingAccountSchema.to_server_account_schema(account)
+            StarlingAccountSchema.to_server_account_schema(
+                bank_name=self.bank_name, account=account
+            )
             for account in accounts_raw
         ]
 
@@ -149,9 +172,9 @@ class CategoryHelper:
         for account_uuid in account_uuids:
             self.insert(account_uuid)
 
-    async def insert(self, token: str, account_uuid: uuid.UUID):
+    async def insert(self, token: str, account_uuid: uuid.UUID, bank_name: str):
         """Add an account/category pair."""
-        api = APIV2(auth_token=token, account_uuid=account_uuid)
+        api = APIV2(auth_token=token, account_uuid=account_uuid, bank_name=bank_name)
         response = await api.get_accounts(raw=True)
 
         default_category = None

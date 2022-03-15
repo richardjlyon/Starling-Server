@@ -24,10 +24,12 @@ class StarlingAccountSchema(BaseModel):
     defaultCategory: uuid.UUID  # FIXME UUID and -> uuid
 
     @staticmethod
-    def to_server_account_schema(account: "StarlingAccountSchema") -> AccountSchema:
+    def to_server_account_schema(
+        bank_name: str, account: "StarlingAccountSchema"
+    ) -> AccountSchema:
         return AccountSchema(
             uuid=account.accountUid,
-            # bank_name=bank_name,
+            bank_name=bank_name,
             account_name=account.name,
             currency=account.currency,
             created_at=account.createdAt,

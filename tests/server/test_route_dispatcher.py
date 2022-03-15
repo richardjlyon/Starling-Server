@@ -2,14 +2,13 @@
 #
 # test the functionality of the route dispatcher
 
-
 import pytest
 
 from starling_server.main import db
 from starling_server.server.route_dispatcher import RouteDispatcher
-from starling_server.server.schemas.account import AccountSchema
+from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
-from tests.conftest import select_accounts, select_transactions
+from tests.conftest import select_transactions
 
 
 def test_initialise():
@@ -19,56 +18,57 @@ def test_initialise():
     # WHEN I get the accounts
     accounts = dispatcher.accounts
 
-    # THEN there are accounts
+    # THEN there are valid account api objects
     assert len(accounts) > 0
+    for account in accounts:
+        assert account.account_uuid is not None
+        assert account.bank_name is not None
+        assert account.token is not None
 
 
 class TestAccounts:
     @pytest.mark.asyncio
-    async def test_update_banks_and_accounts(self, empty_dispatcher):
-        # GIVEN a dispatcher with an empty database and an initialised AccountHelper
-
-        # WHEN I update banks and accounts
-        await empty_dispatcher.update_banks_and_accounts()
-
-        # THEN the database is updated with the banks and accounts
-        accounts = select_accounts()
-        assert len(accounts) > 0
-
-    @pytest.mark.asyncio
-    async def test_get_accounts(self, live_dispatcher):
-        # GIVEN a test database initialised with Starling accounts
+    async def test_get_accounts(self, testdb_with_real_accounts):
+        # GIVEN a dispatcher with a test database initialised with Starling accounts
+        dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
 
         # WHEN I get the accounts
-        accounts = await live_dispatcher.get_accounts()
+        accounts = await dispatcher.get_accounts()
 
         # THEN the accounts are returned
         assert isinstance(accounts, list)
-        assert isinstance(accounts[0], AccountSchema)
+        assert len(accounts) > 0
+        for account in accounts:
+            assert isinstance(account, AccountSchema)
 
     @pytest.mark.asyncio
-    async def test_get_account_balances(self, live_dispatcher):
-        # GIVEN a test database initialised with Starling accounts
+    async def test_get_account_balances(self, testdb_with_real_accounts):
+        # GIVEN a dispatcher with a test database initialised with Starling accounts
+        dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
 
         # WHEN I get the account balances
-        balances = await live_dispatcher.get_account_balances()
+        balances = await dispatcher.get_account_balances()
 
         # THEN the account balances are returned
-        print(balances)
+        assert isinstance(balances, list)
+        assert len(balances) > 0
+        for balance in balances:
+            assert isinstance(balance, AccountBalanceSchema)
 
 
 class TestTransactions:
     @pytest.mark.asyncio
     async def test_get_transactions_for_account_id_between(
-        self, live_dispatcher, personal_account_id
+        self, testdb_with_real_accounts, config
     ):
-        # GIVEN a test database initialised with Starling accounts and no transactions
+        # GIVEN a dispatcher with a test database initialised with Starling accounts and no transactions
+        dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
         transactions = select_transactions()
         assert len(transactions) == 0
 
         # WHEN I get transactions for an account with the given uuid
-        transactions = await live_dispatcher.get_transactions_for_account_id_between(
-            account_id=personal_account_id
+        transactions = await dispatcher.get_transactions_for_account_id_between(
+            account_id=config.account_uuid
         )
 
         # THEN the transactions are returned
@@ -80,6 +80,9 @@ class TestTransactions:
         assert len(transactions) > 0
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(
+        reason="Need to modify config to load more than one account in test database"
+    )
     async def test_get_transactions_between(self, live_dispatcher, personal_account_id):
         # GIVEN a test database initialised with Starling accounts and no transactions
         transactions = select_transactions()

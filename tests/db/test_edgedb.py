@@ -9,20 +9,20 @@ from tests.db.conftest import make_accounts, make_transactions
 
 
 class TestAccount:
-    def test_insert_or_update_account_insert_2(self, empty_db):
+    def test_insert_or_update_account_insert_2(self, empty_db, config):
         # GIVEN an empty database
 
         # WHEN I add two accounts
         accounts = make_accounts(2)
         for account in accounts:
-            empty_db.insert_or_update_account(account)
+            empty_db.insert_or_update_account(config.token, account)
 
         # THEN two accounts are added
         accounts_db = select_accounts()
         assert len(accounts_db) == 2
         assert accounts_db[0].bank.name == accounts[0].bank_name
 
-    def test_insert_or_update_account_update_1(self, db_with_two_accounts):
+    def test_insert_or_update_account_update_1(self, db_with_two_accounts, config):
         # GIVEN a database with two accounts
 
         # WHEN an account name is modified
@@ -36,7 +36,7 @@ class TestAccount:
             currency=a.currency,
             created_at=a.created_at,
         )
-        db_with_two_accounts.insert_or_update_account(account)
+        db_with_two_accounts.insert_or_update_account(config.token, account)
 
         # THEN the account name is updated
         accounts_db = select_accounts()
@@ -109,13 +109,13 @@ class TestTransaction:
         assert transactions[0].transactions[0].uuid == t0_uuid
 
     def test_get_last_transaction_date_for_account(
-        self, db_with_four_transactions, personal_account_id
+        self, db_with_four_transactions, config
     ):
         # GIVEN a database with 2 accounts of 2 transactions each
 
         # WHEN I get the last transaction date for the personal account
         last_date = db_with_four_transactions.get_last_transaction_date_for_account(
-            personal_account_id
+            config.account_uuid
         )
 
         # THEN the date is for the last transaction

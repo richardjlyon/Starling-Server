@@ -13,7 +13,7 @@ router = APIRouter()
     response_model=List[AccountSchema],
 )
 async def get_accounts(force_refresh: bool = False) -> List[AccountSchema]:
-    return await dispatcher.get_accounts(force_refresh)
+    return await dispatcher.get_accounts()
 
 
 @router.get("/balances", response_model=List[AccountBalanceSchema])
