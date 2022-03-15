@@ -1,7 +1,7 @@
 # api_base.py
 #
 # Defines an abstract API base class
-
+import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Coroutine, Any
@@ -27,18 +27,33 @@ class BaseAPI(ABC):
 
     @abstractmethod
     async def get_transactions_for_account_id_between(
-        self, account_uuid: str, start_date: datetime, end_date: datetime
+        self,
+        account_uuid: str,
+        start_date: datetime,
+        end_date: datetime,
     ) -> Coroutine[Any, Any, List[TransactionSchema]]:
         """Get the transactions for the account with the given id between the given dates."""
         pass
 
 
 class BaseAPIV2(ABC):
-    def __init__(self, bank_name: str, auth_token: str):
+    def __init__(self, auth_token: str, account_uuid: uuid.UUID):
         super().__init__()
         self.token = auth_token
-        self.bank_name = bank_name
+        self.account_uuid = account_uuid
 
     @abstractmethod
     def get_accounts(self) -> list[AccountSchema]:
+        pass
+
+    @abstractmethod
+    def get_account_balance(self) -> AccountBalanceSchema:
+        pass
+
+    @abstractmethod
+    def get_transactions_between(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> List[TransactionSchema]:
         pass

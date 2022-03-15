@@ -1,7 +1,7 @@
 # schemas.py
 #
 # Starling Bank schema definitions
-
+import re
 import uuid
 from datetime import datetime
 from typing import List, Optional
@@ -9,7 +9,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 # = ACCOUNTS ==========================================================================================================
-from starling_server.server.schemas.account import AccountSchema
+from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
+from starling_server.server.schemas.transaction import TransactionSchema
 
 
 class StarlingAccountSchema(BaseModel):
@@ -23,7 +24,7 @@ class StarlingAccountSchema(BaseModel):
     defaultCategory: uuid.UUID  # FIXME UUID and -> uuid
 
     @staticmethod
-    def to_server_accountschema(account: "StarlingAccountSchema") -> AccountSchema:
+    def to_server_account_schema(account: "StarlingAccountSchema") -> AccountSchema:
         return AccountSchema(
             uuid=account.accountUid,
             # bank_name=bank_name,
@@ -51,6 +52,17 @@ class StarlingBalanceSchema(BaseModel):
     clearedBalance: StarlingSignedCurrencyAndAmountSchema
     pendingTransactions: StarlingSignedCurrencyAndAmountSchema
     effectiveBalance: StarlingSignedCurrencyAndAmountSchema
+
+    @staticmethod
+    def to_server_account_balance_schema(
+        account_uuid: uuid.UUID, balance: "StarlingBalanceSchema"
+    ) -> AccountBalanceSchema:
+        return AccountBalanceSchema(
+            uuid=account_uuid,
+            cleared_balance=balance.clearedBalance.minorUnits / 100.0,
+            pending_transactions=balance.pendingTransactions.minorUnits / 100.0,
+            effective_balance=balance.effectiveBalance.minorUnits / 100.0,
+        )
 
 
 # = TRANSACTIONS  ======================================================================================================
@@ -84,6 +96,26 @@ class StarlingTransactionSchema(BaseModel):
     sourceAmount: SourceAmount
     reference: Optional[str] = None
     status: str
+
+    @staticmethod
+    def to_server_transaction_schema(
+        account_uuid: uuid.UUID, transaction: "StarlingTransactionSchema"
+    ) -> TransactionSchema:
+        def clean_string(the_string: Optional[str]) -> Optional[str]:
+            """Replace multiple spaces with a single space."""
+            if the_string:
+                return str(re.sub(" +", " ", the_string).strip())
+            else:
+                return ""
+
+        return TransactionSchema(
+            uuid=uuid.UUID(transaction.feedItemUid),
+            account_uuid=account_uuid,
+            time=transaction.transactionTime,
+            counterparty_name=transaction.counterPartyName,
+            amount=transaction.sourceAmount.compute_amount(transaction.direction),
+            reference=clean_string(transaction.reference),
+        )
 
 
 class StarlingTransactionsSchema(BaseModel):
