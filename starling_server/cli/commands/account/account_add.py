@@ -14,12 +14,10 @@ config = ConfigHelper(db)
 
 class AccountAdd(Command):
     """
-    Add a Bank and associated accounts to the database.
+    Add an account.
 
     add
     """
-
-    # FIXME This is broken until adapted to use Starling APIV2.
 
     def handle(self) -> None:
         loop = asyncio.get_event_loop()

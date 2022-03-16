@@ -5,6 +5,7 @@
 from cleo import Command
 
 from starling_server.cli.commands.account.account_add import AccountAdd
+from starling_server.main import db
 
 
 class AccountCommand(Command):
@@ -17,4 +18,12 @@ class AccountCommand(Command):
     commands = [AccountAdd()]
 
     def handle(self):
-        return self.call("help", self._config.name)
+
+        accounts = db.get_accounts()
+
+        for idx, account in enumerate(accounts):
+            # TODO add account balances
+            self.line(f"<info>[{idx}] {account.bank.name}: {account.name}</info>")
+
+        if self.option("help"):
+            return self.call("help", self._config.name)
