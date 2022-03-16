@@ -12,7 +12,8 @@ from starling_server.server.schemas.account import AccountSchema
 bank_classes = {
     "Starling Personal": "starling",
     "Starling Business": "starling",
-    "SpareBanken": "sparebanken",
+    "Starling Sole Trader": "starling",
+    "Starling Joint": "starling",
 }
 
 
