@@ -5,6 +5,7 @@
 from cleo import Command
 
 from starling_server.cli.commands.account.account_add import AccountAdd
+from starling_server.cli.commands.account.account_delete import AccountDelete
 from starling_server.main import db
 
 
@@ -15,11 +16,11 @@ class AccountCommand(Command):
     account
     """
 
-    commands = [AccountAdd()]
+    commands = [AccountAdd(), AccountDelete()]
 
     def handle(self):
 
-        accounts = db.get_accounts()
+        accounts = db.select_accounts()
 
         for idx, account in enumerate(accounts):
             # TODO add account balances

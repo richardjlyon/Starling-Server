@@ -21,7 +21,7 @@ class StarlingAccountSchema(BaseModel):
     accountType: str
     currency: str
     createdAt: datetime
-    defaultCategory: uuid.UUID  # FIXME UUID and -> uuid
+    defaultCategory: uuid.UUID
 
     @staticmethod
     def to_server_account_schema(
