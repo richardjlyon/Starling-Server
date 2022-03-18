@@ -16,14 +16,14 @@ def test_initialise():
     dispatcher = RouteDispatcher(db)
 
     # WHEN I get the accounts
-    accounts = dispatcher.accounts
+    apis = dispatcher.apis
 
     # THEN there are valid account api objects
-    assert len(accounts) > 0
-    for account in accounts:
-        assert account.account_uuid is not None
-        assert account.bank_name is not None
-        assert account.token is not None
+    assert len(apis) > 0
+    for api in apis:
+        assert api.account_uuid is not None
+        assert api.bank_name is not None
+        assert api.token is not None
 
 
 class TestAccounts:

@@ -21,7 +21,7 @@ class RouteDispatcher:
 
     def __init__(self, database: Database):
         self.db = database
-        self.accounts = self._build_account_list()
+        self.apis = self._build_api_list()
 
     # = ACCOUNTS =======================================================================================================
 
@@ -41,8 +41,8 @@ class RouteDispatcher:
     ) -> List[Coroutine[Any, Any, AccountBalanceSchema]]:
         """Get a list of account balances from the provider."""
         balances = []
-        for account in self.accounts:
-            balances.append(await account.get_account_balance())
+        for api in self.apis:
+            balances.append(await api.get_account_balance())
         return balances
 
     # = TRANSACTIONS ===================================================================================================
@@ -56,21 +56,22 @@ class RouteDispatcher:
         """Get transactions for the specified account for the default time interval."""
 
         # FIXME Tidy this logic up include start_date OR end_date
+        # TODO start_date is earliest of (start_date / account_last_updated)
         if start_date or end_date is None:
             end_date = datetime.now()
             start_date = end_date - timedelta(days=default_interval_days)
 
         # get latest transactions
-        account = self._get_account_for_id(account_id)
-        if account is None:
+        api = self._get_api_for_id(account_id)
+        if api is None:
             return
 
-        transactions = await account.get_transactions_between(start_date, end_date)
+        transactions = await api.get_transactions_between(start_date, end_date)
 
         # save to the database
         for transaction in transactions:
+            # counter_party = make_counterparty_from(transaction)
             self.db.upsert_transaction(transaction)
-            # TODO update server_last_updated
 
         print(len(transactions))
         return transactions
@@ -92,7 +93,7 @@ class RouteDispatcher:
 
     # = HELPERS ========================================================================================================
 
-    def _build_account_list(self):
+    def _build_api_list(self) -> List[Any]:
         """Returns a list of account api objects for each bank in the database."""
         banks_db = self.db.client.query(
             """
@@ -106,11 +107,11 @@ class RouteDispatcher:
             """
         )
 
-        accounts = []
+        apis = []
         for bank in banks_db:
             for account in bank.accounts:
                 api_class = get_class_for_bank_name(bank.name)
-                accounts.append(
+                apis.append(
                     api_class(
                         auth_token=bank.auth_token_hash,
                         account_uuid=account.uuid,
@@ -118,10 +119,8 @@ class RouteDispatcher:
                     )
                 )
 
-        return accounts
+        return apis
 
-    def _get_account_for_id(self, account_uuid: uuid.UUID) -> Optional[Any]:
+    def _get_api_for_id(self, account_uuid: uuid.UUID) -> Optional[Any]:
         """Returns the account with the given id, or None."""
-        return next(
-            account for account in self.accounts if account.account_uuid == account_uuid
-        )
+        return next(api for api in self.apis if api.account_uuid == account_uuid)
