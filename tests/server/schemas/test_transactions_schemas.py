@@ -1,20 +1,23 @@
 import uuid
 from datetime import datetime
 
-from starling_server.server.schemas.transaction import TransactionSchema, clean_string
+from starling_server.server.schemas.transaction import (
+    TransactionSchema,
+    Counterparty,
+    clean_string,
+)
 
 
 def test_transaction_schema():
-    s = TransactionSchema(
-        uuid=str(uuid.uuid4()),
-        account_uuid=str(uuid.uuid4()),
+    t = TransactionSchema(
+        uuid=uuid.uuid4(),
+        account_uuid=uuid.uuid4(),
         time=datetime.now(),
-        counterparty_name="payee",
+        counterparty=Counterparty(uuid=uuid.uuid4(), name="TEST COUNTERPARTY"),
         amount=1.23,
         reference="the reference",
     )
-
-    assert isinstance(s, TransactionSchema)
+    assert isinstance(t, TransactionSchema)
 
 
 def test_clean_string():

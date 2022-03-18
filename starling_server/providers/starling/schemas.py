@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 # = ACCOUNTS ==========================================================================================================
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 
 
 class StarlingAccountSchema(BaseModel):
@@ -110,11 +110,16 @@ class StarlingTransactionSchema(BaseModel):
             else:
                 return ""
 
+        counterparty = Counterparty(
+            uuid=uuid.UUID(transaction.counterPartyUid),
+            name=transaction.counterPartyName,
+        )
+
         return TransactionSchema(
             uuid=uuid.UUID(transaction.feedItemUid),
             account_uuid=account_uuid,
             time=transaction.transactionTime,
-            counterparty_name=transaction.counterPartyName,
+            counterparty=counterparty,
             amount=transaction.sourceAmount.compute_amount(transaction.direction),
             reference=clean_string(transaction.reference),
         )

@@ -164,7 +164,7 @@ class Database(DBBase):
             account_uuid=transaction.account_uuid,
             uuid=transaction.uuid,
             time=transaction.time,
-            counterparty_name=transaction.counterparty_name,
+            counterparty_name=transaction.counterparty.name,
             amount=transaction.amount,
             reference=transaction.reference,
         )

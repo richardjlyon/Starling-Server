@@ -12,7 +12,7 @@ import pytz
 
 from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 
 test_bank_name = "Starling Business (TEST)"
 
@@ -118,7 +118,7 @@ def make_transactions(number: int, account_uuid: str) -> List[TransactionSchema]
             uuid=str(uuid.uuid4()),
             account_uuid=str(account_uuid),
             time=datetime.now(pytz.timezone("Europe/London")),
-            counterparty_name=f"Counterparty {i}",
+            counterparty=Counterparty(uuid=uuid.uuid4(), name=f"Counterparty {i}"),
             amount=random() * 10000,
             reference=f"{str(account_uuid)[-4:]}/{i}",
         )

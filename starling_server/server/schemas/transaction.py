@@ -10,13 +10,21 @@ from uuid import UUID
 from pydantic.main import BaseModel
 
 
+class Counterparty(BaseModel):
+    """Defines the server counterparty response model."""
+
+    uuid: UUID
+    name: str
+    display_name: Optional[str]
+
+
 class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
 
     uuid: UUID
     account_uuid: UUID
     time: datetime
-    counterparty_name: str
+    counterparty: Counterparty
     amount: float
     reference: Optional[str]
 

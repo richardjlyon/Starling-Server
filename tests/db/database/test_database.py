@@ -3,7 +3,7 @@ These tests verify the functionality of the EdgeDB Class. They require database 
 """
 
 from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 from tests.db.database.conftest import (
     make_accounts,
     make_transactions,
@@ -168,7 +168,9 @@ class TestTransaction:
             account_uuid=t.account.uuid,
             uuid=t.uuid,
             time=t.time,
-            counterparty_name=t.counterparty_name,
+            counterparty=Counterparty(
+                uuid=None, name=t.counterparty_name
+            ),  # FIXME get counterparty uuid
             amount=t.amount,
             reference=modified_reference,
         )
