@@ -1,3 +1,9 @@
+"""
+Tests the functionality of the FastAPI routes.
+These tests require Accounts to be present in the live database
+# FIXME rewrite tests to use mocking
+"""
+
 from fastapi.testclient import TestClient
 
 from starling_server.server.app import app

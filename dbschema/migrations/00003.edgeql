@@ -1,9 +1,7 @@
-CREATE MIGRATION m1nvjcl5r75ldtdbz6dglji563cdgnqotepeuj5wmm4kcjmnvv5otq
-    ONTO m1o4jdgkjejum5pokm5aduapesgpzi7bydiuved7yxcrdstrse55wa
+CREATE MIGRATION m1abuuargkt2hsndn335sg5n4dw3qhllxvo4kz2aowsubjuptpdjma
+    ONTO m1e7gipzw5jjry2uch6fkwqvuztk34jegfq2cdaryeitmi7537lctq
 {
-  ALTER TYPE default::Account {
-      ALTER PROPERTY uuid {
-          RENAME TO account_uuid;
-      };
+  ALTER TYPE default::Bank {
+      CREATE MULTI LINK accounts := (.<bank[IS default::Account]);
   };
 };
