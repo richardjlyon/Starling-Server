@@ -49,7 +49,7 @@ class ConfigHelper:
 
         # insert into the database
         for account in accounts:
-            self.db.insert_or_update_account(token=token, account=account)
+            self.db.upsert_account(token=token, account=account)
 
         return accounts
 

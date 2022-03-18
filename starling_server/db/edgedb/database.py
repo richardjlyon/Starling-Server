@@ -14,25 +14,11 @@ from starling_server.server.schemas.transaction import TransactionSchema
 class Database(DBBase):
     def __init__(self, database: str = None):
         super().__init__()
-        self.client = edgedb.create_client(database=database)
+        self.client = edgedb.create_client(
+            database=database
+        )  # defaults to database "edgedb"
 
-    def reset(self, accounts: List[AccountSchema]):
-        """Drop Bank and Account tables and reconfigure from a list of accounts."""
-
-        print("RESET")
-        self.client.query(
-            """
-            delete Bank;
-            """
-        )
-
-        for account in accounts:
-            print(account)
-
-    # noinspection SqlNoDataSourceInspection
-    def insert_or_update_account(self, token: str, account: AccountSchema):
-
-        # ensure Bank exists: note - this can probably be combined with the `insert Account` query
+    def upsert_bank(self, bank_name: str, token: str):
         self.client.query(
             """
             insert Bank {
@@ -46,29 +32,59 @@ class Database(DBBase):
                 }
             );
             """,
-            name=account.bank_name,
+            name=bank_name,
             token=token,
         )
+
+    # noinspection SqlNoDataSourceInspection
+    def delete_bank(self, bank_name: str):
+        self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
+
+    def insert_category_group(self, group_name: str):
+        self.client.query(
+            """
+            insert CategoryGroup { name := <str>$group_name }
+            """,
+            group_name=group_name,
+        )
+
+    def insert_category(self, group_name: str, category_name: str):
+        self.client.query(
+            """
+            with category_group := (select CategoryGroup filter .name = <str>$group_name)
+            insert Category {
+                name := <str>$category_name,
+                category_group := category_group
+            }
+            """,
+            group_name=group_name,
+            category_name=category_name,
+        )
+
+    def upsert_account(self, token: str, account: AccountSchema):
+        # ensure Bank exists: note - this can probably be combined with the `insert Account` query
+        self.upsert_bank(account.bank_name, token=token)
+
         account_db = self.client.query(
             """
-            with bank := (
-                select Bank filter .name = <str>$bank_name
-            )
-            insert Account {
-                bank := bank,
-                uuid := <uuid>$uuid,
-                name := <str>$name,
-                currency := <str>$currency,
-                created_at := <datetime>$created_at
-            } unless conflict on .uuid else (
-                update Account 
-                set {
-                    name := <str>$name,
-                    currency := <str>$currency,
-                    created_at := <datetime>$created_at,
-                }
-            );
-            """,
+                    with bank := (
+                        select Bank filter .name = <str>$bank_name
+                    )
+                    insert Account {
+                        bank := bank,
+                        uuid := <uuid>$uuid,
+                        name := <str>$name,
+                        currency := <str>$currency,
+                        created_at := <datetime>$created_at
+                    } unless conflict on .uuid else (
+                        update Account 
+                        set {
+                            name := <str>$name,
+                            currency := <str>$currency,
+                            created_at := <datetime>$created_at,
+                        }
+                    );
+                    """,
             bank_name=account.bank_name,
             uuid=account.uuid,
             name=account.account_name,
@@ -79,7 +95,8 @@ class Database(DBBase):
         return account_db
 
     # noinspection SqlNoDataSourceInspection
-    def get_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
+
+    def select_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
         accounts_db = self.client.query(
             """
             select Account {
@@ -105,8 +122,23 @@ class Database(DBBase):
         else:
             return accounts_db
 
-    # noinspection SqlNoDataSourceInspection
-    def insert_or_update_transaction(self, transaction: TransactionSchema):
+    def select_account_for_account_uuid(
+        self, account_uuid: uuid.UUID, as_schema: bool = False
+    ) -> AccountSchema:
+        accounts = self.select_accounts(as_schema=as_schema)
+        return next(account for account in accounts if account.uuid == account_uuid)
+
+    def delete_account(self, account_uuid: uuid.UUID):
+        self.client.query(
+            """
+            delete Account filter .uuid = <uuid>$account_uuid;
+            """,
+            account_uuid=account_uuid,
+        )
+
+        # noinspection SqlNoDataSourceInspection
+
+    def upsert_transaction(self, transaction: TransactionSchema):
         transaction_db = self.client.query(
             """
             with account := (
@@ -139,8 +171,9 @@ class Database(DBBase):
         self.client.close()
         return transaction_db
 
-    # noinspection SqlNoDataSourceInspection
-    def get_transactions_for_account(self, account_uuid: uuid.UUID):
+        # noinspection SqlNoDataSourceInspection
+
+    def select_transactions_for_account(self, account_uuid: uuid.UUID):
         transactions = self.client.query(
             """
             select Account {
@@ -150,27 +183,33 @@ class Database(DBBase):
                 }
             }
             filter Account.uuid = <uuid>$account_uuid
-            
+    
             """,
             account_uuid=account_uuid,
         )
         self.client.close()
         return transactions
 
-    # noinspection SqlNoDataSourceInspection
-    def get_last_transaction_date_for_account(self, account_uuid: uuid.UUID):
+        # noinspection SqlNoDataSourceInspection
 
-        transaction = self.client.query(
+    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
+        self.client.query(
             """
             with account := (
                 select Account filter .uuid = <uuid>$account_uuid
             )
-            select Transaction { time }
-            filter account = account
-            order by .time desc;
-
+            delete (
+                select Transaction
+                filter .account.uuid = account.uuid
+            )
             """,
             account_uuid=account_uuid,
         )
-        self.client.close()
-        return transaction
+
+    def reset(self):
+        """Drop all Banks, Accounts, and Transacstions."""
+        self.client.query(
+            """
+            delete Bank;
+            """,
+        )

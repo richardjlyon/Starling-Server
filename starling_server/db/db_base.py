@@ -14,25 +14,51 @@ class DBBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def reset(self, accounts: List[AccountSchema]):
+    def upsert_bank(self, bank_name: str, token: str):
         pass
 
     @abstractmethod
-    def insert_or_update_account(self, token: str, account: AccountSchema):
+    def delete_bank(self, bank_name: str):
         pass
 
     @abstractmethod
-    def get_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
+    def insert_category_group(self, group_name: str):
         pass
 
     @abstractmethod
-    def insert_or_update_transaction(self, transaction: TransactionSchema):
+    def insert_category(self, group_name: str, category_name: str):
         pass
 
     @abstractmethod
-    def get_transactions_for_account(self, account_uuid: uuid.UUID):
+    def upsert_account(self, token: str, account: AccountSchema):
         pass
 
     @abstractmethod
-    def get_last_transaction_date_for_account(self, account_id: uuid.UUID):
+    def select_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
+        pass
+
+    @abstractmethod
+    def select_account_for_account_uuid(
+        self, account_uuid: uuid.UUID, as_schema: bool = False
+    ) -> List[AccountSchema]:
+        pass
+
+    @abstractmethod
+    def delete_account(self, account_uuid: uuid.UUID):
+        pass
+
+    @abstractmethod
+    def upsert_transaction(self, transaction: TransactionSchema):
+        pass
+
+    @abstractmethod
+    def select_transactions_for_account(self, account_uuid: uuid.UUID):
+        pass
+
+    @abstractmethod
+    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
+        pass
+
+    @abstractmethod
+    def reset(self):
         pass

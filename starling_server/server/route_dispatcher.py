@@ -34,7 +34,7 @@ class RouteDispatcher:
         Returns:
             A list of `AccountSchema` objects
         """
-        return self.db.get_accounts(as_schema=True)
+        return self.db.select_accounts(as_schema=True)
 
     async def get_account_balances(
         self,
@@ -69,7 +69,7 @@ class RouteDispatcher:
 
         # save to the database
         for transaction in transactions:
-            self.db.insert_or_update_transaction(transaction)
+            self.db.upsert_transaction(transaction)
             # TODO update server_last_updated
 
         print(len(transactions))
@@ -80,7 +80,7 @@ class RouteDispatcher:
     ) -> Optional[List[TransactionSchema]]:
 
         transactions = []
-        accounts = self.db.get_accounts(as_schema=True)
+        accounts = self.db.select_accounts(as_schema=True)
         for account in accounts:
             result = await self.get_transactions_for_account_id_between(
                 account_id=account.uuid, start_date=start_date, end_date=end_date
