@@ -147,24 +147,42 @@ class Database(DBBase):
         # noinspection SqlNoDataSourceInspection
 
     def upsert_counterparty(self, counterparty: Counterparty):
-        self.client.query(
-            """
-            insert Counterparty {
-                uuid := <uuid>$uuid,
-                name := <str>$name,
-                display_name := <str>$display_name
-            } unless conflict on .uuid else (
-                update Counterparty
-                set {
+        # FIXME find out how to handle 'Optional' inserts
+        if counterparty.display_name is None:
+            self.client.query(
+                """
+                insert Counterparty {
+                    uuid := <uuid>$uuid,
+                    name := <str>$name,
+                } unless conflict on .uuid else (
+                    update Counterparty
+                    set {
+                        name := <str>$name,
+                    }
+                )
+                """,
+                uuid=counterparty.uuid,
+                name=counterparty.name,
+            )
+        else:
+            self.client.query(
+                """
+                insert Counterparty {
+                    uuid := <uuid>$uuid,
                     name := <str>$name,
                     display_name := <str>$display_name
-                }
+                } unless conflict on .uuid else (
+                    update Counterparty
+                    set {
+                        name := <str>$name,
+                        display_name := <str>$display_name
+                    }
+                )
+                """,
+                uuid=counterparty.uuid,
+                name=counterparty.name,
+                display_name=counterparty.display_name,
             )
-            """,
-            uuid=counterparty.uuid,
-            name=counterparty.name,
-            display_name=counterparty.display_name,
-        )
 
     def upsert_transaction(self, transaction: TransactionSchema):
         self.upsert_counterparty(transaction.counterparty)
