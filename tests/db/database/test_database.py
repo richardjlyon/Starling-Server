@@ -169,7 +169,9 @@ class TestTransaction:
             uuid=t.uuid,
             time=t.time,
             counterparty=Counterparty(
-                uuid=None, name=t.counterparty_name
+                uuid=t.counterparty.uuid,
+                name=t.counterparty.name,
+                display_name=t.counterparty.display_name,
             ),  # FIXME get counterparty uuid
             amount=t.amount,
             reference=modified_reference,

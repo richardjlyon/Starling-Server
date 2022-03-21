@@ -6,6 +6,8 @@ import edgedb
 import pytest
 import pytz
 
+from starling_server.server.schemas.transaction import Counterparty
+
 client = edgedb.create_client(database="test")
 test_bank_name = "Starling Personal"
 
@@ -67,6 +69,11 @@ def reset():
         delete CategoryGroup;
         """
     )
+    client.query(
+        """
+        delete Counterparty;
+        """
+    )
     client.close()
 
 
@@ -125,37 +132,66 @@ def insert_categories(db):
                 with category_group := (select CategoryGroup filter .name = <str>$group)
                 insert Category {
                     name := <str>$category,
-                    category_group := category_group
+                    category_group := category_group,
+                    uuid := <uuid>$uuid
                 }
                 """,
                 group=group,
                 category=category,
+                uuid=uuid.uuid4(),
             )
             category_list.append(category)
 
     return category_list
 
 
+def upsert_counterparty(db, counterparty: Counterparty):
+    db.query(
+        """
+        insert Counterparty {
+            uuid := <uuid>$uuid,
+            name := <str>$name,
+            display_name := <str>$display_name
+        } unless conflict on .uuid else (
+            update Counterparty
+            set {
+                name := <str>$name,
+                display_name := <str>$display_name
+            }
+        )
+        """,
+        uuid=counterparty.uuid,
+        name=counterparty.name,
+        display_name=counterparty.display_name,
+    )
+
+
 def insert_transaction(db, account_uuid):
-    transaction_uuid = uuid.uuid4()
+    counterparty_uuid = uuid.uuid4()
+    counterparty = Counterparty(
+        uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+    )
+    upsert_counterparty(db, counterparty)
     db.query(
         """
         with 
             account := (select Account filter .uuid = <uuid>$account_uuid),
-            category := (select Category filter .name = <str>$category)
+            category := (select Category filter .name = <str>$category),
+            counterparty := (select Counterparty filter .uuid = <uuid>$counterparty_uuid),
         insert Transaction {
             account := account,
             category := category,
             uuid := <uuid>$transaction_uuid,
             time := <datetime>$now,
-            counterparty_name := "DUMMY COUNTERPARTY",
+            counterparty := counterparty,
             amount := <float32>$amount,
             reference := <str>$reference,
         }
         """,
         account_uuid=account_uuid,
         category=make_category(db),
-        transaction_uuid=transaction_uuid,
+        counterparty_uuid=counterparty_uuid,
+        transaction_uuid=uuid.uuid4(),
         now=datetime.now(pytz.timezone("Europe/London")),
         amount=random() * 100,
         reference=f"Ref: {str(account_uuid)[-4:]}",

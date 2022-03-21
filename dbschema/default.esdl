@@ -49,6 +49,7 @@ module default {
     }
 
     type Category {
+        required property uuid -> uuid {constraint exclusive};
         required property name -> str {constraint exclusive};
 
         link category_group -> CategoryGroup;

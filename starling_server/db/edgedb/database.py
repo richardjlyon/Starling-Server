@@ -8,7 +8,7 @@ import edgedb
 
 from starling_server.db.db_base import DBBase
 from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 
 
 class Database(DBBase):
@@ -48,15 +48,23 @@ class Database(DBBase):
             group_name=group_name,
         )
 
-    def insert_category(self, group_name: str, category_name: str):
+    def upsert_category(self, group_name: str, category_name: str):
         self.client.query(
             """
             with category_group := (select CategoryGroup filter .name = <str>$group_name)
             insert Category {
+                uuid := <uuid>$uuid,
                 name := <str>$category_name,
                 category_group := category_group
-            }
+            } unless conflict on .uuid else (
+                update Category
+                set {
+                    name := <str>$category_name,
+                    category_group := category_group
+                }
+            )
             """,
+            uuid=uuid.uuid4(),
             group_name=group_name,
             category_name=category_name,
         )
@@ -138,24 +146,45 @@ class Database(DBBase):
 
         # noinspection SqlNoDataSourceInspection
 
+    def upsert_counterparty(self, counterparty: Counterparty):
+        self.client.query(
+            """
+            insert Counterparty {
+                uuid := <uuid>$uuid,
+                name := <str>$name,
+                display_name := <str>$display_name
+            } unless conflict on .uuid else (
+                update Counterparty
+                set {
+                    name := <str>$name,
+                    display_name := <str>$display_name
+                }
+            )
+            """,
+            uuid=counterparty.uuid,
+            name=counterparty.name,
+            display_name=counterparty.display_name,
+        )
+
     def upsert_transaction(self, transaction: TransactionSchema):
+        self.upsert_counterparty(transaction.counterparty)
         transaction_db = self.client.query(
             """
-            with account := (
-                select Account filter .uuid = <uuid>$account_uuid
-            )
+            with 
+                account := ( select Account filter .uuid = <uuid>$account_uuid),
+                counterparty := (select Counterparty filter .uuid = <uuid>$counterparty_uuid)
             insert Transaction {
                 account := account,
                 uuid := <uuid>$uuid,
                 time := <datetime>$time,
-                counterparty_name := <str>$counterparty_name,
+                counterparty := counterparty,
                 amount := <float32>$amount,
                 reference := <str>$reference
             } unless conflict on .uuid else (
                 update Transaction
                 set {
                     time := <datetime>$time,
-                    counterparty_name := <str>$counterparty_name,
+                    counterparty := counterparty,
                     amount := <float32>$amount,
                     reference := <str>$reference
                 }
@@ -164,7 +193,7 @@ class Database(DBBase):
             account_uuid=transaction.account_uuid,
             uuid=transaction.uuid,
             time=transaction.time,
-            counterparty_name=transaction.counterparty.name,
+            counterparty_uuid=transaction.counterparty.uuid,
             amount=transaction.amount,
             reference=transaction.reference,
         )

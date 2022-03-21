@@ -18,6 +18,16 @@ class Counterparty(BaseModel):
     display_name: Optional[str]
 
 
+class CategoryGroup(BaseModel):
+    name: str
+
+
+class Category(BaseModel):
+    uuid: UUID
+    name: str
+    category_group: CategoryGroup
+
+
 class TransactionSchema(BaseModel):
     """Defines the server transaction response model."""
 

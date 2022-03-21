@@ -36,6 +36,12 @@ def db_2_accounts(db, config):
     return db
 
 
+@pytest.fixture()
+def counterparty(db):
+    counterparty_uuid = uuid.uuid4()
+    return Counterparty(uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY")
+
+
 @pytest.fixture
 def db_4_transactions(empty_db):
     """Make a clean database with two accounts of two transactions each."""
@@ -78,6 +84,11 @@ def reset(db):
         delete CategoryGroup;
         """
     )
+    db.client.query(
+        """
+        delete Counterparty;
+        """
+    )
     db.client.close()
 
 
@@ -92,7 +103,7 @@ def insert_categories(db) -> List[str]:
     for group_name, categories in data.items():
         db.insert_category_group(group_name)
         for category_name in categories:
-            db.insert_category(group_name, category_name)
+            db.upsert_category(group_name, category_name)
             category_list.append(category_name)
 
     return category_list
@@ -118,7 +129,11 @@ def make_transactions(number: int, account_uuid: str) -> List[TransactionSchema]
             uuid=str(uuid.uuid4()),
             account_uuid=str(account_uuid),
             time=datetime.now(pytz.timezone("Europe/London")),
-            counterparty=Counterparty(uuid=uuid.uuid4(), name=f"Counterparty {i}"),
+            counterparty=Counterparty(
+                uuid=uuid.uuid4(),
+                name=f"Counterparty {i}",
+                display_name=f"Counterparty Display {i}",
+            ),
             amount=random() * 10000,
             reference=f"{str(account_uuid)[-4:]}/{i}",
         )
@@ -160,7 +175,9 @@ def select_transactions(db):
             account: { uuid, name },
             uuid,
             time,
-            counterparty_name,
+            counterparty: {
+                uuid, name, display_name
+            },
             amount,
             reference
         };

@@ -113,6 +113,7 @@ class StarlingTransactionSchema(BaseModel):
         counterparty = Counterparty(
             uuid=uuid.UUID(transaction.counterPartyUid),
             name=transaction.counterPartyName,
+            display_name="",
         )
 
         return TransactionSchema(

@@ -127,7 +127,9 @@ def select_transactions():
             account: { uuid, name },
             uuid,
             time,
-            counterparty_name,
+            counterparty: {
+                uuid, name, display_name
+            },
             amount,
             reference
         };

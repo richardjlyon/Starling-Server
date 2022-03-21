@@ -3,12 +3,14 @@ These tests verify the integrity of the EdgeDB schema. They require database "te
 """
 import uuid
 
+from starling_server.server.schemas.transaction import Counterparty
 from tests.db.schema.conftest import (
     test_bank_name,
     insert_bank,
     insert_account,
     insert_transaction,
     insert_categories,
+    upsert_counterparty,
 )
 
 
@@ -89,6 +91,49 @@ class TestAccount:
             )
             == 1
         )
+
+
+class TestCounterparty:
+    def test_upsert_counterparty_insert_1(self, db):
+        # GIVEN an empty database
+        # WHEN I add a counterparty
+        counterparty_uuid = uuid.uuid4()
+        counterparty = Counterparty(
+            uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+        )
+        upsert_counterparty(db, counterparty)
+
+        # THEN the counterparty is added
+        counterparty = db.query(
+            """
+            Select Counterparty {name} filter .uuid = <uuid>$uuid""",
+            uuid=counterparty_uuid,
+        )
+
+        assert counterparty[0].name == "DUMMY"
+
+    def test_upsert_counterparty_update_1(self, db):
+        # GIVEN a database with a counterparty
+        counterparty_uuid = uuid.uuid4()
+        counterparty = Counterparty(
+            uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+        )
+        upsert_counterparty(db, counterparty)
+
+        # WHEN I modify the counterparty name
+        updated_counterparty = Counterparty(
+            uuid=counterparty_uuid, name="DUMMY MODIFIED", display_name="DUMMY MODIFIED"
+        )
+        upsert_counterparty(db, updated_counterparty)
+
+        # THEN the counterparty is updated
+        counterparty = db.query(
+            """
+            Select Counterparty {name} filter .uuid = <uuid>$uuid""",
+            uuid=counterparty_uuid,
+        )
+
+        assert counterparty[0].name == "DUMMY MODIFIED"
 
 
 class TestTransaction:
