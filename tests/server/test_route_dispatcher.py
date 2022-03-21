@@ -8,7 +8,7 @@ from starling_server.main import db
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
-from tests.conftest import select_transactions
+from tests.db.database.conftest import select_transactions
 
 
 def test_initialise():
@@ -63,7 +63,7 @@ class TestTransactions:
     ):
         # GIVEN a dispatcher with a test database initialised with Starling accounts and no transactions
         dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
-        transactions = select_transactions()
+        transactions = select_transactions(testdb_with_real_accounts)
         assert len(transactions) == 0
 
         # WHEN I get transactions for an account with the given uuid
@@ -76,7 +76,7 @@ class TestTransactions:
         assert isinstance(transactions[0], TransactionSchema)
 
         # AND the database is updated
-        transactions = select_transactions()
+        transactions = select_transactions(testdb_with_real_accounts)
         assert len(transactions) > 0
 
     @pytest.mark.asyncio
@@ -96,7 +96,7 @@ class TestTransactions:
         assert isinstance(transactions[0], TransactionSchema)
 
         # AND the database is updated
-        transactions = select_transactions()
+        transactions = select_transactions(live_dispatcher)
         assert len(transactions) > 0
 
         # AND there are transactions from both accounts

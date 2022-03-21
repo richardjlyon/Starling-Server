@@ -14,15 +14,14 @@ from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 
+test_db = Database(database="test")
 test_bank_name = "Starling Business (TEST)"
 
 
 @pytest.fixture
 def db():
     """Returns an empty database and destroys its contents after testing."""
-    test_db = Database(database="test")
-    reset(test_db)
-    # insert_categories(test_db)
+    reset(test_db.client)
     yield test_db
     # FIXME allows the database to be inspected - uncomment this when done
     # reset(test_db)
@@ -30,66 +29,89 @@ def db():
 
 @pytest.fixture
 def db_2_accounts(db, config):
+    """Inserts two test accounts."""
     accounts = make_accounts(2)
     for account in accounts:
         db.upsert_account(config.token, account)
     return db
 
 
-@pytest.fixture()
-def counterparty(db):
-    counterparty_uuid = uuid.uuid4()
-    return Counterparty(uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY")
-
-
 @pytest.fixture
-def db_4_transactions(empty_db):
-    """Make a clean database with two accounts of two transactions each."""
-    accounts = make_accounts(2)
-    for account in accounts:
-        empty_db.upsert_account("DUMMY TOKEN", account)
-
-    accounts_db = select_accounts(empty_db)
+def db_4_transactions(db_2_accounts):
+    """Inserts two accounts of two transactions each."""
+    accounts_db = select_accounts(db_2_accounts)
     for account_db in accounts_db:
         transactions = make_transactions(2, account_uuid=account_db.uuid)
         for transaction in transactions:
-            empty_db.upsert_transaction(transaction)
+            db_2_accounts.upsert_transaction(transaction)
 
-    return empty_db
+    return db_2_accounts
 
 
-def reset(db):
-    db.client.query(
+def reset(client):
+    client.query(
         """
         delete Transaction;
         """
     )
-    db.client.query(
+    client.query(
         """
         delete Account;
         """
     )
-    db.client.query(
+    client.query(
         """
         delete Bank;
         """
     )
-    db.client.query(
+    client.query(
         """
         delete Category;
         """
     )
-    db.client.query(
+    client.query(
         """
         delete CategoryGroup;
         """
     )
-    db.client.query(
+    client.query(
         """
         delete Counterparty;
         """
     )
-    db.client.close()
+    client.close()
+
+
+def make_accounts(n) -> List[AccountSchema]:
+    """Make n test accounts."""
+    return [
+        AccountSchema(
+            uuid=uuid.uuid4(),
+            bank_name=f"Starling Personal {i}",
+            account_name=f"Account {i}",
+            currency="GBP",
+            created_at=datetime.now(pytz.timezone("Europe/London")),
+        )
+        for i in range(n)
+    ]
+
+
+def make_transactions(number: int, account_uuid: uuid.UUID) -> List[TransactionSchema]:
+    return [
+        TransactionSchema(
+            uuid=uuid.uuid4(),
+            account_uuid=account_uuid,
+            time=datetime.now(pytz.timezone("Europe/London")),
+            counterparty=Counterparty(
+                uuid=uuid.uuid4(),
+                name=f"Counterparty {i}",
+                display_name=f"Counterparty Display {i}",
+            ),
+            amount=random() * 10000,
+            reference=f"{str(account_uuid)[-4:]}/{i}",
+        )
+        for i in range(number)
+    ]
 
 
 def insert_categories(db) -> List[str]:
@@ -107,38 +129,6 @@ def insert_categories(db) -> List[str]:
             category_list.append(category_name)
 
     return category_list
-
-
-def make_accounts(n) -> List[AccountSchema]:
-    """Make n test accounts."""
-    return [
-        AccountSchema(
-            uuid=uuid.uuid4(),
-            bank_name=f"Starling Personal {i}",
-            account_name=f"Account {i}",
-            currency="GBP",
-            created_at=datetime.now(pytz.timezone("Europe/London")),
-        )
-        for i in range(n)
-    ]
-
-
-def make_transactions(number: int, account_uuid: str) -> List[TransactionSchema]:
-    return [
-        TransactionSchema(
-            uuid=str(uuid.uuid4()),
-            account_uuid=str(account_uuid),
-            time=datetime.now(pytz.timezone("Europe/London")),
-            counterparty=Counterparty(
-                uuid=uuid.uuid4(),
-                name=f"Counterparty {i}",
-                display_name=f"Counterparty Display {i}",
-            ),
-            amount=random() * 10000,
-            reference=f"{str(account_uuid)[-4:]}/{i}",
-        )
-        for i in range(number)
-    ]
 
 
 def select_banks(db):
@@ -185,30 +175,3 @@ def select_transactions(db):
     )
     db.client.close()
     return transactions
-
-
-# @pytest.fixture
-# def db_with_two_accounts(empty_db):
-#     """Make a clean database with two test accounts."""
-#     db = empty_db
-#     accounts = make_accounts(2)
-#     for account in accounts:
-#         db.upsert_account("DUMMY TOKEN", account)
-#
-#     return db
-#
-#
-# @pytest.fixture
-# def db_with_four_transactions(empty_db):
-#     """Make a clean database with two accounts of two transactions each."""
-#     accounts = make_accounts(2)
-#     for account in accounts:
-#         empty_db.upsert_account("DUMMY TOKEN", account)
-#
-#     accounts_db = select_accounts()
-#     for account_db in accounts_db:
-#         transactions = make_transactions(2, account_uuid=account_db.uuid)
-#         for transaction in transactions:
-#             empty_db.upsert_transaction(transaction)
-#
-#     return empty_db

@@ -13,6 +13,7 @@ from starling_server.db.edgedb.database import Database
 from starling_server.server.config_helper import ConfigHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.secrets import token_filepath
+from tests.db.database.conftest import reset
 
 testdb = Database(database="test")
 
@@ -53,7 +54,7 @@ def config():
 @pytest.fixture
 def empty_db():
     """Returns an empty test database, and destroys its contents after testing."""
-    reset()
+    reset(testdb.client)
     yield testdb
     # reset() # FIXME allows the database to be inspected - uncomment this when done
 
@@ -71,72 +72,6 @@ async def testdb_with_real_accounts(empty_db, config):
 def empty_dispatcher(empty_db):
     """Provides a dispatcher with no banks or accounts and a live helper."""
     return RouteDispatcher(database=empty_db)
-
-
-# @pytest.mark.asyncio
-# @pytest.fixture()
-# async def test_dispatcher_with_accounts(testdb_with_real_accounts):
-#     """Provides a dispatcher with banks and accounts populated and a live helper."""
-#     dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
-#     return dispatcher
-
-
-# = DATABASE UTILITY QUERIES =========================================================================================
-
-
-def reset():
-    testdb.client.query(
-        """
-        delete Transaction;
-        """
-    )
-    testdb.client.query(
-        """
-        delete Account;
-        """
-    )
-    testdb.client.query(
-        """
-        delete Bank;
-        """
-    )
-    testdb.client.close()
-
-
-def select_accounts():
-    accounts = testdb.client.query(
-        """
-        select Account {
-            bank: { name },
-            uuid,
-            name,
-            currency,
-            created_at,
-            transactions: { reference }
-        };
-        """
-    )
-    testdb.client.close()
-    return accounts
-
-
-def select_transactions():
-    transactions = testdb.client.query(
-        """
-        select Transaction {
-            account: { uuid, name },
-            uuid,
-            time,
-            counterparty: {
-                uuid, name, display_name
-            },
-            amount,
-            reference
-        };
-        """
-    )
-    testdb.client.close()
-    return transactions
 
 
 def show(things: List, message=None) -> None:

@@ -7,6 +7,7 @@ import pytest
 import pytz
 
 from starling_server.server.schemas.transaction import Counterparty
+from tests.db.database.conftest import reset
 
 client = edgedb.create_client(database="test")
 test_bank_name = "Starling Personal"
@@ -15,7 +16,7 @@ test_bank_name = "Starling Personal"
 @pytest.fixture
 def db():
     """Returns an empty test database, and destroys its contents after testing."""
-    reset()
+    reset(client)
     yield client
     # reset() # FIXME allows the database to be inspected - uncomment this when done
 
@@ -41,40 +42,6 @@ def db_with_transactions(db_with_accounts):
 
 
 # = Helpers
-
-
-def reset():
-    client.query(
-        """
-        delete Transaction;
-        """
-    )
-    client.query(
-        """
-        delete Account;
-        """
-    )
-    client.query(
-        """
-        delete Bank;
-        """
-    )
-    client.query(
-        """
-        delete Category;
-        """
-    )
-    client.query(
-        """
-        delete CategoryGroup;
-        """
-    )
-    client.query(
-        """
-        delete Counterparty;
-        """
-    )
-    client.close()
 
 
 def insert_bank(db, name):
