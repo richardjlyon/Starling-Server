@@ -16,10 +16,14 @@ Persistence
 -----------
 
 Customisation
--------------
-
-Categorisation
 --------------
+
+..  toctree::
+    :maxdepth: 3
+
+    transaction_processing
+
+
 
 ..  toctree::
     :maxdepth: 3

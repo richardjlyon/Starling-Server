@@ -17,5 +17,5 @@ That's what *Bank Server* does.
     :maxdepth: 3
     :caption: Documentation
 
-    theory/index
+    how_it_works/index
     code/code
