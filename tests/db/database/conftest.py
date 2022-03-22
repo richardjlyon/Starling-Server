@@ -79,6 +79,11 @@ def reset(client):
         delete Counterparty;
         """
     )
+    client.query(
+        """
+        delete NameDisplayname;
+        """
+    )
     client.close()
 
 

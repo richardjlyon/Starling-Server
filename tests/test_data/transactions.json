@@ -1,0 +1,202 @@
+{
+  "feedItems": [
+    {
+      "feedItemUid": "4f311347-efb2-4dc2-9eeb-5eab50a92763",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 14544
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 14544
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-21T10:02:33.856Z",
+      "transactionTime": "2022-03-21T10:02:33.000Z",
+      "source": "MASTER_CARD",
+      "sourceSubType": "ONLINE",
+      "status": "PENDING",
+      "transactingApplicationUserUid": "2ea20a1b-237b-4b88-a43c-c50551f4f29a",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "5e41b571-14e6-484f-b38a-b5da71685372",
+      "counterPartyName": "Sainsburys",
+      "counterPartySubEntityUid": "85e56502-2a90-4f42-b344-6dc34facac21",
+      "reference": "SAINSBURYS             LONDON        GBR",
+      "country": "GB",
+      "spendingCategory": "GROCERIES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "c1390aed-caaf-4118-884e-5a3e03bfebe1",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 12895
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 12895
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-19T19:34:26.551Z",
+      "transactionTime": "2022-03-19T10:11:00.000Z",
+      "settlementTime": "2022-03-19T19:34:26.525Z",
+      "source": "MASTER_CARD",
+      "sourceSubType": "ANDROID_PAY",
+      "status": "SETTLED",
+      "transactingApplicationUserUid": "2ea20a1b-237b-4b88-a43c-c50551f4f29a",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "64f4af5b-8be2-4fff-834e-44f3157143c2",
+      "counterPartyName": "Riccarton Garden C",
+      "counterPartySubEntityUid": "3ab5a928-2d92-41cf-a1c9-1a6f4974719a",
+      "reference": "SQ *RICCARTON GARDEN C",
+      "country": "GB",
+      "spendingCategory": "SHOPPING",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "36b3eec3-5fa9-4f24-bb09-45b37650cc45",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 1745
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 1745
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-16T06:32:07.050Z",
+      "transactionTime": "2022-03-15T18:00:56.000Z",
+      "settlementTime": "2022-03-16T06:32:07.036Z",
+      "source": "MASTER_CARD",
+      "sourceSubType": "ANDROID_PAY",
+      "status": "SETTLED",
+      "transactingApplicationUserUid": "2ea20a1b-237b-4b88-a43c-c50551f4f29a",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "68e16af4-c2c3-413b-bf93-1056b90097fa",
+      "counterPartyName": "Tesco",
+      "counterPartySubEntityUid": "a9e3f901-ba88-4145-b57c-043ae6fbb3d9",
+      "reference": "TESCO-STORES 6557",
+      "country": "GB",
+      "spendingCategory": "GROCERIES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "9255db81-4035-4c81-ad35-766dc81dc37c",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 3398
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 3398
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-16T12:28:23.634Z",
+      "transactionTime": "2022-03-15T17:59:38.000Z",
+      "settlementTime": "2022-03-16T12:28:23.615Z",
+      "source": "MASTER_CARD",
+      "sourceSubType": "ANDROID_PAY",
+      "status": "SETTLED",
+      "transactingApplicationUserUid": "2ea20a1b-237b-4b88-a43c-c50551f4f29a",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "34dfadb6-3c61-4ac1-b0aa-fb36073e42c6",
+      "counterPartyName": "Majestic Wine",
+      "counterPartySubEntityUid": "24688ba6-884c-4ee3-a9e5-93c3e8c670a4",
+      "reference": "MAJESTIC WINE",
+      "country": "GB",
+      "spendingCategory": "GROCERIES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "bc4e71d9-6c5d-46fd-b715-11592b098e21",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 2020
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 2020
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-16T06:32:07.121Z",
+      "transactionTime": "2022-03-15T17:57:17.000Z",
+      "settlementTime": "2022-03-16T06:32:07.105Z",
+      "source": "MASTER_CARD",
+      "sourceSubType": "ANDROID_PAY",
+      "status": "SETTLED",
+      "transactingApplicationUserUid": "2ea20a1b-237b-4b88-a43c-c50551f4f29a",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "68e16af4-c2c3-413b-bf93-1056b90097fa",
+      "counterPartyName": "Tesco",
+      "counterPartySubEntityUid": "a9e3f901-ba88-4145-b57c-043ae6fbb3d9",
+      "reference": "TESCO-STORES 6557",
+      "country": "GB",
+      "spendingCategory": "GROCERIES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "9d9a30cb-cea0-480d-9029-89b6e5d3babe",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 100
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 100
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-15T01:25:32.619Z",
+      "transactionTime": "2022-03-15T01:25:32.472Z",
+      "settlementTime": "2022-03-15T01:25:32.586Z",
+      "source": "DIRECT_DEBIT",
+      "status": "SETTLED",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "3d22dded-2511-4132-96f7-7937ebbf996a",
+      "counterPartyName": "PayPal",
+      "counterPartySubEntityUid": "b7833a4c-9cb5-439c-beb0-b5f1bdbdff84",
+      "reference": "5FYJ2228RNL6C",
+      "country": "GB",
+      "spendingCategory": "BILLS_AND_SERVICES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    },
+    {
+      "feedItemUid": "4693cdfd-818d-49de-b02d-5d396874413e",
+      "categoryUid": "b23c9e8b-4377-4d9a-bce3-e7ee5477af50",
+      "amount": {
+        "currency": "GBP",
+        "minorUnits": 720
+      },
+      "sourceAmount": {
+        "currency": "GBP",
+        "minorUnits": 720
+      },
+      "direction": "OUT",
+      "updatedAt": "2022-03-15T00:33:42.849Z",
+      "transactionTime": "2022-03-15T00:33:42.650Z",
+      "settlementTime": "2022-03-15T00:33:42.815Z",
+      "source": "DIRECT_DEBIT",
+      "status": "SETTLED",
+      "counterPartyType": "MERCHANT",
+      "counterPartyUid": "3d22dded-2511-4132-96f7-7937ebbf996a",
+      "counterPartyName": "PayPal",
+      "counterPartySubEntityUid": "b7833a4c-9cb5-439c-beb0-b5f1bdbdff84",
+      "reference": "5FYJ2228RNL6C",
+      "country": "GB",
+      "spendingCategory": "BILLS_AND_SERVICES",
+      "hasAttachment": false,
+      "hasReceipt": false
+    }
+  ]
+}

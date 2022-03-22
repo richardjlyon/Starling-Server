@@ -40,6 +40,40 @@ class Database(DBBase):
     def delete_bank(self, bank_name: str):
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
+    def upsert_display_name(self, name: str, display_name: str):
+        self.client.query(
+            """
+            insert NameDisplayname {
+                name := <str>$name,
+                display_name := <str>$display_name,
+            } unless conflict on .name else (
+                update NameDisplayname
+                set {
+                    display_name := <str>$display_name,
+                }
+            )
+            """,
+            name=name,
+            display_name=display_name,
+        )
+
+    def display_name_for_name(self, name: str):
+        return self.client.query(
+            """
+            select NameDisplayname { display_name } filter .name = <str>$name
+            """,
+            name=name,
+        )
+
+    def delete_name(self, name: str):
+        self.client.query(
+            """
+            delete NameDisplayname
+            filter .name = <str>$name
+            """,
+            name=name,
+        )
+
     def insert_category_group(self, group_name: str):
         self.client.query(
             """

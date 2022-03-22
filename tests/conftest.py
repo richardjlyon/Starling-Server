@@ -1,17 +1,23 @@
 # tests/conftest.py
 #
 # provides general test fixtures and utilities
-
+import json
 import pathlib
 import uuid
 from dataclasses import dataclass
 from typing import List
 
 import pytest
+from pydantic import parse_obj_as, PydanticTypeError
 
 from starling_server.db.edgedb.database import Database
+from starling_server.providers.starling.schemas import (
+    StarlingTransactionsSchema,
+    StarlingTransactionSchema,
+)
 from starling_server.server.config_helper import ConfigHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.server.secrets import token_filepath
 from tests.db.database.conftest import reset
 
@@ -72,6 +78,26 @@ async def testdb_with_real_accounts(empty_db, config):
 def empty_dispatcher(empty_db):
     """Provides a dispatcher with no banks or accounts and a live helper."""
     return RouteDispatcher(database=empty_db)
+
+
+@pytest.fixture
+def mock_transactions() -> List[TransactionSchema]:
+    """Generate a list of transactions from a file to avoid an api call."""
+    transaction_data_file = TEST_FOLDER / "test_data" / "transactions.json"
+    with open(transaction_data_file, "r") as f:
+        response = json.load(f)
+    try:
+        parsed_response = parse_obj_as(StarlingTransactionsSchema, response)
+    except PydanticTypeError:
+        raise RuntimeError(f"Pydantic type error")
+    transactions_raw = parsed_response.feedItems
+    account_uuid = uuid.uuid4()
+    return [
+        StarlingTransactionSchema.to_server_transaction_schema(
+            account_uuid, transaction
+        )
+        for transaction in transactions_raw
+    ]
 
 
 def show(things: List, message=None) -> None:

@@ -27,6 +27,13 @@ module default {
         multi link transactions := .<counterparty[is Transaction];
     }
 
+    type NameDisplayname {
+
+         property name -> str {constraint exclusive};
+         property name_fragment -> str {constraint exclusive};
+         property display_name -> str;
+    }
+
     type Transaction {
         required link account -> Account {
             on target delete delete source;

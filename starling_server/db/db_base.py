@@ -22,6 +22,18 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
+    def upsert_display_name(self, name: str, display_name: str):
+        pass
+
+    @abstractmethod
+    def display_name_for_name(self, name: str) -> str:
+        pass
+
+    @abstractmethod
+    def delete_name(self, name: str):
+        pass
+
+    @abstractmethod
     def insert_category_group(self, group_name: str):
         pass
 
