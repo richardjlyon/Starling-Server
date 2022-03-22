@@ -9,52 +9,42 @@ from starling_server.server.transaction_processor import (
 
 
 class TestUpsertNamePairs:
-    def test_upsert_name_insert(self, empty_db):
+    def test_upsert_name_insert(self, tp_empty):
         # GIVEN an empty database and a name / display_name pair
-        tp = TransactionProcessor(empty_db)
         name = "Riccarton Garden C"
         display_name = "Riccarton Garden Centre"
 
         # WHEN I insert the pair
-        tp.upsert_display_name(name=name, display_name=display_name)
+        tp_empty.upsert_display_name(name=name, display_name=display_name)
 
         # THEN the pair is inserted
-        assert display_name == tp.display_name_for_name(name)
+        assert display_name == tp_empty.display_name_for_name(name)
 
-    def test_upsert_name_update(self, empty_db):
+    def test_upsert_name_update(self, tp_one_pair):
         # GIVEN an empty database and a name / display_name pair
-        tp = TransactionProcessor(empty_db)
-        name = "Riccarton Garden C"
-        display_name = "Riccarton Garden Centre"
-        tp.upsert_display_name(name=name, display_name=display_name)
-
         # WHEN I update the pair
+        name = "Riccarton Garden C"
         new_display_name = "Riccarton Garden Centre *MODIFIED*"
-        tp.upsert_display_name(name=name, display_name=new_display_name)
+        tp_one_pair.upsert_display_name(name=name, display_name=new_display_name)
 
         # THEN the pair is updated
-        assert new_display_name == tp.display_name_for_name(name)
+        assert new_display_name == tp_one_pair.display_name_for_name(name)
 
-    def test_display_name_for_name_returns_none(self, empty_db):
+    def test_display_name_for_name_returns_none(self, tp_empty):
         # GIVEN an empty database
-        tp = TransactionProcessor(empty_db)
-
         # WHEN I attempt to get a display_name for non existent name
         # THEN it returns None
-        assert tp.display_name_for_name("NONEXISTENT") is None
+        assert tp_empty.display_name_for_name("NONEXISTENT") is None
 
-    def test_upsert_name_delete(self, empty_db):
+    def test_upsert_name_delete(self, tp_one_pair):
         # GIVEN an empty database and a name / display_name pair
-        tp = TransactionProcessor(empty_db)
         name = "Riccarton Garden C"
-        display_name = "Riccarton Garden Centre"
-        tp.upsert_display_name(name=name, display_name=display_name)
 
         # WHEN I delete the pair
-        tp.delete_name(name)
+        tp_one_pair.delete_name(name)
 
         # THEN the pair is deleted
-        assert tp.display_name_for_name(name) is None
+        assert tp_one_pair.display_name_for_name(name) is None
 
 
 class TestNoMapping:

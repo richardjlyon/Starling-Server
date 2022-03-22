@@ -19,6 +19,7 @@ from starling_server.server.config_helper import ConfigHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.server.secrets import token_filepath
+from starling_server.server.transaction_processor import TransactionProcessor
 from tests.db.database.conftest import reset
 
 testdb = Database(database="test")
@@ -106,3 +107,21 @@ def show(things: List, message=None) -> None:
         print(f"\n{message}\n===========================:")
     for thing in things:
         print(thing)
+
+
+# = Transaction Processor fixtures ===================================================================================
+
+
+@pytest.fixture()
+def tp_empty(empty_db):
+    """A transaction processor with an empty database"""
+    return TransactionProcessor(empty_db)
+
+
+@pytest.fixture()
+def tp_one_pair(tp_empty):
+    """A transaction processor with a name pair"""
+    name = "Riccarton Garden C"
+    display_name = "Riccarton Garden Centre"
+    tp_empty.upsert_display_name(name=name, display_name=display_name)
+    return tp_empty
