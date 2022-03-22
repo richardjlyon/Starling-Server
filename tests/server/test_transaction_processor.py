@@ -2,10 +2,7 @@
 These test the functionality of the  Transaction Processor, including the logic of default counterparty selection,
 general couterparty display name lookup, and transaction-specific counterparty
 """
-
-from starling_server.server.transaction_processor import (
-    TransactionProcessor,
-)
+import pytest
 
 
 class TestUpsertNamePairs:
@@ -20,15 +17,15 @@ class TestUpsertNamePairs:
         # THEN the pair is inserted
         assert display_name == tp_empty.display_name_for_name(name)
 
-    def test_upsert_name_update(self, tp_one_pair):
+    def test_upsert_name_update(self, tp_two_pairs):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
         name = "Riccarton Garden C"
         new_display_name = "Riccarton Garden Centre *MODIFIED*"
-        tp_one_pair.upsert_display_name(name=name, display_name=new_display_name)
+        tp_two_pairs.upsert_display_name(name=name, display_name=new_display_name)
 
         # THEN the pair is updated
-        assert new_display_name == tp_one_pair.display_name_for_name(name)
+        assert new_display_name == tp_two_pairs.display_name_for_name(name)
 
     def test_display_name_for_name_returns_none(self, tp_empty):
         # GIVEN an empty database
@@ -36,50 +33,62 @@ class TestUpsertNamePairs:
         # THEN it returns None
         assert tp_empty.display_name_for_name("NONEXISTENT") is None
 
-    def test_upsert_name_delete(self, tp_one_pair):
+    def test_upsert_name_delete(self, tp_two_pairs):
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
 
         # WHEN I delete the pair
-        tp_one_pair.delete_name(name)
+        tp_two_pairs.delete_name(name)
 
         # THEN the pair is deleted
-        assert tp_one_pair.display_name_for_name(name) is None
+        assert tp_two_pairs.display_name_for_name(name) is None
 
 
-class TestNoMapping:
-    """Verifies that display_name is set if none is supplied in TransactionSchema."""
+class TestUpsertNameFragmentPairs:
+    @pytest.mark.skip(reason="need method to compare name_fragment")
+    def test_upsert_name_fragment_insert(self, tp_empty):
+        # GIVEN an empty database and a name fragment / display name pair
+        name_fragment = "dwp"
+        display_name = "DWP"
 
-    def test_full_name_mapping_no_match(self, empty_db, mock_transactions):
-        # GIVEN an empty database and a raw transaction with no display name
-        tp = TransactionProcessor(empty_db)
-        t = mock_transactions[0]
-        assert t.counterparty.display_name is None
+        # WHEN I insert the pair in the NameDisplayname table
+        tp_empty.upsert_display_name(
+            name_fragment=name_fragment, display_name=display_name
+        )
 
-        # WHEN I assign a display name
-        t_processed = tp.assign_display_name(transaction=t)
-
-        # THEN the display name is set to the raw name
-        assert t_processed.counterparty.display_name == t.counterparty.name
-
-
-class TestFullNameMapping:
-    """Verifies that display name is set if a name/display name is present."""
-
-    def test_full_name_mapping_with_match(self, empty_db, mock_transactions):
-        # GIVEN raw transactions and a valid match pair
-
-        # WHEN I assign a display name
-
-        # THEN the matched display name is assigned
-
+        # THEN the pair is inserted correctly
         pass
 
 
-class TestPartialNameMapping:
-    """Verifies that a display name is set if a fragment of a name is present."""
+class TestNameMatching:
+    """Verifies that display name is set if a name/display name is present."""
 
-    pass
+    def test_full_name_mapping_no_match_is_none(self, tp_two_pairs):
+        # GIVEN a database with a pair
+        # WHEN I attempt to get a match for a name that isn't present
+        # THEN the display name is set to the raw name
+        assert tp_two_pairs.display_name_for_name("XXX") is None
+
+    def test_full_name_mapping_with_match(self, tp_two_pairs):
+        # GIVEN raw transactions and a valid match pair
+        name = "Riccarton Garden C"
+        expected_name = "Riccarton Garden Centre"
+
+        # WHEN I attempt to get a match for a name that is present
+        display_name = tp_two_pairs.display_name_for_name(name)
+
+        # THEN the matched display name is assigned
+        assert display_name == expected_name
+
+    def test_name_fragment_with_match(self, tp_two_pairs):
+        # GIVEN a Transaction Processor with a name_fragment and a name
+        name = "104q21e9x Dwp Uc"
+
+        # WHEN I search for a partial match
+        match = tp_two_pairs.display_name_for_name(name, fragment=True)
+
+        # THEN the correct match is identified
+        assert match == "Department of Work and Pensions"
 
 
 class TestTransactionSpecificCounterparty:

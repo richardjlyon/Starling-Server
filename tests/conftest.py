@@ -119,9 +119,15 @@ def tp_empty(empty_db):
 
 
 @pytest.fixture()
-def tp_one_pair(tp_empty):
+def tp_two_pairs(tp_empty):
     """A transaction processor with a name pair"""
     name = "Riccarton Garden C"
     display_name = "Riccarton Garden Centre"
+
     tp_empty.upsert_display_name(name=name, display_name=display_name)
+
+    name_fragment = "dwp"
+    display_name = "Department of Work and Pensions"
+    tp_empty.upsert_display_name(name_fragment=name_fragment, display_name=display_name)
+
     return tp_empty

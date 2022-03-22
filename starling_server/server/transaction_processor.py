@@ -12,25 +12,42 @@ class TransactionProcessor:
     def __init__(self, db):
         self.db = db
 
-    def upsert_display_name(self, name: str, display_name: str) -> None:
+    def upsert_display_name(
+        self, name: str = None, name_fragment: str = None, display_name: str = None
+    ) -> None:
         """
         Insert the name / display_name pair in NameDisplayname database table.
         Args:
             name (str): the name to insert
+            name_fragment (str): the name fragment to insert
             display_name (str): the display_name to insert
 
         """
-        self.db.upsert_display_name(name, display_name)
+        if display_name is None:
+            raise ValueError("No display_name")
 
-    def display_name_for_name(self, name) -> Optional[str]:
+        if name is not None:
+            self.db.upsert_display_name(name=name, display_name=display_name)
+        elif name_fragment is not None:
+            self.db.upsert_display_name(
+                name_fragment=name_fragment, display_name=display_name
+            )
+        else:
+            raise ValueError("name and display_name cannot both be None")
+
+    def display_name_for_name(self, name: str, fragment: bool = False) -> Optional[str]:
         """
         Return the display name from NameDisplayname database table for the given name.
         Args:
-            name (str):the name to match
+            name (str): the name to match
+            fragment (bool): if true, search name fragments
 
         Returns: The display name, or None
 
         """
+        if fragment:
+            return self._get_display_name_for_matched_name(name)
+
         results = self.db.display_name_for_name(name)
         if len(results) > 0:
             return results[0].display_name
@@ -44,10 +61,28 @@ class TransactionProcessor:
         """
         self.db.delete_name(name)
 
-    def assign_display_name(self, transaction: TransactionSchema) -> TransactionSchema:
-        new_transaction = transaction
-        new_transaction.counterparty.display_name = transaction.counterparty.name
-        return new_transaction
-
     def assign_category(self, transaction: TransactionSchema):
         pass
+
+    def _get_display_name_for_matched_name(self, name: str) -> Optional[str]:
+        """
+        Match name to name_fragments and return display_name if one is found.
+        Args:
+            name (str): The name to match against fragments
+
+        Returns: A display name, or None.
+
+        """
+
+        fragments = self.db.select_name_fragments()
+        matches = [
+            fragment.display_name
+            for fragment in fragments
+            if fragment.name_fragment.lower() in name.lower()
+        ]
+
+        if len(matches) > 1:
+            raise RuntimeError("Database integrity fault: multiple fragment matches")
+
+        if len(matches) == 1:
+            return matches[0]

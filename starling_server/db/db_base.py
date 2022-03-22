@@ -22,7 +22,9 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def upsert_display_name(self, name: str, display_name: str):
+    def upsert_display_name(
+        self, name: str = None, name_fragment: str = None, display_name: str = None
+    ):
         pass
 
     @abstractmethod
@@ -31,6 +33,14 @@ class DBBase(ABC):
 
     @abstractmethod
     def delete_name(self, name: str):
+        pass
+
+    @abstractmethod
+    def select_name_fragments(self):
+        pass
+
+    @abstractmethod
+    def delete_name_fragment(self, name_fragment: str):
         pass
 
     @abstractmethod

@@ -40,22 +40,41 @@ class Database(DBBase):
     def delete_bank(self, bank_name: str):
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
-    def upsert_display_name(self, name: str, display_name: str):
-        self.client.query(
-            """
-            insert NameDisplayname {
-                name := <str>$name,
-                display_name := <str>$display_name,
-            } unless conflict on .name else (
-                update NameDisplayname
-                set {
+    def upsert_display_name(
+        self, name: str = None, name_fragment: str = None, display_name: str = None
+    ):
+        if name is not None:
+            self.client.query(
+                """
+                insert NameDisplayname {
+                    name := <str>$name,
                     display_name := <str>$display_name,
-                }
+                } unless conflict on .name else (
+                    update NameDisplayname
+                    set {
+                        display_name := <str>$display_name,
+                    }
+                )
+                """,
+                name=name,
+                display_name=display_name,
             )
-            """,
-            name=name,
-            display_name=display_name,
-        )
+        elif name_fragment is not None:
+            self.client.query(
+                """
+                insert NameDisplayname {
+                    name_fragment := <str>$name_fragment,
+                    display_name := <str>$display_name,
+                } unless conflict on .name_fragment else (
+                    update NameDisplayname
+                    set {
+                        display_name := <str>$display_name,
+                    }
+                )
+                """,
+                name_fragment=name_fragment,
+                display_name=display_name,
+            )
 
     def display_name_for_name(self, name: str):
         return self.client.query(
@@ -72,6 +91,25 @@ class Database(DBBase):
             filter .name = <str>$name
             """,
             name=name,
+        )
+
+    def select_name_fragments(self):
+        return self.client.query(
+            """
+            select NameDisplayname { 
+                name_fragment, 
+                display_name 
+            } filter len(.name_fragment) > 0
+            """,
+        )
+
+    def delete_name_fragment(self, name_fragment: str):
+        self.client.query(
+            """
+            delete NameDisplayname
+            filter .name_fragment = <str>name_fragment
+            """,
+            name_fragment=name_fragment,
         )
 
     def insert_category_group(self, group_name: str):
