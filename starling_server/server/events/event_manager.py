@@ -1,3 +1,7 @@
+"""
+Implements the EventManager class.
+"""
+
 import loguru
 
 
