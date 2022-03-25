@@ -16,7 +16,7 @@ def test_initialise():
     dispatcher = RouteDispatcher(db)
 
     # WHEN I get the accounts
-    apis = dispatcher.apis
+    apis = dispatcher.api_list.apis
 
     # THEN there are valid account api objects
     assert len(apis) > 0
