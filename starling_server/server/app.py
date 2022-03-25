@@ -1,12 +1,21 @@
 """
 Define the main Server app.
 """
-
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from .routes import AccountRouter, TransactionRouter
+import starling_server.server.events.event_manager as event_manager
+from starling_server.db.edgedb.database import Database
+from starling_server.server.events.log_listener import setup_log_listener
+from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.routes.accounts import router as AccountsRouter
+from starling_server.server.routes.transactions import router as TransactionsRouter
+
+db = Database()
+dispatcher = RouteDispatcher(database=db)
+events = event_manager.EventManager()
 
 app = FastAPI()
 
@@ -18,8 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(AccountRouter, tags=["Accounts"], prefix="/accounts")
-app.include_router(TransactionRouter, tags=["Transactions"], prefix="/transactions")
+app.include_router(AccountsRouter, tags=["Accounts"], prefix="/accounts")
+app.include_router(TransactionsRouter, tags=["Transactions"], prefix="/transactions")
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
@@ -33,3 +42,16 @@ def use_route_names_as_operation_ids(app: FastAPI) -> None:
 
 
 use_route_names_as_operation_ids(app)
+
+
+def run():
+    setup_log_listener()
+    # setup_account_listener()
+
+    uvicorn.run(
+        "starling_server.server.app:app", host="0.0.0.0", port=8000, reload=True
+    )
+
+
+if __name__ == "__main__":
+    run()

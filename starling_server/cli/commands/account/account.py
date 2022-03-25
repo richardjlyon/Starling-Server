@@ -6,7 +6,7 @@ from cleo import Command
 
 from starling_server.cli.commands.account.account_add import AccountAdd
 from starling_server.cli.commands.account.account_delete import AccountDelete
-from starling_server.main import db
+from starling_server.server.app import db
 
 
 class AccountCommand(Command):

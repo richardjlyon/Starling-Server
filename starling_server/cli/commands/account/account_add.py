@@ -6,8 +6,8 @@ from cleo import Command
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
-from starling_server.main import db
 from starling_server.providers.starling.api import CategoryHelper
+from starling_server.server.app import db
 from starling_server.server.route_dispatcher import get_provider_for_bank_name
 from starling_server.server.schemas.account import AccountSchema
 
