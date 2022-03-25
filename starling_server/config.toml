@@ -1,0 +1,8 @@
+default_interval_days = 14
+
+# map of bank  names to their provider classes
+[bank_classes]
+"Starling Personal" = "starling"
+"Starling Business" = "starling"
+"Starling Sole Trader" = "starling"
+"Starling Joint" = "starling"

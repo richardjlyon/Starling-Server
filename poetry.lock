@@ -521,6 +521,21 @@ pytest = ">=5.0"
 dev = ["pre-commit", "tox", "pytest-asyncio"]
 
 [[package]]
+name = "python-configuration"
+version = "0.8.2"
+description = "A library to load configuration parameters from multiple sources and formats"
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[package.extras]
+azure = ["azure-identity (>=1.5.0,<2.0.0)", "azure-keyvault (>=4.0.0,<5.0.0)"]
+aws = ["boto3 (>=1.10.48,<2.0.0)"]
+gcp = ["google-cloud-secret-manager (>=2.0.0,<3.0.0)"]
+yaml = ["pyyaml (>=5.1,<6.0)"]
+toml = ["toml (>=0.10.0,<0.11.0)"]
+
+[[package]]
 name = "python-decouple"
 version = "3.6"
 description = "Strict separation of settings from code."
@@ -782,7 +797,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "d2fb1b0e5bb4a7b37ef7697f5b6c74e914f078b5754a75cbfd6498ca168d7019"
+content-hash = "e103b5cbe9a4b8ddace2fbfa6c06e546d1168a57c5bc334a53c5d63015dec86b"
 
 [metadata.files]
 alabaster = [
@@ -1169,6 +1184,10 @@ pytest-asyncio = [
 pytest-mock = [
     {file = "pytest-mock-3.7.0.tar.gz", hash = "sha256:5112bd92cc9f186ee96e1a92efc84969ea494939c3aead39c50f421c4cc69534"},
     {file = "pytest_mock-3.7.0-py3-none-any.whl", hash = "sha256:6cff27cec936bf81dc5ee87f07132b807bcda51106b5ec4b90a04331cba76231"},
+]
+python-configuration = [
+    {file = "python-configuration-0.8.2.tar.gz", hash = "sha256:d733f788aabed4fb0e35020a0c428731f56a3dcebc787f82e9665e4cacc00861"},
+    {file = "python_configuration-0.8.2-py3-none-any.whl", hash = "sha256:71d933a1dc7cc5c4c5196d9818456592dd6fdc684bf45db2f4c7dc37de58dd73"},
 ]
 python-decouple = [
     {file = "python-decouple-3.6.tar.gz", hash = "sha256:2838cdf77a5cf127d7e8b339ce14c25bceb3af3e674e039d4901ba16359968c7"},

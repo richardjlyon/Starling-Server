@@ -14,7 +14,7 @@ import httpx
 import toml
 from pydantic import PydanticTypeError, parse_obj_as
 
-from starling_server.config import config_path
+from starling_server import config_path
 from starling_server.providers.provider_api import ProviderAPI
 from starling_server.providers.starling.schemas import (
     StarlingAccountSchema,

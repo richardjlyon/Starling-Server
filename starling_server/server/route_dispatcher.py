@@ -3,14 +3,14 @@ RouteDispatcher handles responding to an API call, retrieving data from account 
 returning the data to the client.
 """
 import asyncio
+import importlib
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from starling_server.config import default_interval_days
+from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.provider_api import ProviderAPI
-from starling_server.server.config_helper import get_class_for_bank_name
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
@@ -60,7 +60,7 @@ class RouteDispatcher:
         # TODO start_date is earliest of (start_date / account_last_updated)
         if start_date or end_date is None:
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=default_interval_days)
+            start_date = end_date - timedelta(days=cfg.default_interval_days)
 
         # get latest transactions
         provider = self.get_provider_for_id(account_id)
@@ -115,9 +115,9 @@ def provider_factory(database: Database) -> List[ProviderAPI]:
     provider_list = []
     for bank in banks_db:
         for account in bank.accounts:
-            api_class: ProviderAPI = get_class_for_bank_name(bank.name)
+            provider: ProviderAPI = get_provider_for_bank_name(bank.name)
             provider_list.append(
-                api_class(
+                provider(
                     auth_token=bank.auth_token_hash,
                     account_uuid=account.uuid,
                     bank_name=bank.name,
@@ -125,3 +125,11 @@ def provider_factory(database: Database) -> List[ProviderAPI]:
             )
 
     return provider_list
+
+
+def get_provider_for_bank_name(bank_name) -> ProviderAPI:
+    """Returns a provider class computed from bank_name"""
+    api_class = cfg.bank_classes.get(bank_name)
+    module = importlib.import_module(f"starling_server.providers.{api_class}.api")
+    class_ = getattr(module, "Starling_API")
+    return class_

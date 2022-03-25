@@ -10,12 +10,12 @@ from typing import List
 import pytest
 from pydantic import parse_obj_as, PydanticTypeError
 
+from starling_server.cli.commands.account.account_add import initialise_bank
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.starling.schemas import (
     StarlingTransactionsSchema,
     StarlingTransactionSchema,
 )
-from starling_server.server.config_helper import ConfigHelper
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.server.secrets import token_filepath
@@ -70,8 +70,7 @@ def empty_db():
 @pytest.mark.asyncio
 async def testdb_with_real_accounts(empty_db, config):
     """Returns a test database populated with live acounts (no transactions)."""
-    config_helper = ConfigHelper(db=empty_db)
-    await config_helper.initialise_bank(bank_name=config.bank_name, token=config.token)
+    await initialise_bank(empty_db, bank_name=config.bank_name, token=config.token)
     return empty_db
 
 
