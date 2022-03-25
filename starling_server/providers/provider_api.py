@@ -14,10 +14,10 @@ from starling_server.server.schemas.transaction import TransactionSchema
 class ProviderAPI(ABC):
     def __init__(
         self,
-        class_name: str,
         auth_token: str,
         bank_name: str,
         account_uuid: Optional[uuid.UUID],
+        class_name: str,
     ):
         super().__init__()
         self._class_name = class_name
@@ -45,3 +45,6 @@ class ProviderAPI(ABC):
     def class_name(self) -> str:
         """The class name of the instantiated object."""
         return self._class_name
+
+    def __repr__(self):
+        return f"<{self._class_name}>"

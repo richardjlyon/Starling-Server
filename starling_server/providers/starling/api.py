@@ -1,6 +1,10 @@
 """
-dfsgdsfg
+Module to handle the Starling API. Starling transactions are associated with a category ID which must be passed to the
+API. Each transaction is assigned an account-specific default category ID which must be retrieved as part of
+initialisation. A CategoryHelper class is provided to manage this process and provide the default category as
+required
 """
+
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -24,13 +28,15 @@ from starling_server.server.schemas.transaction import TransactionSchema
 
 API_VERSION = "v2"
 API_BASE_URL = f"https://api.starlingbank.com/api/{API_VERSION}"
-CLASS_NAME = f"StarlingAPI{API_VERSION}"
+CLASS_NAME = f"Starling_API_{API_VERSION}"
 
 T = TypeVar("T")
 
 
 class Starling_API(ProviderAPI):
     """Provides the API methods for a Starling Bank account."""
+
+    default_category: uuid.UUID
 
     def __init__(
         self,
@@ -47,14 +53,15 @@ class Starling_API(ProviderAPI):
             account_uuid (str): uuid of the account
             category_check (bool): if False, bypass initialising the default category (i.e when getting it)
         """
+
         if account_uuid is not None and bank_name is None:
-            raise ValueError("missing bank_name for account_uuid")
+            raise ValueError("Missing bank_name for account_uuid")
 
         super().__init__(
-            class_name=CLASS_NAME,
             auth_token=auth_token,
             bank_name=bank_name,
             account_uuid=account_uuid,
+            class_name=CLASS_NAME,
         )
 
         if category_check is True and account_uuid is not None:
@@ -65,23 +72,18 @@ class Starling_API(ProviderAPI):
                 )
             self.default_category = default_category
 
-    # = ABSTRACT METHOD IMPLEMENTATIONS
+    # = ABSTRACT METHOD IMPLEMENTATIONS ===============================================================================
 
-    async def get_accounts(self, raw: bool = False) -> list[AccountSchema]:
+    async def get_accounts(self) -> list[AccountSchema]:
         """
         Get all of the accounts associated with the authorisation token.
-        Args:
-            raw (bool): If true, don't convert to AccountSchema
 
         Returns:
             A list of accounts
         """
-        path = "/accounts"
-        response = await self.get_endpoint(path)
-        if raw:
-            return response
-        else:
-            return self.to_account_schema_list(response)
+
+        response = await self.get_accounts_raw()
+        return self.to_account_schema_list(response)
 
     async def get_account_balance(self) -> AccountBalanceSchema:
         """Get the account balance associated with the account id."""
@@ -101,7 +103,7 @@ class Starling_API(ProviderAPI):
         response = await self.get_endpoint(path, params)
         return self.to_transaction_schema_list(response)
 
-    # = SCHEMA CONVERTORS
+    # = SCHEMA CONVERTORS =============================================================================================
 
     def to_account_schema_list(self, response: dict) -> List[AccountSchema]:
         """Validate response and convert to a list of AccountSchema."""
@@ -149,7 +151,7 @@ class Starling_API(ProviderAPI):
 
         return transactions
 
-    # = UTILITIES ======================================================================================================
+    # = UTILITIES =====================================================================================================
 
     async def get_endpoint(self, path: str, params: dict = None) -> dict:
         """Get an api endpoint."""
@@ -170,6 +172,11 @@ class Starling_API(ProviderAPI):
 
             return r.json()
 
+    async def get_accounts_raw(self) -> dict:
+        """Get all of the accounts associated with the authorisation token as a raw json response."""
+        path = "/accounts"
+        return await self.get_endpoint(path)
+
 
 class CategoryHelper:
     """A class to help manage Starling API default categories.
@@ -181,7 +188,7 @@ class CategoryHelper:
     _storage_filepath: Path
 
     def __init__(self, storage_filepath: Path = None):
-        # create the storage file if it doesn't exist
+        # create the storage file if one isn't supplied or if the default doesn't exist
         if storage_filepath is None:
             storage_filepath = config_path.saveFolderPath() / "starling_config.yaml"
         if not storage_filepath.is_file():

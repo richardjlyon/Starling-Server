@@ -15,15 +15,15 @@ def test_initialise():
     # GIVEN a dispatcher and the live database
     dispatcher = RouteDispatcher(db)
 
-    # WHEN I get the accounts
-    apis = dispatcher.api_list.apis
+    # WHEN I get the providers
+    providers = dispatcher.providers
 
     # THEN there are valid account api objects
-    assert len(apis) > 0
-    for api in apis:
-        assert api.account_uuid is not None
-        assert api.bank_name is not None
-        assert api.auth_token is not None
+    assert len(providers) > 0
+    for provider in providers:
+        assert provider.account_uuid is not None
+        assert provider.bank_name is not None
+        assert provider.auth_token is not None
 
 
 class TestAccounts:
@@ -31,6 +31,7 @@ class TestAccounts:
     async def test_get_accounts(self, testdb_with_real_accounts):
         # GIVEN a dispatcher with a test database initialised with Starling accounts
         dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
+        print(dispatcher.providers)
 
         # WHEN I get the accounts
         accounts = await dispatcher.get_accounts()

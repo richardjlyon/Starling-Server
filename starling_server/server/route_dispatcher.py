@@ -1,76 +1,31 @@
-"""Comment at the top
-
-route_dispatcher.py
-
-A class for coordinating data fetch, storage, and publishing
 """
-
+RouteDispatcher handles responding to an API call, retrieving data from account providers, storing the data, and
+returning the data to the client.
+"""
+import asyncio
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Optional, Any, Coroutine
+from typing import List, Optional
 
 from starling_server.config import default_interval_days
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.provider_api import ProviderAPI
 from starling_server.server.config_helper import get_class_for_bank_name
-from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
+from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema
-
-
-class APIFactory:
-    """Creates a list of api objects for the accounts in a database."""
-
-    db: Database
-    apis: List[ProviderAPI]
-
-    def __init__(self, db: Database):
-        self.db = db
-        self.apis = self.make_apis()
-
-    def make_apis(self) -> List[ProviderAPI]:
-        """Returns a list of account api objects for each bank in the database."""
-        banks_db = self.db.client.query(
-            """
-            select Bank {
-                name,
-                auth_token_hash,
-                accounts: {
-                    uuid
-                }
-            }
-            """
-        )
-
-        api_list = []
-        for bank in banks_db:
-            for account in bank.accounts:
-                api_class: ProviderAPI = get_class_for_bank_name(bank.name)
-                api_list.append(
-                    api_class(
-                        auth_token=bank.auth_token_hash,
-                        account_uuid=account.uuid,
-                        bank_name=bank.name,
-                    )
-                )
-
-        return api_list
-
-    def get_api_for_id(self, account_uuid: uuid.UUID) -> Optional[ProviderAPI]:
-        """Returns the account with the given id, or None."""
-        return next(api for api in self.apis if api.account_uuid == account_uuid)
 
 
 class RouteDispatcher:
     """Controls server operations to coordinate fetching, storage, and publishing."""
 
     db: Database
-    api_list: APIFactory
+    providers: List[ProviderAPI]
 
     def __init__(self, database: Database):
         self.db = database
-        self.api_list = APIFactory(database)
+        self.providers = provider_factory(database)
 
-    # = ACCOUNTS =======================================================================================================
+    # = ROUTES: ACCOUNTS ===============================================================================================
 
     async def get_accounts(self) -> List[AccountSchema]:
         """Get a list of accounts from the database.
@@ -85,14 +40,13 @@ class RouteDispatcher:
 
     async def get_account_balances(
         self,
-    ) -> List[Coroutine[Any, Any, AccountBalanceSchema]]:
-        """Get a list of account balances from the provider."""
-        balances = []
-        for api in self.api_list.apis:
-            balances.append(await api.get_account_balance())
-        return balances
+    ):
+        """Get a list of account balances from the providers."""
+        return await asyncio.gather(
+            *[provider.get_account_balance() for provider in self.providers]
+        )
 
-    # = TRANSACTIONS ===================================================================================================
+    # = ROUTES: TRANSACTIONS ===========================================================================================
 
     async def get_transactions_for_account_id_between(
         self,
@@ -109,15 +63,14 @@ class RouteDispatcher:
             start_date = end_date - timedelta(days=default_interval_days)
 
         # get latest transactions
-        api = self.api_list.get_api_for_id(account_id)
-        transactions = await api.get_transactions_between(start_date, end_date)
+        provider = self.get_provider_for_id(account_id)
+        transactions = await provider.get_transactions_between(start_date, end_date)
 
         # save to the database
         for transaction in transactions:
             # counter_party = make_counterparty_from(transaction)
             self.db.upsert_transaction(transaction)
 
-        print(len(transactions))
         return transactions
 
     async def get_transactions_between(
@@ -133,3 +86,42 @@ class RouteDispatcher:
 
         transactions.sort(key=lambda t: t.time, reverse=True)
         return transactions
+
+    # = HELPERS =======================================================================================================
+
+    def get_provider_for_id(self, account_uuid: uuid.UUID) -> Optional[ProviderAPI]:
+        """Returns the account with the given id, or None."""
+        return next(
+            provider
+            for provider in self.providers
+            if provider.account_uuid == account_uuid
+        )
+
+
+def provider_factory(database: Database) -> List[ProviderAPI]:
+    """Returns a list of provider api objects for each bank in the database."""
+    banks_db = database.client.query(
+        """
+        select Bank {
+            name,
+            auth_token_hash,
+            accounts: {
+                uuid
+            }
+        }
+        """
+    )
+
+    provider_list = []
+    for bank in banks_db:
+        for account in bank.accounts:
+            api_class: ProviderAPI = get_class_for_bank_name(bank.name)
+            provider_list.append(
+                api_class(
+                    auth_token=bank.auth_token_hash,
+                    account_uuid=account.uuid,
+                    bank_name=bank.name,
+                )
+            )
+
+    return provider_list
