@@ -23,7 +23,7 @@ def test_initialise():
     for api in apis:
         assert api.account_uuid is not None
         assert api.bank_name is not None
-        assert api.token is not None
+        assert api.auth_token is not None
 
 
 class TestAccounts:

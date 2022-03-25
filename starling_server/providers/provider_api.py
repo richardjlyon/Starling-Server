@@ -21,7 +21,7 @@ class ProviderAPI(ABC):
     ):
         super().__init__()
         self._class_name = class_name
-        self.token = auth_token
+        self.auth_token = auth_token
         self.bank_name = bank_name
         self.account_uuid = account_uuid
 

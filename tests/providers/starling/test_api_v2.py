@@ -21,7 +21,7 @@ class TestInitialisation:
             account_uuid=config.account_uuid,
         )
         # THEN the provider initialises properly
-        assert api.token == config.token
+        assert api.auth_token == config.token
         assert api.bank_name == config.bank_name
         assert api.account_uuid == config.account_uuid
 
@@ -32,7 +32,7 @@ class TestInitialisation:
         api = Starling_API(auth_token=config.token)
 
         # THEN provider initialises correctly
-        assert api.token == config.token
+        assert api.auth_token == config.token
         assert api.bank_name is None
         assert api.account_uuid is None
 

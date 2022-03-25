@@ -9,9 +9,9 @@ from typing import TypeVar, List
 import httpx
 import toml
 from pydantic import PydanticTypeError, parse_obj_as
-from starling_server.providers.provider_api import ProviderAPI
 
 from starling_server.config import config_path
+from starling_server.providers.provider_api import ProviderAPI
 from starling_server.providers.starling.schemas import (
     StarlingAccountSchema,
     StarlingAccountsSchema,
@@ -155,7 +155,7 @@ class Starling_API(ProviderAPI):
         """Get an api endpoint."""
 
         headers = {
-            "Authorization": f"Bearer {self.token}",
+            "Authorization": f"Bearer {self.auth_token}",
             "User-Agent": "python",
         }
         url = f"{API_BASE_URL}{path}"
