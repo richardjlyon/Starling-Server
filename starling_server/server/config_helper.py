@@ -1,12 +1,12 @@
 """
-This module provides methods for configuring the server, including inserting or updating banks and associated accounts.
+Provides methods for configuring the server, including inserting or updating banks and associated accounts.
 """
 
 import importlib
 from typing import List
 
 from starling_server.db.edgedb.database import Database
-from starling_server.providers.starling.api_v2 import APIV2
+from starling_server.providers.provider_api import ProviderAPI
 from starling_server.server.schemas.account import AccountSchema
 
 bank_classes = {
@@ -54,9 +54,9 @@ class ConfigHelper:
         return accounts
 
 
-def get_class_for_bank_name(bank_name) -> APIV2:
+def get_class_for_bank_name(bank_name) -> ProviderAPI:
     """Returns a class object computed from the bank_name"""
     api_class = bank_classes.get(bank_name)
-    module = importlib.import_module(f"starling_server.providers.{api_class}.api_v2")
-    class_ = getattr(module, "APIV2")
+    module = importlib.import_module(f"starling_server.providers.{api_class}.api")
+    class_ = getattr(module, "Starling_API")
     return class_

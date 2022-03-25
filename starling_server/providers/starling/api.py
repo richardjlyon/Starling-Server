@@ -9,9 +9,9 @@ from typing import TypeVar, List
 import httpx
 import toml
 from pydantic import PydanticTypeError, parse_obj_as
+from starling_server.providers.provider_api import ProviderAPI
 
 from starling_server.config import config_path
-from starling_server.providers.api_base import BaseAPIV2
 from starling_server.providers.starling.schemas import (
     StarlingAccountSchema,
     StarlingAccountsSchema,
@@ -29,7 +29,7 @@ CLASS_NAME = f"StarlingAPI{API_VERSION}"
 T = TypeVar("T")
 
 
-class APIV2(BaseAPIV2):
+class Starling_API(ProviderAPI):
     """Provides the API methods for a Starling Bank account."""
 
     def __init__(
@@ -188,7 +188,7 @@ class CategoryHelper:
 
     async def insert(self, token: str, account_uuid: uuid.UUID, bank_name: str):
         """Add an account/category pair."""
-        api = APIV2(
+        api = Starling_API(
             auth_token=token,
             account_uuid=account_uuid,
             bank_name=bank_name,

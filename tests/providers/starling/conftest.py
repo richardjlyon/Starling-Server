@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from starling_server.providers.starling.api_v2 import CategoryHelper
+from starling_server.providers.starling.api import CategoryHelper, Starling_API
 from tests.conftest import TEST_FOLDER
 
 
 @pytest.fixture()
 def api_personal_account(personal_account_id):
     """Provides a StarlingAPI object initialised to the personal account."""
-    return StarlingAPI(account_uuid=personal_account_id)
+    return Starling_API(account_uuid=personal_account_id)
 
 
 @pytest.fixture()
