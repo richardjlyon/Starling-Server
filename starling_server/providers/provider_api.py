@@ -7,8 +7,11 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional
 
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas import (
+    AccountSchema,
+    AccountBalanceSchema,
+    TransactionSchema,
+)
 
 
 class ProviderAPI(ABC):

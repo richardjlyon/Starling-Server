@@ -11,8 +11,7 @@ from typing import List, Optional
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.provider_api import ProviderAPI
-from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas import AccountSchema, TransactionSchema
 
 
 class RouteDispatcher:

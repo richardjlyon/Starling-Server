@@ -3,7 +3,7 @@ The transaction processor is called by the route dispatcher. It computes transac
 """
 from typing import Optional
 
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.server.schemas import TransactionSchema
 
 
 class TransactionProcessor:

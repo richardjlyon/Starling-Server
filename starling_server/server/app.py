@@ -6,8 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from .routes.accounts import router as AccountRouter
-from .routes.transactions import router as TransactionRouter
+from .routes import AccountRouter, TransactionRouter
 
 app = FastAPI()
 
