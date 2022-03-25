@@ -172,19 +172,21 @@ class Starling_API(ProviderAPI):
 
 
 class CategoryHelper:
-    """A class to help manage Starling API default categories."""
+    """A class to help manage Starling API default categories.
+
+    Maintains a TOML file in the config folder with pairs of account uuid / default category uuid and provides CRUD
+    methods to access them.
+    """
+
+    _storage_filepath: Path
 
     def __init__(self, storage_filepath: Path = None):
+        # create the storage file if it doesn't exist
         if storage_filepath is None:
             storage_filepath = config_path.saveFolderPath() / "starling_config.yaml"
         if not storage_filepath.is_file():
             storage_filepath.touch()
         self._storage_filepath = storage_filepath
-
-    def initialise(self, account_uuids: List[str]) -> None:
-        """Add the list of accounts with given ids to storage."""
-        for account_uuid in account_uuids:
-            self.insert(account_uuid)
 
     async def insert(self, token: str, account_uuid: uuid.UUID, bank_name: str):
         """Add an account/category pair."""
@@ -194,7 +196,7 @@ class CategoryHelper:
             bank_name=bank_name,
             category_check=False,
         )
-        response = await api.get_accounts(raw=True)
+        response = await api.get_accounts_raw()
 
         default_category = None
         # next() raises a StopIteration RuntimeError, so loop
@@ -210,18 +212,18 @@ class CategoryHelper:
         config_file[str(account_uuid)] = default_category
         self._save(config_file)
 
-    def remove(self, account_uuid: str):
+    def remove(self, account_uuid: uuid.UUID):
         """Remove an account/category pair."""
         config_file = self._load()
         if str(account_uuid) in config_file:
-            del config_file["str(account_uuid)"]
+            del config_file[str(account_uuid)]
             self._save(config_file)
 
-    def category_for_account_id(self, account_uuid: uuid.UUID) -> dict:
-        """Retrieve the cateogry for the account id."""
+    def category_for_account_id(self, account_uuid: uuid.UUID) -> uuid.UUID:
+        """Retrieve the category for the account id."""
         if account_uuid is not None:
             config_file = self._load()
-            return config_file.get(str(account_uuid))
+            return uuid.UUID(config_file.get(str(account_uuid)))
 
     def _load(self):
         """Load the data from the file system."""

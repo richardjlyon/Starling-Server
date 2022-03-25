@@ -1,6 +1,7 @@
 # providers/starling/test_api_v2.py
 #
 # tests the functionality of the StarlingAPI class
+import uuid
 from datetime import datetime, timedelta
 
 import pytest
@@ -104,11 +105,11 @@ class TestCategoryHelper:
         # WHEN I insert an account
         await helper.insert(config.token, config.account_uuid, config.bank_name)
 
-        # THEN the config file is updated with a correct account id / default category pair
-        expected_default_category = "b23c9e8b-4377-4d9a-bce3-e7ee5477af50"
+        # THEN the config file is updated with an account id / default category pair
         config_file = helper._load()
         assert str(config.account_uuid) in config_file
-        assert config_file[str(config.account_uuid)] == expected_default_category
+        default_category_uuid = uuid.UUID(config_file[str(config.account_uuid)])
+        assert isinstance(default_category_uuid, uuid.UUID)
 
     @pytest.mark.asyncio
     async def test_category_for_account_id(self, category_helper, config):
@@ -119,8 +120,8 @@ class TestCategoryHelper:
         # WHEN I get the default category
         default_category = helper.category_for_account_id(config.account_uuid)
 
-        # THEN the defualt category is corrrect
-        expected_default_category = "b23c9e8b-4377-4d9a-bce3-e7ee5477af50"
+        # THEN the default category is correct
+        expected_default_category = uuid.UUID("b23c9e8b-4377-4d9a-bce3-e7ee5477af50")
         assert default_category == expected_default_category
 
     @pytest.mark.asyncio
