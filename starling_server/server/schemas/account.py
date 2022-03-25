@@ -1,6 +1,6 @@
-# server/schemas/account.py
-#
-# Server account schema definitions.
+"""
+Define the schemas used for Server account data structures.
+"""
 
 from datetime import datetime
 

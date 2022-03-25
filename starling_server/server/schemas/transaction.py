@@ -1,6 +1,6 @@
-# server/schemas/transaction.py
-#
-# Server transaction schema definitions.
+"""
+Define the schemas used for Server transaction data structures.
+"""
 
 import re
 from datetime import datetime

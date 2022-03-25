@@ -1,6 +1,6 @@
-# app.py
-#
-# the server FastApi app
+"""
+Define the main Server app.
+"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
