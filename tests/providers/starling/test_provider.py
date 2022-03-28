@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from starling_server.providers.starling.api import Starling_API
+from starling_server.providers.starling.api import StarlingProvider
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 
@@ -16,7 +16,7 @@ class TestInitialisation:
         # GIVEN a config file
 
         # WHEN I initialise an api provider with all properties
-        api = Starling_API(
+        api = StarlingProvider(
             auth_token=config.token,
             bank_name=config.bank_name,
             account_uuid=config.account_uuid,
@@ -30,7 +30,7 @@ class TestInitialisation:
         # GIVEN a config file
 
         # WHEN I initialise an api provider only with a token
-        api = Starling_API(auth_token=config.token)
+        api = StarlingProvider(auth_token=config.token)
 
         # THEN provider initialises correctly
         assert api.auth_token == config.token
@@ -42,14 +42,14 @@ class TestInitialisation:
         # WHEN I initialise an api provider with an account id but not a bank name
         # THEN it raises value error
         with pytest.raises(ValueError) as e:
-            Starling_API(auth_token=config.token, account_uuid=config.account_uuid)
+            StarlingProvider(auth_token=config.token, account_uuid=config.account_uuid)
 
 
 class TestAccount:
     @pytest.mark.asyncio
     async def test_get_accounts(self, config):
         # GIVEN an api initialised only with an access token
-        api = Starling_API(auth_token=config.token, bank_name=config.bank_name)
+        api = StarlingProvider(auth_token=config.token, bank_name=config.bank_name)
 
         # WHEN I get the accounts
         accounts = await api.get_accounts()
@@ -62,7 +62,7 @@ class TestAccount:
     @pytest.mark.asyncio
     async def test_get_account_balance(self, config):
         # GIVEN an api initialised with a personal account id
-        api = Starling_API(
+        api = StarlingProvider(
             auth_token=config.token,
             bank_name=config.bank_name,
             account_uuid=config.account_uuid,
@@ -79,7 +79,7 @@ class TestTransaction:
     @pytest.mark.asyncio
     async def test_get_transactions_between(self, config):
         # GIVEN an api initialised with a personal account id
-        api = Starling_API(
+        api = StarlingProvider(
             auth_token=config.token,
             bank_name=config.bank_name,
             account_uuid=config.account_uuid,

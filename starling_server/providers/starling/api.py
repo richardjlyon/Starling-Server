@@ -15,7 +15,7 @@ import toml
 from pydantic import PydanticTypeError, parse_obj_as
 
 from starling_server import config_path
-from starling_server.providers.provider_api import ProviderAPI
+from starling_server.providers.provider import Provider
 from starling_server.providers.starling.schemas import (
     StarlingAccountSchema,
     StarlingAccountsSchema,
@@ -33,7 +33,7 @@ CLASS_NAME = f"Starling_API_{API_VERSION}"
 T = TypeVar("T")
 
 
-class Starling_API(ProviderAPI):
+class StarlingProvider(Provider):
     """Provides the API methods for a Starling Bank account."""
 
     default_category: uuid.UUID
@@ -197,7 +197,7 @@ class CategoryHelper:
 
     async def insert(self, token: str, account_uuid: uuid.UUID, bank_name: str):
         """Add an account/category pair."""
-        api = Starling_API(
+        api = StarlingProvider(
             auth_token=token,
             account_uuid=account_uuid,
             bank_name=bank_name,

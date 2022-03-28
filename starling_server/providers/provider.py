@@ -14,7 +14,7 @@ from starling_server.server.schemas import (
 )
 
 
-class ProviderAPI(ABC):
+class Provider(ABC):
     def __init__(
         self,
         auth_token: str,

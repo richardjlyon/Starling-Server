@@ -18,9 +18,9 @@ from starling_server.providers.starling.schemas import (
 )
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.transaction import TransactionSchema
-from starling_server.server.secrets import token_filepath
 from starling_server.server.transaction_processor import TransactionProcessor
 from tests.db.database.conftest import reset
+from .secrets import token_filepath
 
 testdb = Database(database="test")
 

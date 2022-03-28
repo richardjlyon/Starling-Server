@@ -10,7 +10,7 @@ from typing import List, Optional
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
-from starling_server.providers.provider_api import ProviderAPI
+from starling_server.providers.provider import Provider
 from starling_server.server.schemas import AccountSchema, TransactionSchema
 
 
@@ -18,7 +18,7 @@ class RouteDispatcher:
     """Controls server operations to coordinate fetching, storage, and publishing."""
 
     db: Database
-    providers: List[ProviderAPI]
+    providers: List[Provider]
 
     def __init__(self, database: Database):
         self.db = database
@@ -27,14 +27,7 @@ class RouteDispatcher:
     # = ROUTES: ACCOUNTS ===============================================================================================
 
     async def get_accounts(self) -> List[AccountSchema]:
-        """Get a list of accounts from the database.
-
-        Args:
-            force_refresh (bool): If true, force update of account details from the provider
-
-        Returns:
-            A list of `AccountSchema` objects
-        """
+        """Get a list of accounts from the database"""
         return self.db.select_accounts(as_schema=True)
 
     async def get_account_balances(
@@ -88,7 +81,7 @@ class RouteDispatcher:
 
     # = HELPERS =======================================================================================================
 
-    def get_provider_for_id(self, account_uuid: uuid.UUID) -> Optional[ProviderAPI]:
+    def get_provider_for_id(self, account_uuid: uuid.UUID) -> Optional[Provider]:
         """Returns the account with the given id, or None."""
         return next(
             provider
@@ -97,7 +90,7 @@ class RouteDispatcher:
         )
 
 
-def provider_factory(database: Database) -> List[ProviderAPI]:
+def provider_factory(database: Database) -> List[Provider]:
     """Returns a list of provider api objects for each bank in the database."""
     banks_db = database.client.query(
         """
@@ -114,7 +107,7 @@ def provider_factory(database: Database) -> List[ProviderAPI]:
     provider_list = []
     for bank in banks_db:
         for account in bank.accounts:
-            provider: ProviderAPI = get_provider_for_bank_name(bank.name)
+            provider: Provider = get_provider_for_bank_name(bank.name)
             provider_list.append(
                 provider(
                     auth_token=bank.auth_token_hash,
@@ -126,9 +119,9 @@ def provider_factory(database: Database) -> List[ProviderAPI]:
     return provider_list
 
 
-def get_provider_for_bank_name(bank_name) -> ProviderAPI:
+def get_provider_for_bank_name(bank_name) -> Provider:
     """Returns a provider class computed from bank_name"""
-    api_class = cfg.bank_classes.get(bank_name)
-    module = importlib.import_module(f"starling_server.providers.{api_class}.api")
-    class_ = getattr(module, "Starling_API")
+    provider_class = cfg.bank_classes.get(bank_name)
+    module = importlib.import_module(f"starling_server.providers.{provider_class}.api")
+    class_ = getattr(module, "StarlingProvider")
     return class_
