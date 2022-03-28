@@ -4,6 +4,7 @@ returning the data to the client.
 """
 import asyncio
 import importlib
+import itertools
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -14,15 +15,53 @@ from starling_server.providers.provider import Provider
 from starling_server.server.schemas import AccountSchema, TransactionSchema
 
 
+class TransactionFetcher:
+    """
+    TransactionFetcher is responsible for retrieving transactions from an account provider.
+    """
+
+    def __init__(self, accounts: List[AccountSchema], providers: List[Provider]):
+        self.accounts = accounts
+        self.providers = providers
+
+    def get_provider_for_account_uuid(
+        self, account_uuid: uuid.UUID
+    ) -> Optional[Provider]:
+        """Returns the account with the given id, or None."""
+        return next(
+            provider
+            for provider in self.providers
+            if provider.account_uuid == account_uuid
+        )
+
+    async def fetch(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[TransactionSchema]:
+        """
+        Fetches transactions from the account provider.
+        Returns:
+             A list of transactions sorted by date.
+        """
+        transactions = [
+            await provider.get_transactions_between(start_date, end_date)
+            for provider in self.providers
+        ]
+        transactions = list(itertools.chain(*transactions))
+        transactions.sort(key=lambda t: t.time, reverse=True)
+        return transactions
+
+
 class RouteDispatcher:
     """Controls server operations to coordinate fetching, storage, and publishing."""
 
     db: Database
-    providers: List[Provider]
+    transaction_fetcher: TransactionFetcher
 
     def __init__(self, database: Database):
         self.db = database
-        self.providers = provider_factory(database)
+        accounts = database.select_accounts(as_schema=True)
+        providers = provider_factory(database)
+        self.transaction_fetcher = TransactionFetcher(accounts, providers)
 
     # = ROUTES: ACCOUNTS ===============================================================================================
 
@@ -39,6 +78,33 @@ class RouteDispatcher:
         )
 
     # = ROUTES: TRANSACTIONS ===========================================================================================
+
+    async def get_transactions_between(
+        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
+    ) -> Optional[List[TransactionSchema]]:
+
+        if end_date is None:
+            end_date = datetime.now()
+        if start_date is None:
+            start_date = end_date - timedelta(days=cfg.default_interval_days)
+
+        new_transactions = await self.transaction_fetcher.fetch(start_date, end_date)
+        processed_transactions = insert_transaction_information(
+            self.db, new_transactions
+        )
+        return processed_transactions_between(self.db, start_date, end_date)
+
+        #
+        #
+        # transactions = []
+        # for account in self.db.select_accounts(as_schema=True):
+        #     result = await self.get_transactions_for_account_id_between(
+        #         account_id=account.uuid, start_date=start_date, end_date=end_date
+        #     )
+        #     transactions.extend(result)
+        #
+        # transactions.sort(key=lambda t: t.time, reverse=True)
+        # return transactions
 
     async def get_transactions_for_account_id_between(
         self,
@@ -65,29 +131,7 @@ class RouteDispatcher:
 
         return transactions
 
-    async def get_transactions_between(
-        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
-    ) -> Optional[List[TransactionSchema]]:
-
-        transactions = []
-        for account in self.db.select_accounts(as_schema=True):
-            result = await self.get_transactions_for_account_id_between(
-                account_id=account.uuid, start_date=start_date, end_date=end_date
-            )
-            transactions.extend(result)
-
-        transactions.sort(key=lambda t: t.time, reverse=True)
-        return transactions
-
     # = HELPERS =======================================================================================================
-
-    def get_provider_for_id(self, account_uuid: uuid.UUID) -> Optional[Provider]:
-        """Returns the account with the given id, or None."""
-        return next(
-            provider
-            for provider in self.providers
-            if provider.account_uuid == account_uuid
-        )
 
 
 def provider_factory(database: Database) -> List[Provider]:

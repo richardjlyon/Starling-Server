@@ -69,7 +69,7 @@ def empty_db():
 @pytest.fixture
 @pytest.mark.asyncio
 async def testdb_with_real_accounts(empty_db, config):
-    """Returns a test database populated with live acounts (no transactions)."""
+    """Returns a test database populated with live accounts (no transactions)."""
     await initialise_bank(empty_db, bank_name=config.bank_name, token=config.token)
     return empty_db
 
