@@ -6,3 +6,13 @@ default_interval_days = 14
 "Starling Business" = "starling"
 "Starling Sole Trader" = "starling"
 "Starling Joint" = "starling"
+
+["Starling Personal"]
+library_name = "starling"
+class_name = "StarlingProvider"
+token_name = "STARLING_PERSONAL_TOKEN"
+
+["Starling Business"]
+library_name = "starling"
+class_name = "StarlingProvider"
+token_name = "STARLING_BUSINESS_TOKEN"

@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import pytest
 
 from starling_server.providers.starling.api import StarlingProvider
-from starling_server.server.route_dispatcher import TransactionFetcher, provider_factory
 from starling_server.server.schemas import TransactionSchema
+from starling_server.server.transaction_fetcher import TransactionFetcher
 
 
 def test_init(testdb_with_real_accounts):
@@ -13,6 +13,7 @@ def test_init(testdb_with_real_accounts):
     tf = TransactionFetcher(accounts=accounts, providers=providers)
     assert tf.accounts == accounts
     assert tf.providers == providers
+    print(accounts[0])
 
 
 def test_get_provider_for_account_uuid(testdb_with_real_accounts):

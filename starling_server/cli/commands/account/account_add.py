@@ -8,7 +8,6 @@ from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.main import db
 from starling_server.providers.starling.api import CategoryHelper
-from starling_server.server.route_dispatcher import get_provider_for_bank_name
 from starling_server.server.schemas.account import AccountSchema
 
 
@@ -111,12 +110,12 @@ async def initialise_bank(
     """
 
     # get the accounts
-    provider_class = get_provider_for_bank_name(bank_name)
-    provider = provider_class(bank_name=bank_name, auth_token=token)
-    accounts = await provider.get_accounts()
-
-    # insert into the database
-    for account in accounts:
-        database.upsert_account(token=token, account=account)
-
-    return accounts
+    # provider_class = get_provider_for_bank_name(bank_name)
+    # provider = provider_class(bank_name=bank_name, auth_token=token)
+    # accounts = await provider.get_accounts()
+    #
+    # # insert into the database
+    # for account in accounts:
+    #     database.upsert_account(token=token, account=account)
+    #
+    # return accounts
