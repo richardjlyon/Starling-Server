@@ -18,22 +18,19 @@ class Database(DBBase):
             database=database
         )  # defaults to database "edgedb"
 
-    def upsert_bank(self, bank_name: str, token: str):
+    def upsert_bank(self, bank_name: str):
         self.client.query(
             """
             insert Bank {
                 name := <str>$name,
-                auth_token_hash := <str>$token,
             } unless conflict on .name else (
                 update Bank
                 set {
                     name := <str>$name,
-                    auth_token_hash := <str>$token,
                 }
             );
             """,
             name=bank_name,
-            token=token,
         )
 
     # noinspection SqlNoDataSourceInspection
@@ -143,7 +140,7 @@ class Database(DBBase):
 
     def upsert_account(self, token: str, account: AccountSchema):
         # ensure Bank exists: note - this can probably be combined with the `insert Account` query
-        self.upsert_bank(account.bank_name, token=token)
+        self.upsert_bank(account.bank_name)
 
         account_db = self.client.query(
             """

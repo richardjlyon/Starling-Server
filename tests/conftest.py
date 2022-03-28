@@ -10,12 +10,13 @@ from typing import List
 import pytest
 from pydantic import parse_obj_as, PydanticTypeError
 
-from starling_server.cli.commands.account.account_add import initialise_bank
+from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.providers.starling.schemas import (
     StarlingTransactionsSchema,
     StarlingTransactionSchema,
 )
+from starling_server.server.account import Account, get_provider_class, get_auth_token
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas.transaction import TransactionSchema
 from starling_server.server.transaction_processor import TransactionProcessor
@@ -66,11 +67,29 @@ def empty_db():
     # reset() # FIXME allows the database to be inspected - uncomment this when done
 
 
+@pytest.mark.asyncio
+async def initialise_accounts(empty_db) -> None:
+    """Initialise the test database with a bank and account."""
+    bank_names = [bank["bank_name"] for bank in cfg.banks]
+    for bank_name in bank_names:
+        provider_class = get_provider_class(bank_name)
+        auth_token = get_auth_token(bank_name)
+        provider = provider_class(
+            auth_token=auth_token, bank_name=bank_name, category_check=False
+        )
+        accounts = await provider.get_accounts()
+        for account in accounts:
+            empty_db.upsert_account(provider.auth_token, account)
+
+    return empty_db
+
+
 @pytest.fixture
 @pytest.mark.asyncio
 async def testdb_with_real_accounts(empty_db, config):
     """Returns a test database populated with live accounts (no transactions)."""
-    await initialise_bank(empty_db, bank_name=config.bank_name, token=config.token)
+
+    await initialise_accounts(empty_db)
     return empty_db
 
 
@@ -130,3 +149,19 @@ def tp_two_pairs(tp_empty):
     tp_empty.upsert_display_name(name_fragment=name_fragment, display_name=display_name)
 
     return tp_empty
+
+
+# = Route Dispatcher fixtures ===================================================================================
+@pytest.fixture()
+def db_4_transactions(testdb_with_real_accounts):
+    """Returns a database with dummy transactions with dates that allow testing new transactions."""
+    return testdb_with_real_accounts
+
+
+@pytest.fixture()
+def accounts(db_4_transactions):
+    """Returns a list of accounts from the database"""
+    return [
+        Account(account_schema)
+        for account_schema in testdb_with_real_accounts.select_accounts(as_schema=True)
+    ]

@@ -49,7 +49,6 @@ def insert_bank(db, name):
         """
         insert Bank {
             name := <str>$name,
-            auth_token_hash := "dummy token"
         }
         """,
         name=name,

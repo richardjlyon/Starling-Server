@@ -18,10 +18,10 @@ class TestBank:
     def test_insert_bank(self, db):
         # GIVEN an empty database
         # WHEN I insert a bank
-        db.upsert_bank(bank_name="Starling Personal (TEST)", token="test token")
+        db.upsert_bank(bank_name="Starling Personal (TEST)")
 
         # THEN the bank is inserted
-        bank_db = db.client.query("select Bank {name, auth_token_hash}")
+        bank_db = db.client.query("select Bank {name}")
         assert len(bank_db) == 1
         assert bank_db[0].name == "Starling Personal (TEST)"
 

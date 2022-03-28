@@ -14,7 +14,7 @@ class DBBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def upsert_bank(self, bank_name: str, token: str):
+    def upsert_bank(self, bank_name: str):
         pass
 
     @abstractmethod

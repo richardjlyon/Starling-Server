@@ -21,6 +21,7 @@ sphinx-rtd-theme = "^1.0.0"
 cleo = "^0.8.1"
 toml = "^0.10.2"
 python-configuration = "^0.8.2"
+PyYAML = "^6.0"
 
 [tool.poetry.scripts]
 bank_server = 'starling_server.cli.cli:cli'

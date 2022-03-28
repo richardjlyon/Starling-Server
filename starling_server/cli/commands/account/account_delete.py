@@ -2,6 +2,8 @@ import asyncio
 
 from cleo import Command
 
+from starling_server.main import db
+
 
 class AccountDelete(Command):
     """
@@ -17,7 +19,6 @@ class AccountDelete(Command):
     async def handle_async(self):
         self.line("<info>Deleting an account</info>")
 
-        # get the account from the user
         self.line(
             "<error>WARNING: This destroys information and cannot be undone</error>"
         )
@@ -25,14 +26,32 @@ class AccountDelete(Command):
             self.line("<info>Exit</info>")
             return
 
-        self.line("deleting")
+        # get the account from the user
+        accounts = db.select_accounts(as_schema=True)
+        valid_response = False
+        response = None
+        print(accounts)
 
-        # remove it from the database
+        while not valid_response:
+            self.line("<info>Enter the account ID ('q' to quit)</info>")
+            for idx, account in enumerate(accounts):
+                self.line(f"[{idx}] {account.bank_name}: {account.account_name}")
 
-        # if it's the last account, remove the bank from the database
+            response = self.ask(
+                ">",
+            )
+            if response == "q":
+                self.line("<info>Exit</info>")
+                return
+            if int(response) <= len(accounts):
+                valid_response = True
+                break
 
-        # perform api specific actions
+            self.line("<error>Invalid account</error>")
 
-        # inform
-
-        pass
+        # remove it form the database
+        account = accounts[int(response)]
+        account_uuid = account.uuid
+        account_name = f"{account.bank_name}: {account.account_name}"
+        db.delete_account(account_uuid)
+        self.line(f"<info>Account '{account_name}' deleted</info>")

@@ -4,7 +4,10 @@
 
 import pytest
 
-from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.account import Account
+from starling_server.server.route_dispatcher import (
+    RouteDispatcher,
+)
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 from starling_server.server.schemas.transaction import TransactionSchema
 from tests.db.database.conftest import select_transactions
@@ -55,6 +58,19 @@ class TestAccounts:
         assert len(balances) > 0
         for balance in balances:
             assert isinstance(balance, AccountBalanceSchema)
+
+
+class TestGetNewTransactions:
+    @pytest.mark.asyncio
+    async def test_get_new_transactions(self, testdb_with_real_accounts):
+        print(testdb_with_real_accounts.select_accounts())
+        accounts = [
+            Account(account_schema)
+            for account_schema in testdb_with_real_accounts.select_accounts(
+                as_schema=True
+            )
+        ]
+        print(accounts)
 
 
 class TestTransactions:

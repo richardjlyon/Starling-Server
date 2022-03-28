@@ -3,14 +3,12 @@ RouteDispatcher handles responding to an API call, retrieving data from account 
 returning the data to the client.
 """
 import asyncio
-import importlib
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
-from starling_server.providers.provider import Provider
 from starling_server.server.account import Account
 from starling_server.server.schemas import AccountSchema, TransactionSchema
 
@@ -55,11 +53,21 @@ class RouteDispatcher:
         if start_date is None:
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
-        # new_transactions = await self.transaction_fetcher.fetch(start_date, end_date)
+        # calls = [
+        #     account.provider.get_transactions_between(start_date, end_date)
+        #     for account in self.accounts
+        # ]
+        # transactions = await asyncio.gather(*calls)
+        # transactions = list(itertools.chain(*transactions))
+        # transactions.sort(key=lambda t: t.time, reverse=True)
+
+        new_transactions = await get_new_transactions(self.accounts, self.db)
         # processed_transactions = insert_transaction_information(
         #     self.db, new_transactions
         # )
         # return processed_transactions_between(self.db, start_date, end_date)
+
+        return new_transactions
 
     async def get_transactions_for_account_id_between(
         self,
@@ -88,39 +96,26 @@ class RouteDispatcher:
 
         # = HELPERS =======================================================================================================
 
-    def provider_factory(database: Database) -> List[Provider]:
-        """Returns a list of provider api objects for each bank in the database."""
-        banks_db = database.client.query(
-            """
-            select Bank {
-                name,
-                auth_token_hash,
-                accounts: {
-                    uuid
-                }
-            }
-            """
+
+def get_latest_transaction_time(db: Database, account_uuid: uuid.UUID) -> datetime:
+    """Returns the time of the latest transaction for the specified account."""
+    pass
+
+
+async def get_new_transactions(
+    accounts: List[Account], db: Database
+) -> List[TransactionSchema]:
+    """Get latest transactions from the accounts."""
+    transactions = []
+    for account in accounts:
+        # compute the last transaction time for account
+        latest_transaction_time = get_latest_transaction_time(db, account.schema.uuid)
+
+        # fetch new transactions
+        transactions.extend(
+            account.provider.get_transactions_between(
+                start_date=latest_transaction_time, end_date=datetime.now()
+            )
         )
 
-        provider_list = []
-        for bank in banks_db:
-            for account in bank.accounts:
-                provider: Provider = get_provider_for_bank_name(bank.name)
-                provider_list.append(
-                    provider(
-                        auth_token=bank.auth_token_hash,
-                        account_uuid=account.uuid,
-                        bank_name=bank.name,
-                    )
-                )
-
-        return provider_list
-
-    def get_provider_for_bank_name(bank_name) -> Provider:
-        """Returns a provider class computed from bank_name"""
-        provider_class = cfg.bank_classes.get(bank_name)
-        module = importlib.import_module(
-            f"starling_server.providers.{provider_class}.api"
-        )
-        class_ = getattr(module, "StarlingProvider")
-        return class_
+    return transactions

@@ -1,0 +1,10 @@
+banks:
+  - bank_name: "Starling Personal"
+    class_name: StarlingProvider
+    library_name: starling
+    token_name: STARLING_PERSONAL_TOKEN
+  - bank_name: "Starling Business"
+    class_name: StarlingProvider
+    library_name: starling
+    token_name: STARLING_BUSINESS_TOKEN
+default_interval_days: 14
