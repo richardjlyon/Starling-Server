@@ -1,6 +1,7 @@
 # test_route_dispatcher
 #
 # test the functionality of the route dispatcher
+from datetime import datetime, timezone
 
 import pytest
 
@@ -45,15 +46,17 @@ class TestAccounts:
 
 
 class TestGetNewTransactions:
-    def test_get_latest_transaction_time(self, db_4_transactions):
+    def test_get_latest_transaction_time(self, db_with_transactions):
         # GIVEN a test database with transactions of different time stamps
-        # WHEN I get the latest transaction time
-        database = None
-        account_uuid = None
-        latest_transaction_time = get_latest_transaction_time(database, account_uuid)
+        account = db_with_transactions.select_accounts()[0]
+        expected_transaction_time = datetime(2020, 1, 1, 7, 1, tzinfo=timezone.utc)
+
+        # WHEN I get the latest transaction time of the first account
+        latest_transaction_time = get_latest_transaction_time(
+            db_with_transactions, account.uuid
+        )
 
         # THEN the latest transaction time is returned
-        expected_transaction_time = None
         assert latest_transaction_time == expected_transaction_time
 
     @pytest.mark.asyncio

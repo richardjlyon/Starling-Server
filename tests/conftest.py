@@ -94,11 +94,11 @@ async def testdb_with_real_accounts(empty_db, config):
 
 
 @pytest.fixture
-def db_4_transactions(db_2_accounts):
-    """Inserts two accounts of two transactions each."""
+def db_with_transactions(db_2_accounts):
+    """Inserts 2 accounts of 8 transactions each."""
     accounts_db = select_accounts(db_2_accounts)
     for account_db in accounts_db:
-        transactions = make_transactions(2, account_uuid=account_db.uuid)
+        transactions = make_transactions(8, account_uuid=account_db.uuid)
         for transaction in transactions:
             db_2_accounts.upsert_transaction(transaction)
 
@@ -162,7 +162,7 @@ def tp_two_pairs(tp_empty):
 
 
 @pytest.fixture()
-def accounts(db_4_transactions):
+def accounts(db_with_transactions):
     """Returns a list of accounts from the database"""
     return [
         Account(account_schema)

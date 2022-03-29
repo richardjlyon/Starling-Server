@@ -118,23 +118,23 @@ class TestAccount:
         # THEN I get the account
         assert account.uuid == account_0_uuid
 
-    def test_delete_account_with_transactions(self, db_4_transactions):
+    def test_delete_account_with_transactions(self, db_with_transactions):
         # GIVEN a database with 2 accounts with 2 transactions each
-        accounts = select_accounts(db_4_transactions)
-        transactions = select_transactions(db_4_transactions)
+        accounts = select_accounts(db_with_transactions)
+        transactions = select_transactions(db_with_transactions)
         assert len(accounts) == 2
-        assert len(transactions) == 4
+        assert len(transactions) == 16
 
         # WHEN I delete a selected account
-        accounts = select_accounts(db_4_transactions)
+        accounts = select_accounts(db_with_transactions)
         account_0_uuid = accounts[0].uuid
-        db_4_transactions.delete_account(account_uuid=account_0_uuid)
+        db_with_transactions.delete_account(account_uuid=account_0_uuid)
 
         # THEN that account and its transactions (only) are deleted
-        accounts = select_accounts(db_4_transactions)
-        transactions = select_transactions(db_4_transactions)
+        accounts = select_accounts(db_with_transactions)
+        transactions = select_transactions(db_with_transactions)
         assert len(accounts) == 1
-        assert len(transactions) == 2
+        assert len(transactions) == 8
 
 
 class TestTransaction:
@@ -160,10 +160,10 @@ class TestTransaction:
                 reference = transaction_db.reference
                 assert account_uuid[-4:] == reference[0:4]  # see `make_transactions()`
 
-    def test_insert_or_update_transaction_update_1(self, db_4_transactions):
+    def test_insert_or_update_transaction_update_1(self, db_with_transactions):
         # GIVEN a database with 2 accounts of 2 transactions each
         # WHEN I update a transaction
-        t = select_transactions(db_4_transactions)[0]
+        t = select_transactions(db_with_transactions)[0]
         modified_uuid = t.uuid
         modified_reference = t.reference + " **MODIFIED**"
         transaction = TransactionSchema(
@@ -178,50 +178,50 @@ class TestTransaction:
             amount=t.amount,
             reference=modified_reference,
         )
-        db_4_transactions.upsert_transaction(transaction)
+        db_with_transactions.upsert_transaction(transaction)
 
         # THEN transaction is updated
-        transactions = select_transactions(db_4_transactions)
+        transactions = select_transactions(db_with_transactions)
         print(transactions)
         transaction = next(t for t in transactions if t.uuid == modified_uuid)
         assert "**MODIFIED**" in transaction.reference
 
-    def test_get_transactions_for_account(self, db_4_transactions):
+    def test_get_transactions_for_account(self, db_with_transactions):
 
         # GIVEN a database with 2 accounts of 2 transactions each
 
         # WHEN I select the transactions for the personal account
-        transactions = select_transactions(db_4_transactions)
+        transactions = select_transactions(db_with_transactions)
         t0_account_uuid = transactions[0].account.uuid
         t0_uuid = transactions[0].uuid
-        transactions = db_4_transactions.select_transactions_for_account(
+        transactions = db_with_transactions.select_transactions_for_account(
             t0_account_uuid
         )
 
         # THEN I get the transactions
-        assert transactions[0].transactions[0].uuid == t0_uuid
+        assert transactions[-1].uuid == t0_uuid
 
-    def test_delete_transactions_for_account_id(self, db_4_transactions):
+    def test_delete_transactions_for_account_id(self, db_with_transactions):
         # GIVEN a database with transactions
         # WHEN I delete all transactions for a selected account
-        accounts = select_accounts(db_4_transactions)
+        accounts = select_accounts(db_with_transactions)
         account_uuid = accounts[0].uuid
-        db_4_transactions.delete_transactions_for_account_id(account_uuid)
+        db_with_transactions.delete_transactions_for_account_id(account_uuid)
 
         # THEN all transactions for that account (only) are deleted
-        accounts = select_accounts(db_4_transactions)
+        accounts = select_accounts(db_with_transactions)
         assert len(accounts[0].transactions) == 0
         assert len(accounts[1].transactions) > 0
 
 
 class TestDeleteMethods:
     # @pytest.mark.skip(reason="Not implemented")
-    def test_reset(self, db_4_transactions):
+    def test_reset(self, db_with_transactions):
         # GIVEN a database with banks, accounts, and transactions
         # WHEN I invoke reset()
-        db_4_transactions.reset()
+        db_with_transactions.reset()
 
         # THEN All banks, accounts, and transactions are deleted
-        assert len(select_banks(db_4_transactions)) == 0
-        assert len(select_accounts(db_4_transactions)) == 0
-        assert len(select_transactions(db_4_transactions)) == 0
+        assert len(select_banks(db_with_transactions)) == 0
+        assert len(select_accounts(db_with_transactions)) == 0
+        assert len(select_transactions(db_with_transactions)) == 0

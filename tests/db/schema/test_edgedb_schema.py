@@ -70,13 +70,13 @@ class TestAccount:
         # AND they are linked to the bank
         assert accounts[0].bank.name == test_bank_name
 
-    def test_delete_account_with_transactions(self, db_4_transactions):
+    def test_delete_account_with_transactions(self, db_with_transactions):
         # GIVEN a db with 2 accounts and 4 transactions
-        assert len(db_4_transactions.client.query("select Account")) == 2
-        assert len(db_4_transactions.client.query("select Transaction")) == 4
+        assert len(db_with_transactions.client.query("select Account")) == 2
+        assert len(db_with_transactions.client.query("select Transaction")) == 16
 
         # WHEN I delete one account
-        db_4_transactions.client.query(
+        db_with_transactions.client.query(
             """
             delete Account
             filter .name = "Account 0"
@@ -84,12 +84,12 @@ class TestAccount:
         )
 
         # THEN the account and its transactions are deleted
-        assert len(db_4_transactions.client.query("select Account")) == 1
-        assert len(db_4_transactions.client.query("select Transaction")) == 2
+        assert len(db_with_transactions.client.query("select Account")) == 1
+        assert len(db_with_transactions.client.query("select Transaction")) == 8
         # AND the other account is not
         assert (
             len(
-                db_4_transactions.client.query(
+                db_with_transactions.client.query(
                     "select Account filter .name = 'Account 1'"
                 )
             )

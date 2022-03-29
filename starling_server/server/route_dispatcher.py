@@ -97,9 +97,15 @@ class RouteDispatcher:
         # = HELPERS =======================================================================================================
 
 
-def get_latest_transaction_time(db: Database, account_uuid: uuid.UUID) -> datetime:
+def get_latest_transaction_time(
+    db: Database, account_uuid: uuid.UUID
+) -> Optional[datetime]:
     """Returns the time of the latest transaction for the specified account."""
-    pass
+    transactions = db.select_transactions_for_account(account_uuid)
+
+    # transactions are sorted by time descending, so the first one is the latest
+    if len(transactions) > 0:
+        return transactions[0].time
 
 
 async def get_new_transactions(
