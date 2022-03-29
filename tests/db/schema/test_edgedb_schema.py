@@ -4,7 +4,7 @@ These tests verify the integrity of the EdgeDB schema. They require database "te
 import uuid
 
 from starling_server.server.schemas.transaction import Counterparty
-from tests.db.schema.conftest import (
+from tests.conftest import (
     test_bank_name,
     insert_bank,
     insert_account,
@@ -15,53 +15,57 @@ from tests.db.schema.conftest import (
 
 
 class TestBank:
-    def test_insert_bank(self, db):
+    def test_insert_bank(self, empty_db):
         # GIVEN an initialised database
         # WHEN I insert a bank
-        insert_bank(db, test_bank_name)
+        insert_bank(empty_db, test_bank_name)
 
         # THEN the bank is inserted
-        bank_name = db.query("Select Bank.name")[0]
+        bank_name = empty_db.client.query("Select Bank.name")[0]
         assert bank_name == test_bank_name
 
-    def test_delete_bank(self, db):
+    def test_delete_bank(self, empty_db):
         # GIVEN a db with a bank and two accounts
-        insert_bank(db, test_bank_name)
+        insert_bank(empty_db, test_bank_name)
         for account_name in ["Personal Account 1", "Personal Account 2"]:
-            insert_account(db, account_name)
+            insert_account(empty_db, account_name)
 
         # WHEN I delete the bank
-        db.query("delete Bank filter .name = <str>$name", name=test_bank_name)
+        empty_db.client.query(
+            "delete Bank filter .name = <str>$name", name=test_bank_name
+        )
 
         # THEN the bank and accounts are deleted
-        assert len(db.query("select Bank")) == 0
-        assert len(db.query("select Account")) == 0
+        assert len(empty_db.client.query("select Bank")) == 0
+        assert len(empty_db.client.query("select Account")) == 0
 
 
 class TestCategory:
-    def test_insert_categories(self, db):
+    def test_insert_categories(self, empty_db):
         # GIVEN an empty database
         # WHEN I insert a set of categories and category groups
-        insert_categories(db)
+        insert_categories(empty_db)
 
         # THEN the categories are inserted
-        assert len(db.query("select CategoryGroup")) > 0
-        assert len(db.query("Select Category")) > 0
-        categories = db.query("Select Category {name, category_group: { name }}")
+        assert len(empty_db.client.query("select CategoryGroup")) > 0
+        assert len(empty_db.client.query("Select Category")) > 0
+        categories = empty_db.client.query(
+            "Select Category {name, category_group: { name }}"
+        )
         assert categories[0].category_group.name == "Mandatory"
 
 
 class TestAccount:
-    def test_insert_accounts(self, db):
+    def test_insert_accounts(self, empty_db):
         # GIVEN a db with a bank
-        insert_bank(db, test_bank_name)
+        insert_bank(empty_db, test_bank_name)
 
         # WHEN I add two accounts
         for account_name in ["Personal Account 1", "Personal Account 2"]:
-            insert_account(db, account_name)
+            insert_account(empty_db, account_name)
 
         # THEN the two counts have been inserted
-        accounts = db.query("Select Account{bank:{name}}")
+        accounts = empty_db.client.query("Select Account{bank:{name}}")
         assert len(accounts) == 2
         # AND they are linked to the bank
         assert accounts[0].bank.name == test_bank_name
@@ -94,17 +98,17 @@ class TestAccount:
 
 
 class TestCounterparty:
-    def test_upsert_counterparty_insert_1(self, db):
+    def test_upsert_counterparty_insert_1(self, empty_db):
         # GIVEN an empty database
         # WHEN I add a counterparty
         counterparty_uuid = uuid.uuid4()
         counterparty = Counterparty(
             uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
         )
-        upsert_counterparty(db, counterparty)
+        upsert_counterparty(empty_db, counterparty)
 
         # THEN the counterparty is added
-        counterparty = db.query(
+        counterparty = empty_db.client.query(
             """
             Select Counterparty {name} filter .uuid = <uuid>$uuid""",
             uuid=counterparty_uuid,
@@ -112,22 +116,22 @@ class TestCounterparty:
 
         assert counterparty[0].name == "DUMMY"
 
-    def test_upsert_counterparty_update_1(self, db):
+    def test_upsert_counterparty_update_1(self, empty_db):
         # GIVEN a database with a counterparty
         counterparty_uuid = uuid.uuid4()
         counterparty = Counterparty(
             uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
         )
-        upsert_counterparty(db, counterparty)
+        upsert_counterparty(empty_db, counterparty)
 
         # WHEN I modify the counterparty name
         updated_counterparty = Counterparty(
             uuid=counterparty_uuid, name="DUMMY MODIFIED", display_name="DUMMY MODIFIED"
         )
-        upsert_counterparty(db, updated_counterparty)
+        upsert_counterparty(empty_db, updated_counterparty)
 
         # THEN the counterparty is updated
-        counterparty = db.query(
+        counterparty = empty_db.client.query(
             """
             Select Counterparty {name} filter .uuid = <uuid>$uuid""",
             uuid=counterparty_uuid,
@@ -140,13 +144,13 @@ class TestTransaction:
     def test_insert_transactions(self, db_with_accounts):
         # GIVEN a db with a 2 accounts
         # WHEN I add transactions to the accounts
-        account_uuids = db_with_accounts.query("select Account.uuid")
+        account_uuids = db_with_accounts.client.query("select Account.uuid")
         for account_uuid in account_uuids:
             for i in range(2):
                 insert_transaction(db_with_accounts, account_uuid)
 
         # THEN the transactions are added
-        assert len(db_with_accounts.query("select Transaction")) == 4
+        assert len(db_with_accounts.client.query("select Transaction")) == 4
         # AND are linked to an account
-        t_0 = db_with_accounts.query("select Transaction { account: {uuid}}")[0]
+        t_0 = db_with_accounts.client.query("select Transaction { account: {uuid}}")[0]
         assert isinstance(t_0.account.uuid, uuid.UUID)

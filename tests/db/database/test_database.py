@@ -4,7 +4,7 @@ These tests verify the functionality of the EdgeDB Class. They require database 
 
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
-from tests.db.database.conftest import (
+from tests.conftest import (
     make_accounts,
     make_transactions,
     insert_categories,
@@ -15,13 +15,13 @@ from tests.db.database.conftest import (
 
 
 class TestBank:
-    def test_insert_bank(self, db):
+    def test_insert_bank(self, empty_db):
         # GIVEN an empty database
         # WHEN I insert a bank
-        db.upsert_bank(bank_name="Starling Personal (TEST)")
+        empty_db.upsert_bank(bank_name="Starling Personal (TEST)")
 
         # THEN the bank is inserted
-        bank_db = db.client.query("select Bank {name}")
+        bank_db = empty_db.client.query("select Bank {name}")
         assert len(bank_db) == 1
         assert bank_db[0].name == "Starling Personal (TEST)"
 
@@ -44,15 +44,17 @@ class TestBank:
 
 
 class TestCategory:
-    def test_insert_categories(self, db):
+    def test_insert_categories(self, empty_db):
         # GIVEN an empty database
         # WHEN I add categories
-        insert_categories(db)
+        insert_categories(empty_db)
 
         # THEN the categories are added
-        assert len(db.client.query("select CategoryGroup")) > 0
-        assert len(db.client.query("Select Category")) > 0
-        categories = db.client.query("Select Category {name, category_group: { name }}")
+        assert len(empty_db.client.query("select CategoryGroup")) > 0
+        assert len(empty_db.client.query("Select Category")) > 0
+        categories = empty_db.client.query(
+            "Select Category {name, category_group: { name }}"
+        )
         assert categories[0].category_group.name == "Mandatory"
 
 
