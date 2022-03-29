@@ -52,6 +52,10 @@ def get_auth_token(bank_name: str) -> str:
 
 
 def get_bank_info(bank_name: str) -> BankInfo:
-    """Returns a bank info object computed from bank_name."""
+    """Returns a bank info object computed from bank_name, or RuntimeError."""
     banks = [BankInfo(**bank) for bank in cfg.banks]
-    return next(bank for bank in banks if bank.bank_name == bank_name)
+    for bank in banks:
+        if bank.bank_name == bank_name:
+            return bank
+
+    raise RuntimeError(f"No bank info found for bank '{bank_name}'")
