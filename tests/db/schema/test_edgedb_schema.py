@@ -70,27 +70,27 @@ class TestAccount:
         # AND they are linked to the bank
         assert accounts[0].bank.name == test_bank_name
 
-    def test_delete_account_with_transactions(self, db_with_transactions):
+    def test_delete_account_with_transactions(self, db_4_transactions):
         # GIVEN a db with 2 accounts and 4 transactions
-        assert len(db_with_transactions.query("select Account")) == 2
-        assert len(db_with_transactions.query("select Transaction")) == 4
+        assert len(db_4_transactions.client.query("select Account")) == 2
+        assert len(db_4_transactions.client.query("select Transaction")) == 4
 
         # WHEN I delete one account
-        db_with_transactions.query(
+        db_4_transactions.client.query(
             """
             delete Account
-            filter .name = "Personal Account 2"
+            filter .name = "Account 0"
             """
         )
 
         # THEN the account and its transactions are deleted
-        assert len(db_with_transactions.query("select Account")) == 1
-        assert len(db_with_transactions.query("select Transaction")) == 2
+        assert len(db_4_transactions.client.query("select Account")) == 1
+        assert len(db_4_transactions.client.query("select Transaction")) == 2
         # AND the other account is not
         assert (
             len(
-                db_with_transactions.query(
-                    "select Account filter .name = 'Personal Account 1'"
+                db_4_transactions.client.query(
+                    "select Account filter .name = 'Account 1'"
                 )
             )
             == 1
@@ -141,16 +141,16 @@ class TestCounterparty:
 
 
 class TestTransaction:
-    def test_insert_transactions(self, db_with_accounts):
+    def test_insert_transactions(self, db_2_accounts):
         # GIVEN a db with a 2 accounts
         # WHEN I add transactions to the accounts
-        account_uuids = db_with_accounts.client.query("select Account.uuid")
+        account_uuids = db_2_accounts.client.query("select Account.uuid")
         for account_uuid in account_uuids:
             for i in range(2):
-                insert_transaction(db_with_accounts, account_uuid)
+                insert_transaction(db_2_accounts, account_uuid)
 
         # THEN the transactions are added
-        assert len(db_with_accounts.client.query("select Transaction")) == 4
+        assert len(db_2_accounts.client.query("select Transaction")) == 4
         # AND are linked to an account
-        t_0 = db_with_accounts.client.query("select Transaction { account: {uuid}}")[0]
+        t_0 = db_2_accounts.client.query("select Transaction { account: {uuid}}")[0]
         assert isinstance(t_0.account.uuid, uuid.UUID)

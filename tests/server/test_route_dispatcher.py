@@ -45,7 +45,7 @@ class TestAccounts:
 
 
 class TestGetNewTransactions:
-    def test_get_latest_transaction_time(self):
+    def test_get_latest_transaction_time(self, db_4_transactions):
         # GIVEN a test database with transactions of different time stamps
         # WHEN I get the latest transaction time
         database = None

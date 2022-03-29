@@ -29,13 +29,13 @@ class RouteDispatcher:
     # = ROUTES: ACCOUNTS ===========================================================================================
 
     async def get_accounts(self) -> List[AccountSchema]:
-        """Get a list of accounts."""
+        """Get a list of the accounts stored in the database."""
         return [account.schema for account in self.accounts]
 
     async def get_account_balances(
         self,
     ):
-        """Get a list of account balances from the providers."""
+        """Get a list of current account balances from the providers."""
         return await asyncio.gather(
             *[account.provider.get_account_balance() for account in self.accounts]
         )
@@ -105,7 +105,7 @@ def get_latest_transaction_time(db: Database, account_uuid: uuid.UUID) -> dateti
 async def get_new_transactions(
     accounts: List[Account], db: Database
 ) -> List[TransactionSchema]:
-    """Get latest transactions from the accounts."""
+    """Get all transactions from each provider since the last recorded transaction date."""
     transactions = []
     for account in accounts:
         # compute the last transaction time for account

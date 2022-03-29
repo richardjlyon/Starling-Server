@@ -5,7 +5,7 @@ import json
 import pathlib
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import random, choice
 from typing import List
 
@@ -85,15 +85,6 @@ def db_2_accounts(empty_db, config):
 
 
 @pytest.fixture
-def db_with_accounts(empty_db):
-    insert_bank(empty_db, test_bank_name)
-    insert_categories(empty_db)
-    for account_name in ["Personal Account 1", "Personal Account 2"]:
-        insert_account(empty_db, account_name)
-    return empty_db
-
-
-@pytest.fixture
 @pytest.mark.asyncio
 async def testdb_with_real_accounts(empty_db, config):
     """Returns a test database populated with live accounts (no transactions)."""
@@ -112,17 +103,6 @@ def db_4_transactions(db_2_accounts):
             db_2_accounts.upsert_transaction(transaction)
 
     return db_2_accounts
-
-
-@pytest.fixture
-def db_with_transactions(db_with_accounts):
-    """Returns a database with 1 bank, 2 accounts, 2 transactions in each with categories."""
-    account_uuids = db_with_accounts.client.query("select Account.uuid")
-    for account_uuid in account_uuids:
-        for i in range(2):
-            insert_transaction(db_with_accounts, account_uuid)
-
-    return db_with_accounts.client
 
 
 # RouteDispatcher fixtures ===========================================================================================
@@ -322,11 +302,14 @@ def select_accounts(db):
 
 
 def make_transactions(number: int, account_uuid: uuid.UUID) -> List[TransactionSchema]:
+    reference_date = datetime(2020, 1, 1, tzinfo=pytz.timezone("Europe/London"))
+    dates = [reference_date + timedelta(hours=i) for i in range(number)]
+
     return [
         TransactionSchema(
             uuid=uuid.uuid4(),
             account_uuid=account_uuid,
-            time=datetime.now(pytz.timezone("Europe/London")),
+            time=dates[i],
             counterparty=Counterparty(
                 uuid=uuid.uuid4(),
                 name=f"Counterparty {i}",
@@ -355,7 +338,7 @@ def insert_transaction(db, account_uuid):
             account := account,
             category := category,
             uuid := <uuid>$transaction_uuid,
-            time := <datetime>$now,
+            time := <datetime>$transaction_time,
             counterparty := counterparty,
             amount := <float32>$amount,
             reference := <str>$reference,
@@ -365,7 +348,7 @@ def insert_transaction(db, account_uuid):
         category=make_category(db),
         counterparty_uuid=counterparty_uuid,
         transaction_uuid=uuid.uuid4(),
-        now=datetime.now(pytz.timezone("Europe/London")),
+        transaction_time=datetime.now(pytz.timezone("Europe/London")),
         amount=random() * 100,
         reference=f"Ref: {str(account_uuid)[-4:]}",
     )
@@ -413,42 +396,6 @@ def insert_categories(db) -> List[str]:
             category_list.append(category_name)
 
     return category_list
-
-
-# def insert_categories(db):
-#     data = {
-#         "Mandatory": ["Energy", "Food", "Insurance"],
-#         "Discretionary": ["Entertainment", "Hobbies", "Vacation"],
-#     }
-#
-#     category_list = []
-#
-#     for group, categories in data.items():
-#
-#         db.query(
-#             """
-#             insert CategoryGroup { name := <str>$group }
-#             """,
-#             group=group,
-#         )
-#
-#         for category in categories:
-#             db.query(
-#                 """
-#                 with category_group := (select CategoryGroup filter .name = <str>$group)
-#                 insert Category {
-#                     name := <str>$category,
-#                     category_group := category_group,
-#                     uuid := <uuid>$uuid
-#                 }
-#                 """,
-#                 group=group,
-#                 category=category,
-#                 uuid=uuid.uuid4(),
-#             )
-#             category_list.append(category)
-#
-#     return category_list
 
 
 def upsert_counterparty(db, counterparty: Counterparty):
