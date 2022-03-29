@@ -78,7 +78,9 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def select_transactions_for_account(self, account_uuid: uuid.UUID):
+    def select_transactions_for_account(
+        self, account_uuid: uuid.UUID, offset: int, limit: int
+    ):
         pass
 
     @abstractmethod

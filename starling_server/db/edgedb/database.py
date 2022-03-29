@@ -6,6 +6,7 @@ from typing import List
 
 import edgedb
 
+from starling_server import cfg
 from starling_server.db.db_base import DBBase
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
@@ -289,24 +290,32 @@ class Database(DBBase):
 
         # noinspection SqlNoDataSourceInspection
 
-    def select_transactions_for_account(self, account_uuid: uuid.UUID):
+    def select_transactions_for_account(
+        self,
+        account_uuid: uuid.UUID,
+        offset: int = 0,
+        limit: int = cfg.default_transaction_limit,
+    ):
         transactions = self.client.query(
             """
-            select Account {
-                transactions: {
-                    uuid,
-                    amount
-                }
+            with account := (select Account filter .uuid = <uuid>$account_uuid)
+            select Transaction {
+                uuid,
+                time,
+                amount,
+                reference
             }
-            filter Account.uuid = <uuid>$account_uuid
-    
+            filter .account = account
+            order by .time desc
+            offset <int16>$offset
+            limit <int16>$limit 
             """,
             account_uuid=account_uuid,
+            offset=offset,
+            limit=limit,
         )
         self.client.close()
         return transactions
-
-        # noinspection SqlNoDataSourceInspection
 
     def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
         self.client.query(

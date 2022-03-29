@@ -8,3 +8,4 @@ banks:
     library_name: starling
     token_name: STARLING_BUSINESS_TOKEN
 default_interval_days: 14
+default_transaction_limit: 20
