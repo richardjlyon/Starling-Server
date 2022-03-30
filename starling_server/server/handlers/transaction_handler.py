@@ -1,8 +1,8 @@
 """
-RouteDispatcher handles responding to an API call, retrieving data from account providers, storing the data, and
-returning the data to the client.
+The TransactionHandler coordinates fetching new transactions from the provider, setting display name and category
+information, archiving to the database, and returning to the client.
 """
-import asyncio
+
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -11,37 +11,17 @@ from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
 from starling_server.server.displayname_map import DisplayNameMap
-from starling_server.server.schemas import AccountSchema, TransactionSchema
+from starling_server.server.handlers.handler import Handler
+from starling_server.server.schemas import TransactionSchema
 
 
-class RouteDispatcher:
-    """Controls server operations to coordinate fetching, storage, and publishing."""
-
-    db: Database
-    accounts: List[Account]
+class TransactionHandler(Handler):
+    """
+    A class for fetching data, archiving it, and returning it to the client.
+    """
 
     def __init__(self, database: Database):
-        self.db = database
-        self.accounts = [
-            Account(account_schema)
-            for account_schema in database.select_accounts(as_schema=True)
-        ]
-
-    # = ROUTES: ACCOUNTS ===========================================================================================
-
-    async def get_accounts(self) -> List[AccountSchema]:
-        """Get a list of the accounts stored in the database."""
-        return [account.schema for account in self.accounts]
-
-    async def get_account_balances(
-        self,
-    ):
-        """Get a list of current account balances from the providers."""
-        return await asyncio.gather(
-            *[account.provider.get_account_balance() for account in self.accounts]
-        )
-
-    # = ROUTES: TRANSACTIONS =======================================================================================
+        super().__init__(database=database)
 
     async def get_transactions_between(
         self,
@@ -66,8 +46,6 @@ class RouteDispatcher:
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
         return None
-
-    # = HELPERS =======================================================================================================
 
 
 async def get_new_transactions(

@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter
 
-from starling_server.main import dispatcher
+from starling_server.main import transaction_handler
 from starling_server.server.schemas.transaction import TransactionSchema
 
 router = APIRouter()
@@ -23,7 +23,7 @@ async def get_transactions_between(
     start_date: datetime = None, end_date: datetime = None
 ) -> Optional[List[TransactionSchema]]:
     """Get transactions from all accounts for the specified time interval."""
-    return await dispatcher.get_transactions_between(start_date, end_date)
+    return await transaction_handler.get_transactions_between(start_date, end_date)
 
 
 @router.get(

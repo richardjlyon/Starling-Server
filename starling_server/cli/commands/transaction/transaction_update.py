@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.handlers.transaction_handler import TransactionHandler
 
 
 class TransactionUpdate(Command):
@@ -23,10 +23,10 @@ class TransactionUpdate(Command):
         days = int(self.option("days"))
         self.line(f"<info>Updating transactions for the last {days} days...</info>")
 
-        dispatcher = RouteDispatcher(database=db)
+        handler = TransactionHandler(database=db)
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
 
-        transactions = await dispatcher.get_transactions_between(start_date, end_date)
+        transactions = await handler.get_transactions_between(start_date, end_date)
         if transactions:
             self.line(f"<info>Added {len(transactions)} transactions.</info>")

@@ -1,3 +1,7 @@
+"""
+An Account is a helper class to simplify access to the provider.
+"""
+
 import importlib
 import os
 from dataclasses import dataclass, field

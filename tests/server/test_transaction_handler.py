@@ -1,61 +1,10 @@
-# test_route_dispatcher
-#
-# test the functionality of the route dispatcher
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from starling_server.server.account import Account
-from starling_server.server.route_dispatcher import (
-    RouteDispatcher,
+from starling_server.server.handlers.transaction_handler import (
     get_latest_transaction_time,
 )
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema
-from tests.conftest import select_transactions
-
-
-class TestInitialise:
-    def test_initialise_route_dispatcher(self, testdb_with_real_accounts):
-        # GIVEN a database initialised with real accounts
-        route_dispatcher = RouteDispatcher(testdb_with_real_accounts)
-
-        # WHEN I get the accounts
-        accounts = route_dispatcher.accounts
-
-        # THEN the accounts have been initialised correctly
-        assert isinstance(accounts, list)
-        assert isinstance(accounts[0], Account)
-
-
-class TestAccounts:
-    @pytest.mark.asyncio
-    async def test_get_accounts(self, testdb_with_real_accounts):
-        # GIVEN a dispatcher with a test database initialised with Starling accounts
-        dispatcher = RouteDispatcher(testdb_with_real_accounts)
-
-        # WHEN I get the accounts
-        accounts = await dispatcher.get_accounts()
-
-        # THEN the accounts are returned
-        assert isinstance(accounts, list)
-        assert len(accounts) > 0
-        for account in accounts:
-            assert isinstance(account, AccountSchema)
-
-    @pytest.mark.asyncio
-    async def test_get_account_balances(self, testdb_with_real_accounts):
-        # GIVEN a dispatcher with a test database initialised with Starling accounts
-        dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
-
-        # WHEN I get the account balances
-        balances = await dispatcher.get_account_balances()
-
-        # THEN the account balances are returned
-        assert isinstance(balances, list)
-        assert len(balances) > 0
-        for balance in balances:
-            assert isinstance(balance, AccountBalanceSchema)
 
 
 class TestGetNewTransactions:

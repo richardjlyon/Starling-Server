@@ -1,3 +1,8 @@
+"""
+To support customising the display name of a counterparty, a table of customisations is stored in the database.
+DisplayNameMap is a class for managing its entries.
+"""
+
 from starling_server.db.edgedb.database import Database
 
 

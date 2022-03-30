@@ -1,10 +1,12 @@
 import uvicorn
 
 from starling_server.db.edgedb.database import Database
-from starling_server.server.route_dispatcher import RouteDispatcher
+from starling_server.server.handlers.account_handler import AccountHandler
+from starling_server.server.handlers.transaction_handler import TransactionHandler
 
 db = Database()
-dispatcher = RouteDispatcher(database=db)
+account_handler = AccountHandler(database=db)
+transaction_handler = TransactionHandler(database=db)
 
 
 def run():
