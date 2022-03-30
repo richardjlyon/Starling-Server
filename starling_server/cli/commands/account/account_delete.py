@@ -17,12 +17,12 @@ class AccountDelete(Command):
         loop.run_until_complete(self.handle_async())
 
     async def handle_async(self):
-        self.line("<info>Deleting an account</info>")
+        self.line("<info>Deleting an account...</info>")
 
         self.line(
-            "<error>WARNING: This destroys information and cannot be undone</error>"
+            "<error>WARNING: This destroys information and cannot be undone. Proceed?</error>"
         )
-        if not self.confirm("Type 'confirm' to continue", False, "(?i)^(confirm)$"):
+        if not self.confirm("Type 'confirm' to continue", False, "(?i)^(yes)$"):
             self.line("<info>Exit</info>")
             return
 
@@ -30,7 +30,6 @@ class AccountDelete(Command):
         accounts = db.select_accounts(as_schema=True)
         valid_response = False
         response = None
-        print(accounts)
 
         while not valid_response:
             self.line("<info>Enter the account ID ('q' to quit)</info>")

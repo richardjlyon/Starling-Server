@@ -1,7 +1,7 @@
 # test_route_dispatcher
 #
 # test the functionality of the route dispatcher
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import pytest
 
@@ -70,7 +70,9 @@ class TestGetNewTransactions:
         )
 
         # THEN the latest transaction time is returned
-        assert latest_transaction_time == expected_transaction_time
+        assert expected_transaction_time == latest_transaction_time - timedelta(
+            milliseconds=1
+        )
 
     @pytest.mark.skip(reason="not sure how to implement this")
     @pytest.mark.asyncio

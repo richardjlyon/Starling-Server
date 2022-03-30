@@ -7,8 +7,6 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from loguru import logger
-
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
@@ -82,10 +80,9 @@ async def get_new_transactions(
     new_transactions = await account.provider.get_transactions_between(
         start_date=latest_transaction_time, end_date=datetime.now()
     )
-    logger.info(
-        f"Retrieved {len(new_transactions)} new transactions for {account.schema.account_name}"
-    )
-    logger.info(new_transactions)
+    # logger.debug(
+    #     f"Retrieved {len(new_transactions)} new transactions for {account.schema.account_name}"
+    # )
 
     return new_transactions
 

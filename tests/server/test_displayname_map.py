@@ -8,43 +8,43 @@ from tests.conftest import select_displaynames
 
 
 class TestDisplayNameMap:
-    def test_upsert_insert(self, displaynamemap_manager):
+    def test_upsert_insert(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
         fragment = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
 
         # WHEN I insert the pair in the DisplayNameMap table
-        displaynamemap_manager.upsert(fragment=fragment, displayname=displayname)
+        dmm_unpopulated.upsert(fragment=fragment, displayname=displayname)
 
         # THEN the pair is inserted
-        display_names = select_displaynames(displaynamemap_manager.db)
+        display_names = select_displaynames(dmm_unpopulated.db)
         assert display_names[0].fragment == fragment
         assert display_names[0].displayname == displayname
 
-    def test_upsert_update(self, displaynamemap_manager):
+    def test_upsert_update(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
         fragment = "Riccarton Garden C"
         new_displayname = "Riccarton Garden Centre *MODIFIED*"
-        displaynamemap_manager.upsert(fragment=fragment, displayname=new_displayname)
+        dmm_unpopulated.upsert(fragment=fragment, displayname=new_displayname)
 
         # THEN the pair is updated
-        displaynames = select_displaynames(displaynamemap_manager.db)
+        displaynames = select_displaynames(dmm_unpopulated.db)
         assert displaynames[0].displayname == new_displayname
 
-    def test_delete_name(self, displaynamemap_manager):
+    def test_delete_name(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
         fragment = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
-        displaynamemap_manager.upsert(fragment=fragment, displayname=displayname)
-        displaynames = select_displaynames(displaynamemap_manager.db)
+        dmm_unpopulated.upsert(fragment=fragment, displayname=displayname)
+        displaynames = select_displaynames(dmm_unpopulated.db)
         assert len(displaynames) == 1
 
         # WHEN I delete the pair
-        displaynamemap_manager.delete(fragment)
+        dmm_unpopulated.delete(fragment)
 
         # THEN the pair is deleted
-        displaynames = select_displaynames(displaynamemap_manager.db)
+        displaynames = select_displaynames(dmm_unpopulated.db)
         assert len(displaynames) == 0
 
 
