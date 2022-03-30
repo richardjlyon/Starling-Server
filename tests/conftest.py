@@ -5,7 +5,7 @@ import json
 import pathlib
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import random, choice
 from typing import List
 
@@ -23,7 +23,10 @@ from starling_server.server.account import Account, get_provider_class, get_auth
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
-from starling_server.server.transaction_processor import TransactionProcessor
+from starling_server.server.transaction_processor import (
+    TransactionProcessor,
+    DisplaynameManager,
+)
 from .secrets import token_filepath
 
 testdb = Database(database="test")
@@ -87,8 +90,10 @@ def db_2_accounts(empty_db, config):
 @pytest.fixture
 @pytest.mark.asyncio
 async def testdb_with_real_accounts(empty_db, config):
-    """Returns a test database populated with live accounts (no transactions)."""
+    """Returns a test database populated with accounts from the config file.
 
+    This is necessary for tests that require a provider object to be created.
+    """
     await initialise_accounts(empty_db)
     return empty_db
 
@@ -106,6 +111,19 @@ def db_with_transactions(db_2_accounts):
 
 
 # RouteDispatcher fixtures ===========================================================================================
+
+
+@pytest.fixture
+def account():
+    return Account(
+        schema=AccountSchema(
+            uuid=uuid.UUID("5b692051-b699-40f8-a48b-d14d554a9bd1"),
+            bank_name="Starling Personal",
+            account_name="Personal",
+            currency="GBP",
+            created_at=datetime(2018, 7, 7, 11, 32, 14, 888000, tzinfo=timezone.utc),
+        )
+    )
 
 
 @pytest.fixture()
@@ -138,6 +156,12 @@ def mock_transactions() -> List[TransactionSchema]:
 
 
 @pytest.fixture()
+def displayname_manager(empty_db):
+    """Returns a displayname manager."""
+    return DisplaynameManager(empty_db)
+
+
+@pytest.fixture()
 def tp_empty(empty_db):
     """A transaction processor with an empty database"""
     return TransactionProcessor(empty_db)
@@ -145,7 +169,7 @@ def tp_empty(empty_db):
 
 @pytest.fixture()
 def tp_two_pairs(tp_empty):
-    """A transaction processor with a name pair"""
+    """A transaction processor with a name_fragment pair"""
     name = "Riccarton Garden C"
     display_name = "Riccarton Garden Centre"
 
@@ -371,6 +395,20 @@ def select_transactions(db):
     )
     db.client.close()
     return transactions
+
+
+def select_displaynames(db):
+    displaynames = db.client.query(
+        """
+        select NameDisplayname {
+            name,
+            name_fragment,
+            display_name
+        };
+        """
+    )
+    db.client.close()
+    return displaynames
 
 
 def make_category(db):

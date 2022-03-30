@@ -4,44 +4,46 @@ general couterparty display name lookup, and transaction-specific counterparty
 """
 import pytest
 
+from tests.conftest import select_displaynames
 
-class TestUpsertNamePairs:
-    def test_upsert_name_insert(self, tp_empty):
+
+class TestDisplaynameManager:
+    def test_upsert_name_insert(self, displayname_manager):
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
         display_name = "Riccarton Garden Centre"
 
         # WHEN I insert the pair
-        tp_empty.upsert_display_name(name=name, display_name=display_name)
+        displayname_manager.upsert_display_name(name=name, display_name=display_name)
 
         # THEN the pair is inserted
-        assert display_name == tp_empty.display_name_for_name(name)
+        display_names = select_displaynames(displayname_manager.db)
+        assert display_names[0].name == name
+        assert display_names[0].display_name == display_name
 
-    def test_upsert_name_update(self, tp_two_pairs):
+    def test_upsert_name_update(self, displayname_manager):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
         name = "Riccarton Garden C"
         new_display_name = "Riccarton Garden Centre *MODIFIED*"
-        tp_two_pairs.upsert_display_name(name=name, display_name=new_display_name)
+        displayname_manager.upsert_display_name(
+            name=name, display_name=new_display_name
+        )
 
         # THEN the pair is updated
-        assert new_display_name == tp_two_pairs.display_name_for_name(name)
+        display_names = select_displaynames(displayname_manager.db)
+        assert display_names[0].display_name == new_display_name
 
-    def test_display_name_for_name_returns_none(self, tp_empty):
-        # GIVEN an empty database
-        # WHEN I attempt to get a display_name for non existent name
-        # THEN it returns None
-        assert tp_empty.display_name_for_name("NONEXISTENT") is None
-
-    def test_upsert_name_delete(self, tp_two_pairs):
+    def test_upsert_name_delete(self, displayname_manager):
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
 
         # WHEN I delete the pair
-        tp_two_pairs.delete_name(name)
+        displayname_manager.delete_name(name)
 
         # THEN the pair is deleted
-        assert tp_two_pairs.display_name_for_name(name) is None
+        display_names = select_displaynames(displayname_manager.db)
+        assert len(display_names) == 0
 
 
 class TestUpsertNameFragmentPairs:
@@ -58,6 +60,14 @@ class TestUpsertNameFragmentPairs:
 
         # THEN the pair is inserted correctly
         pass
+
+
+class TestUpsertNamePairs:
+    def test_display_name_for_name_returns_none(self, tp_empty):
+        # GIVEN an empty database
+        # WHEN I attempt to get a display_name for non existent name
+        # THEN it returns None
+        assert tp_empty.display_name_for_name("NONEXISTENT") is None
 
 
 class TestNameMatching:

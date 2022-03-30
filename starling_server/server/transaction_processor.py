@@ -1,15 +1,17 @@
 """
-The transaction processor is called by the route dispatcher. It computes transaction display names and categories based on configuration tables.
+The transaction processor is called by the route dispatcher. It computes transaction display names and categories based
+on configuration tables.
 """
 from typing import Optional
 
+from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas import TransactionSchema
 
 
-class TransactionProcessor:
-    """A class for setting transaction display names and categories."""
+class DisplaynameManager:
+    """A class for managing entries in the NameDisplayname table."""
 
-    def __init__(self, db):
+    def __init__(self, db: Database):
         self.db = db
 
     def upsert_display_name(
@@ -35,6 +37,29 @@ class TransactionProcessor:
         else:
             raise ValueError("name and display_name cannot both be None")
 
+    def delete_name(self, name: str):
+        """
+        Delete the name / display_name pair from NameDisplayname database table.
+        Args:
+            name (str): the name to match
+
+        """
+        self.db.delete_name(name)
+
+
+class CategoryManager:
+    """A class for managing entries in the Category table."""
+
+    def __init__(self, db: Database):
+        self.db = db
+
+
+class TransactionProcessor:
+    """A class for setting transaction display names and categories."""
+
+    def __init__(self, db: Database):
+        self.db = db
+
     def display_name_for_name(self, name: str, fragment: bool = False) -> Optional[str]:
         """
         Return the display name from NameDisplayname database table for the given name.
@@ -51,15 +76,6 @@ class TransactionProcessor:
         results = self.db.display_name_for_name(name)
         if len(results) > 0:
             return results[0].display_name
-
-    def delete_name(self, name: str):
-        """
-        Delete the name / display_name pair from NameDisplayname database table.
-        Args:
-            name (str): the name to match
-
-        """
-        self.db.delete_name(name)
 
     def assign_category(self, transaction: TransactionSchema):
         pass
