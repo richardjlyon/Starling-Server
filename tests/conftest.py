@@ -26,7 +26,7 @@ from starling_server.server.schemas.transaction import TransactionSchema, Counte
 from starling_server.server.transaction_processor import (
     TransactionProcessor,
     CategoryManager,
-    DisplayNameMapManager,
+    DisplayNameMap,
 )
 from .secrets import token_filepath
 
@@ -159,7 +159,17 @@ def mock_transactions() -> List[TransactionSchema]:
 @pytest.fixture()
 def displaynamemap_manager(empty_db):
     """Returns a displayname manager."""
-    return DisplayNameMapManager(empty_db)
+    return DisplayNameMap(empty_db)
+
+
+@pytest.fixture(name="dmm_populated")
+def populated_displaynamemap_manager(empty_db):
+    """Returns a displayname manager with a populated displayname map."""
+    dmm = DisplayNameMap(empty_db)
+    dmm.upsert(fragment="Waterstones", displayname="Waterstones")
+    dmm.upsert(fragment="Acme coffee biz", displayname="Wee cafe at bus stop")
+    dmm.upsert(fragment="BP", displayname="BP Petrol")
+    return dmm
 
 
 @pytest.fixture()
@@ -174,19 +184,19 @@ def tp_empty(empty_db):
     return TransactionProcessor(empty_db)
 
 
-@pytest.fixture()
-def tp_two_pairs(tp_empty):
-    """A transaction processor with a name_fragment pair"""
-    name = "Riccarton Garden C"
-    display_name = "Riccarton Garden Centre"
-
-    tp_empty.upsert_display_name(name=name, display_name=display_name)
-
-    name_fragment = "dwp"
-    display_name = "Department of Work and Pensions"
-    tp_empty.upsert_display_name(name_fragment=name_fragment, display_name=display_name)
-
-    return tp_empty
+# @pytest.fixture()
+# def tp_two_pairs(tp_empty):
+#     """A transaction processor with a name_fragment pair"""
+#     name = "Riccarton Garden C"
+#     display_name = "Riccarton Garden Centre"
+#
+#     tp_empty.upsert_display_name(name=name, display_name=display_name)
+#
+#     name_fragment = "dwp"
+#     display_name = "Department of Work and Pensions"
+#     tp_empty.upsert_display_name(name_fragment=name_fragment, display_name=display_name)
+#
+#     return tp_empty
 
 
 # Route Dispatcher fixtures ===========================================================================================
@@ -356,7 +366,7 @@ def make_transactions(number: int, account_uuid: uuid.UUID) -> List[TransactionS
 def insert_transaction(db, account_uuid):
     counterparty_uuid = uuid.uuid4()
     counterparty = Counterparty(
-        uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+        uuid=counterparty_uuid, name="DUMMY", displayname="DUMMY"
     )
     upsert_counterparty(db, counterparty)
     db.client.query(
@@ -393,7 +403,7 @@ def select_transactions(db):
             uuid,
             time,
             counterparty: {
-                uuid, name, display_name
+                uuid, name, displayname
             },
             amount,
             reference
@@ -409,7 +419,7 @@ def select_displaynames(db):
         """
         select DisplayNameMap {
             fragment,
-            display_name
+            displayname
         };
         """
     )
@@ -448,18 +458,18 @@ def upsert_counterparty(db, counterparty: Counterparty):
         insert Counterparty {
             uuid := <uuid>$uuid,
             name := <str>$name,
-            display_name := <str>$display_name
+            displayname := <str>$displayname
         } unless conflict on .uuid else (
             update Counterparty
             set {
                 name := <str>$name,
-                display_name := <str>$display_name
+                displayname := <str>$displayname
             }
         )
         """,
         uuid=counterparty.uuid,
         name=counterparty.name,
-        display_name=counterparty.display_name,
+        displayname=counterparty.displayname,
     )
 
 

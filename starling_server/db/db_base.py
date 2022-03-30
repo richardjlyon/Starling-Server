@@ -3,7 +3,7 @@
 # Defines a base class for a database provider
 import uuid
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
@@ -22,23 +22,15 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def upsert_display_name_map(self, fragment: str = None, display_name: str = None):
+    def display_name_map_upsert(self, fragment: str = None, display_name: str = None):
         pass
 
     @abstractmethod
-    def delete_display_name_map(self, fragment: str):
+    def display_name_map_delete(self, fragment: str):
         pass
 
     @abstractmethod
-    def display_name_for_name(self, name: str) -> str:
-        pass
-
-    @abstractmethod
-    def select_name_fragments(self):
-        pass
-
-    @abstractmethod
-    def delete_name_fragment(self, name_fragment: str):
+    def display_name_map_select(self) -> Optional[set]:
         pass
 
     @abstractmethod

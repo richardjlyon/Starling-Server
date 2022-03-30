@@ -103,7 +103,7 @@ class TestCounterparty:
         # WHEN I add a counterparty
         counterparty_uuid = uuid.uuid4()
         counterparty = Counterparty(
-            uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+            uuid=counterparty_uuid, name="DUMMY", displayname="DUMMY"
         )
         upsert_counterparty(empty_db, counterparty)
 
@@ -120,13 +120,13 @@ class TestCounterparty:
         # GIVEN a database with a counterparty
         counterparty_uuid = uuid.uuid4()
         counterparty = Counterparty(
-            uuid=counterparty_uuid, name="DUMMY", display_name="DUMMY"
+            uuid=counterparty_uuid, name="DUMMY", displayname="DUMMY"
         )
         upsert_counterparty(empty_db, counterparty)
 
         # WHEN I modify the counterparty name
         updated_counterparty = Counterparty(
-            uuid=counterparty_uuid, name="DUMMY MODIFIED", display_name="DUMMY MODIFIED"
+            uuid=counterparty_uuid, name="DUMMY MODIFIED", displayname="DUMMY MODIFIED"
         )
         upsert_counterparty(empty_db, updated_counterparty)
 

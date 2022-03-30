@@ -21,7 +21,7 @@ module default {
 
         required property uuid -> uuid {constraint exclusive};
         required property name -> str;
-        property display_name -> str;
+        property displayname -> str;
 
         multi link transactions := .<counterparty[is Transaction];
     }
@@ -29,7 +29,7 @@ module default {
     type DisplayNameMap {
 
          property fragment -> str {constraint exclusive};
-         property display_name -> str;
+         property displayname -> str;
     }
 
     type Transaction {

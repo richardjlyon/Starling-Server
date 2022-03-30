@@ -15,7 +15,7 @@ class Counterparty(BaseModel):
 
     uuid: UUID
     name: str
-    display_name: Optional[str]
+    displayname: Optional[str]
 
 
 class CategoryGroup(BaseModel):

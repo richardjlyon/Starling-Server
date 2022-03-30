@@ -2,7 +2,7 @@
 #
 # Defines an edgedb database manager
 import uuid
-from typing import List
+from typing import List, Optional
 
 import edgedb
 
@@ -38,24 +38,24 @@ class Database(DBBase):
     def delete_bank(self, bank_name: str):
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
-    def upsert_display_name_map(self, fragment: str = None, display_name: str = None):
+    def display_name_map_upsert(self, fragment: str = None, displayname: str = None):
         self.client.query(
             """
             insert DisplayNameMap {
                 fragment := <str>$fragment,
-                display_name := <str>$display_name,
+                displayname := <str>$displayname,
             } unless conflict on .fragment else (
                 update DisplayNameMap
                 set {
-                    display_name := <str>$display_name,
+                    displayname := <str>$displayname,
                 }
             )
             """,
             fragment=fragment,
-            display_name=display_name,
+            displayname=displayname,
         )
 
-    def delete_display_name_map(self, fragment: str):
+    def display_name_map_delete(self, fragment: str):
         self.client.query(
             """
             delete DisplayNameMap
@@ -64,32 +64,16 @@ class Database(DBBase):
             fragment=fragment,
         )
 
-    def display_name_for_name(self, name: str):
-        return self.client.query(
+    def display_name_map_select(self) -> Optional[set]:
+        results = self.client.query(
             """
-            select DisplayNameMap { display_name } filter .name = <str>$name
-            """,
-            name=name,
-        )
-
-    def select_name_fragments(self):
-        return self.client.query(
+            select DisplayNameMap {
+                fragment,
+                displayname
+            }
             """
-            select DisplayNameMap { 
-                name_fragment, 
-                display_name 
-            } filter len(.name_fragment) > 0
-            """,
         )
-
-    def delete_name_fragment(self, name_fragment: str):
-        self.client.query(
-            """
-            delete DisplayNameMap
-            filter .name_fragment = <str>name_fragment
-            """,
-            name_fragment=name_fragment,
-        )
+        return results if len(results) > 0 else None
 
     def insert_category_group(self, group_name: str):
         self.client.query(
@@ -199,7 +183,7 @@ class Database(DBBase):
 
     def upsert_counterparty(self, counterparty: Counterparty):
         # FIXME find out how to handle 'Optional' inserts
-        if counterparty.display_name is None:
+        if counterparty.displayname is None:
             self.client.query(
                 """
                 insert Counterparty {
@@ -221,18 +205,18 @@ class Database(DBBase):
                 insert Counterparty {
                     uuid := <uuid>$uuid,
                     name := <str>$name,
-                    display_name := <str>$display_name
+                    displayname := <str>$displayname
                 } unless conflict on .uuid else (
                     update Counterparty
                     set {
                         name := <str>$name,
-                        display_name := <str>$display_name
+                        displayname := <str>$displayname
                     }
                 )
                 """,
                 uuid=counterparty.uuid,
                 name=counterparty.name,
-                display_name=counterparty.display_name,
+                displayname=counterparty.displayname,
             )
 
     def upsert_transaction(self, transaction: TransactionSchema):
