@@ -49,3 +49,10 @@ class DisplayNameMap:
             if entry.fragment.lower() in name.lower():
                 return entry.displayname
         return name
+
+    def get_all_displaynames(self) -> list:
+        """
+        Returns all the display names in the database.
+        """
+        entries = self.db.display_name_map_select()
+        return entries if entries is not None else None

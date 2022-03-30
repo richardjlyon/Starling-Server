@@ -10,8 +10,9 @@ class TransactionName(Command):
     """
     Manage display name modifiers
 
-    name
+    names
         {--d|delete : Delete a display name modifier}
+        {--a|add : Add a display name modifier}
     """
 
     dnm = DisplayNameMap(db)
@@ -21,12 +22,19 @@ class TransactionName(Command):
         loop.run_until_complete(self.handle_async())
 
     async def handle_async(self):
+
+        self.show_table()
+
         if self.option("delete"):
             self.delete_name()
-        else:
+
+        elif self.option("add"):
             self.insert_name()
 
+        self.show_table()
+
     def delete_name(self) -> None:
+        self.line(f"<info>Delete name...</info>")
         fragment = self.ask("Display name fragment: ")
         self.dnm.delete(fragment=fragment)
         print(f"Removed {fragment}")
@@ -37,3 +45,16 @@ class TransactionName(Command):
         displayname = self.ask("Display name: ")
         self.dnm.upsert(fragment=fragment, displayname=displayname)
         self.line(f"<info>Added {fragment}->{displayname} </info>")
+
+    def show_table(self):
+        displaynames = self.dnm.get_all_displaynames()
+        if len(displaynames) > 0:
+            table = self.table()
+            table.set_header_row(["Fragment", "Display name"])
+            table.set_rows(
+                [
+                    [displayname.fragment, displayname.displayname]
+                    for displayname in displaynames
+                ]
+            )
+            table.render(self.io)
