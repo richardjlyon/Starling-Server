@@ -26,7 +26,7 @@ module default {
         multi link transactions := .<counterparty[is Transaction];
     }
 
-    type NameDisplayname {
+    type DisplayNameMap {
 
          property name -> str {constraint exclusive};
          property name_fragment -> str {constraint exclusive};

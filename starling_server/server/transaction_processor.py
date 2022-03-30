@@ -9,7 +9,7 @@ from starling_server.server.schemas import TransactionSchema
 
 
 class DisplaynameManager:
-    """A class for managing entries in the NameDisplayname table."""
+    """A class for managing entries in the DisplayNameMap table."""
 
     def __init__(self, db: Database):
         self.db = db

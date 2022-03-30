@@ -26,6 +26,7 @@ from starling_server.server.schemas.transaction import TransactionSchema, Counte
 from starling_server.server.transaction_processor import (
     TransactionProcessor,
     DisplaynameManager,
+    CategoryManager,
 )
 from .secrets import token_filepath
 
@@ -162,6 +163,12 @@ def displayname_manager(empty_db):
 
 
 @pytest.fixture()
+def category_manager(empty_db):
+    """Returns a category manager."""
+    return CategoryManager(empty_db)
+
+
+@pytest.fixture()
 def tp_empty(empty_db):
     """A transaction processor with an empty database"""
     return TransactionProcessor(empty_db)
@@ -230,7 +237,7 @@ def reset(client):
     )
     client.query(
         """
-        delete NameDisplayname;
+        delete DisplayNameMap;
         """
     )
     client.close()
@@ -400,7 +407,7 @@ def select_transactions(db):
 def select_displaynames(db):
     displaynames = db.client.query(
         """
-        select NameDisplayname {
+        select DisplayNameMap {
             name,
             name_fragment,
             display_name

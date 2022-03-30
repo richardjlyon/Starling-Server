@@ -44,11 +44,11 @@ class Database(DBBase):
         if name is not None:
             self.client.query(
                 """
-                insert NameDisplayname {
+                insert DisplayNameMap {
                     name := <str>$name,
                     display_name := <str>$display_name,
                 } unless conflict on .name else (
-                    update NameDisplayname
+                    update DisplayNameMap
                     set {
                         display_name := <str>$display_name,
                     }
@@ -60,11 +60,11 @@ class Database(DBBase):
         elif name_fragment is not None:
             self.client.query(
                 """
-                insert NameDisplayname {
+                insert DisplayNameMap {
                     name_fragment := <str>$name_fragment,
                     display_name := <str>$display_name,
                 } unless conflict on .name_fragment else (
-                    update NameDisplayname
+                    update DisplayNameMap
                     set {
                         display_name := <str>$display_name,
                     }
@@ -77,7 +77,7 @@ class Database(DBBase):
     def display_name_for_name(self, name: str):
         return self.client.query(
             """
-            select NameDisplayname { display_name } filter .name = <str>$name
+            select DisplayNameMap { display_name } filter .name = <str>$name
             """,
             name=name,
         )
@@ -85,7 +85,7 @@ class Database(DBBase):
     def delete_name(self, name: str):
         self.client.query(
             """
-            delete NameDisplayname
+            delete DisplayNameMap
             filter .name = <str>$name
             """,
             name=name,
@@ -94,7 +94,7 @@ class Database(DBBase):
     def select_name_fragments(self):
         return self.client.query(
             """
-            select NameDisplayname { 
+            select DisplayNameMap { 
                 name_fragment, 
                 display_name 
             } filter len(.name_fragment) > 0
@@ -104,7 +104,7 @@ class Database(DBBase):
     def delete_name_fragment(self, name_fragment: str):
         self.client.query(
             """
-            delete NameDisplayname
+            delete DisplayNameMap
             filter .name_fragment = <str>name_fragment
             """,
             name_fragment=name_fragment,
