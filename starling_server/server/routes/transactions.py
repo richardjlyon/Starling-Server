@@ -2,7 +2,6 @@
 Define the transaction routes.
 """
 
-import uuid
 from datetime import datetime
 from typing import List, Optional
 
@@ -37,6 +36,7 @@ async def get_transactions_for_account_id_between(
     account_id: str, start_date: datetime = None, end_date: datetime = None
 ) -> Optional[List[TransactionSchema]]:
     """Get transactions for the specified account and time interval."""
-    return await dispatcher.get_transactions_for_account_id_between(
-        uuid.UUID(account_id), start_date, end_date
-    )
+    # return await dispatcher.get_transactions_for_account_id_between(
+    #     uuid.UUID(account_id), start_date, end_date
+    # )
+    pass

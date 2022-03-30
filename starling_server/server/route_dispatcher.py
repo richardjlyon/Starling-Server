@@ -11,6 +11,7 @@ from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
 from starling_server.server.schemas import AccountSchema, TransactionSchema
+from starling_server.server.transaction_processor import TransactionProcessor
 
 
 class RouteDispatcher:
@@ -47,54 +48,59 @@ class RouteDispatcher:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
     ) -> Optional[List[TransactionSchema]]:
+        """Get a list of transactions between the given dates.
 
+        This method retrieves new transactions from the providers, stores them in the database, sets each new
+        transaction's counter party and category, then returns a list of transactions for the specified interval.
+        """
+
+        for account in self.accounts:
+            new_transactions = await get_new_transactions(self.db, account)
+            processed_transactions = process_new_transactions(self.db, new_transactions)
+            # insert new transactions into database
+
+        # return transactions between the given dates
         if end_date is None:
             end_date = datetime.now()
         if start_date is None:
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
-        # calls = [
-        #     account.provider.get_transactions_between(start_date, end_date)
-        #     for account in self.accounts
-        # ]
-        # transactions = await asyncio.gather(*calls)
-        # transactions = list(itertools.chain(*transactions))
-        # transactions.sort(key=lambda t: t.time, reverse=True)
+        return None
 
-        new_transactions = await get_new_transactions(self.accounts, self.db)
-        # processed_transactions = insert_transaction_information(
-        #     self.db, new_transactions
-        # )
-        # return processed_transactions_between(self.db, start_date, end_date)
+    # = HELPERS =======================================================================================================
 
-        return new_transactions
 
-    async def get_transactions_for_account_id_between(
-        self,
-        account_id: uuid.UUID,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Optional[List[TransactionSchema]]:
-        """Get transactions for the specified account for the default time interval."""
+async def get_new_transactions(
+    db: Database, account: Account
+) -> List[TransactionSchema]:
+    """Get all transactions for the account since the last recorded transaction date."""
 
-        # FIXME Tidy this logic up include start_date OR end_date
-        # TODO start_date is earliest of (start_date / account_last_updated)
-        if start_date or end_date is None:
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=cfg.default_interval_days)
+    # compute the latest transaction time for the account, or the default time interval if none
+    latest_transaction_time = get_latest_transaction_time(db, account.schema.uuid)
+    if latest_transaction_time is None:
+        latest_transaction_time = datetime.now() - timedelta(
+            days=cfg.default_interval_days
+        )
 
-        # get latest transactions
-        # provider = self.get_provider_for_id(account_id)
-        # transactions = await provider.get_transactions_between(start_date, end_date)
-        #
-        # # save to the database
-        # for transaction in transactions:
-        #     # counter_party = make_counterparty_from(transaction)
-        #     self.db.upsert_transaction(transaction)
-        #
-        # return transactions
+    return await account.provider.get_transactions_between(
+        start_date=latest_transaction_time, end_date=datetime.now()
+    )
 
-        # = HELPERS =======================================================================================================
+
+def process_new_transactions(
+    db: Database,
+    transactions: List[TransactionSchema],
+) -> List[TransactionSchema]:
+    """Process new transactions and add information to them."""
+    processor = TransactionProcessor(db)
+    processed_transactions = []
+    for transaction in transactions:
+        # set transaction display name
+        # set transaction category
+
+        processed_transactions.append(transaction)
+
+    return processed_transactions
 
 
 def get_latest_transaction_time(
@@ -102,26 +108,6 @@ def get_latest_transaction_time(
 ) -> Optional[datetime]:
     """Returns the time of the latest transaction for the specified account."""
     transactions = db.select_transactions_for_account(account_uuid)
-
     # transactions are sorted by time descending, so the first one is the latest
     if len(transactions) > 0:
         return transactions[0].time
-
-
-async def get_new_transactions(
-    accounts: List[Account], db: Database
-) -> List[TransactionSchema]:
-    """Get all transactions from each provider since the last recorded transaction date."""
-    transactions = []
-    for account in accounts:
-        # compute the last transaction time for account
-        latest_transaction_time = get_latest_transaction_time(db, account.schema.uuid)
-
-        # fetch new transactions
-        transactions.extend(
-            account.provider.get_transactions_between(
-                start_date=latest_transaction_time, end_date=datetime.now()
-            )
-        )
-
-    return transactions

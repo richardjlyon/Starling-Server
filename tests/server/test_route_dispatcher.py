@@ -15,11 +15,24 @@ from starling_server.server.schemas.transaction import TransactionSchema
 from tests.conftest import select_transactions
 
 
+class TestInitialise:
+    def test_initialise_route_dispatcher(self, testdb_with_real_accounts):
+        # GIVEN a database initialised with real accounts
+        route_dispatcher = RouteDispatcher(testdb_with_real_accounts)
+
+        # WHEN I get the accounts
+        accounts = route_dispatcher.accounts
+
+        # THEN the accounts have been initialised correctly
+        assert isinstance(accounts, list)
+        assert isinstance(accounts[0], Account)
+
+
 class TestAccounts:
     @pytest.mark.asyncio
     async def test_get_accounts(self, testdb_with_real_accounts):
         # GIVEN a dispatcher with a test database initialised with Starling accounts
-        dispatcher = RouteDispatcher(database=testdb_with_real_accounts)
+        dispatcher = RouteDispatcher(testdb_with_real_accounts)
 
         # WHEN I get the accounts
         accounts = await dispatcher.get_accounts()
@@ -59,16 +72,16 @@ class TestGetNewTransactions:
         # THEN the latest transaction time is returned
         assert latest_transaction_time == expected_transaction_time
 
+    @pytest.mark.skip(reason="not sure how to implement this")
     @pytest.mark.asyncio
-    async def test_get_new_transactions(self, testdb_with_real_accounts):
-        print(testdb_with_real_accounts.select_accounts())
-        accounts = [
-            Account(account_schema)
-            for account_schema in testdb_with_real_accounts.select_accounts(
-                as_schema=True
-            )
-        ]
-        print(accounts)
+    async def test_get_new_transactions(self, db_with_transactions):
+        # GIVEN a test database with transactions
+
+        # WHEN I get the new transactions
+
+        # THEN ???
+
+        pass
 
 
 class TestTransactions:
