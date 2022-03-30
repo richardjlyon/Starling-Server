@@ -20,13 +20,13 @@ from starling_server.providers.starling.schemas import (
     StarlingTransactionSchema,
 )
 from starling_server.server.account import Account, get_provider_class, get_auth_token
+from starling_server.server.displayname_map import DisplayNameMap
 from starling_server.server.route_dispatcher import RouteDispatcher
 from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 from starling_server.server.transaction_processor import (
     TransactionProcessor,
     CategoryManager,
-    DisplayNameMap,
 )
 from .secrets import token_filepath
 
@@ -156,20 +156,21 @@ def mock_transactions() -> List[TransactionSchema]:
 # Transaction Processor fixtures ======================================================================================
 
 
-@pytest.fixture()
-def displaynamemap_manager(empty_db):
-    """Returns a displayname manager."""
+@pytest.fixture(name="dmm_unpopulated")
+def unpopulated_displaynamemap_manager(empty_db):
+    """Returns an unpopulated displayname manager."""
     return DisplayNameMap(empty_db)
 
 
 @pytest.fixture(name="dmm_populated")
-def populated_displaynamemap_manager(empty_db):
-    """Returns a displayname manager with a populated displayname map."""
-    dmm = DisplayNameMap(empty_db)
-    dmm.upsert(fragment="Waterstones", displayname="Waterstones")
-    dmm.upsert(fragment="Acme coffee biz", displayname="Wee cafe at bus stop")
-    dmm.upsert(fragment="BP", displayname="BP Petrol")
-    return dmm
+def populated_displaynamemap_manager(dmm_unpopulated):
+    """Returns a displayname manager with sample entries."""
+    dmm_unpopulated.upsert(fragment="Waterstones", displayname="Waterstones")
+    dmm_unpopulated.upsert(
+        fragment="Acme coffee biz", displayname="Wee cafe at bus stop"
+    )
+    dmm_unpopulated.upsert(fragment="BP", displayname="BP Petrol")
+    return dmm_unpopulated
 
 
 @pytest.fixture()

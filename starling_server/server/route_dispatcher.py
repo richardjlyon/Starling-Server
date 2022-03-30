@@ -10,8 +10,8 @@ from typing import List, Optional
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
+from starling_server.server.displayname_map import DisplayNameMap
 from starling_server.server.schemas import AccountSchema, TransactionSchema
-from starling_server.server.transaction_processor import TransactionProcessor
 
 
 class RouteDispatcher:
@@ -92,15 +92,14 @@ def process_new_transactions(
     transactions: List[TransactionSchema],
 ) -> List[TransactionSchema]:
     """Process new transactions and add information to them."""
-    processor = TransactionProcessor(db)
-    processed_transactions = []
+    processor = DisplayNameMap(db)
     for transaction in transactions:
-        # set transaction display name
-        # set transaction category
+        transaction.counterparty.displayname = processor.displayname_for(
+            transaction.counterparty.name
+        )
+        print(transaction.counterparty)
 
-        processed_transactions.append(transaction)
-
-    return processed_transactions
+    return transactions
 
 
 def get_latest_transaction_time(

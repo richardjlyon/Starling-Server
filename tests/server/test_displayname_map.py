@@ -7,7 +7,7 @@ import pytest
 from tests.conftest import select_displaynames
 
 
-class TestDisplayNameMapManager:
+class TestDisplayNameMap:
     def test_upsert_insert(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
         fragment = "Riccarton Garden C"
@@ -49,7 +49,10 @@ class TestDisplayNameMapManager:
 
 
 class TestNameMatching:
-    def test_none(self, dmm_populated):
+    def test_no_entries(self, dmm_unpopulated):
+        assert dmm_unpopulated.displayname_for("XXX") == "XXX"
+
+    def test_no_match(self, dmm_populated):
         assert dmm_populated.displayname_for("NotInDatabase") == "NotInDatabase"
 
     def test_full_match(self, dmm_populated):
