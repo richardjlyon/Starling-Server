@@ -186,20 +186,17 @@ class TestTransaction:
         transaction = next(t for t in transactions if t.uuid == modified_uuid)
         assert "**MODIFIED**" in transaction.reference
 
-    def test_get_transactions_for_account(self, db_with_transactions):
+    def test_select_transactions_for_account(self, db_with_transactions):
 
-        # GIVEN a database with 2 accounts of 2 transactions each
-
+        # GIVEN a database with 2 accounts of 8 transactions each
         # WHEN I select the transactions for the personal account
-        transactions = select_transactions(db_with_transactions)
-        t0_account_uuid = transactions[0].account.uuid
-        t0_uuid = transactions[0].uuid
+        accounts = select_accounts(db_with_transactions)
         transactions = db_with_transactions.select_transactions_for_account(
-            t0_account_uuid
+            accounts[0].uuid
         )
 
         # THEN I get the transactions
-        assert transactions[-1].uuid == t0_uuid
+        assert len(transactions) == 8
 
     def test_delete_transactions_for_account_id(self, db_with_transactions):
         # GIVEN a database with transactions

@@ -8,13 +8,13 @@ from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas import TransactionSchema
 
 
-class DisplaynameManager:
+class DisplayNameMapManager:
     """A class for managing entries in the DisplayNameMap table."""
 
     def __init__(self, db: Database):
         self.db = db
 
-    def upsert_display_name(
+    def upsert(
         self, name: str = None, name_fragment: str = None, display_name: str = None
     ) -> None:
         """
@@ -27,24 +27,21 @@ class DisplaynameManager:
         """
         if display_name is None:
             raise ValueError("No display_name")
+        if name and name_fragment:
+            raise ValueError("name and name_fragment cannot both be specified")
+        if name is None and name_fragment is None:
+            raise ValueError("either name or name_fragment must be specified")
 
-        if name is not None:
-            self.db.upsert_display_name(name=name, display_name=display_name)
-        elif name_fragment is not None:
-            self.db.upsert_display_name(
-                name_fragment=name_fragment, display_name=display_name
-            )
-        else:
-            raise ValueError("name and display_name cannot both be None")
+        self.db.upsert_display_name_map(name, name_fragment, display_name)
 
-    def delete_name(self, name: str):
+    def delete(self, name: str):
         """
         Delete the name / display_name pair from NameDisplayname database table.
         Args:
             name (str): the name to match
 
         """
-        self.db.delete_name(name)
+        self.db.delete_display_name_map(name)
 
 
 class CategoryManager:

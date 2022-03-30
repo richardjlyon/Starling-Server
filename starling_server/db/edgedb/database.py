@@ -38,7 +38,7 @@ class Database(DBBase):
     def delete_bank(self, bank_name: str):
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
-    def upsert_display_name(
+    def upsert_display_name_map(
         self, name: str = None, name_fragment: str = None, display_name: str = None
     ):
         if name is not None:
@@ -74,19 +74,19 @@ class Database(DBBase):
                 display_name=display_name,
             )
 
+    def delete_display_name_map(self, display_name: str):
+        self.client.query(
+            """
+            delete DisplayNameMap
+            filter .display_name = <str>display_name
+            """,
+            display_name=display_name,
+        )
+
     def display_name_for_name(self, name: str):
         return self.client.query(
             """
             select DisplayNameMap { display_name } filter .name = <str>$name
-            """,
-            name=name,
-        )
-
-    def delete_name(self, name: str):
-        self.client.query(
-            """
-            delete DisplayNameMap
-            filter .name = <str>$name
             """,
             name=name,
         )

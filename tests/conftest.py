@@ -25,8 +25,8 @@ from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
 from starling_server.server.transaction_processor import (
     TransactionProcessor,
-    DisplaynameManager,
     CategoryManager,
+    DisplayNameMapManager,
 )
 from .secrets import token_filepath
 
@@ -157,9 +157,9 @@ def mock_transactions() -> List[TransactionSchema]:
 
 
 @pytest.fixture()
-def displayname_manager(empty_db):
+def displaynamemap_manager(empty_db):
     """Returns a displayname manager."""
-    return DisplaynameManager(empty_db)
+    return DisplayNameMapManager(empty_db)
 
 
 @pytest.fixture()

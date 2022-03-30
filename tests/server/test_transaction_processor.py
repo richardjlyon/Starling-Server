@@ -7,58 +7,65 @@ import pytest
 from tests.conftest import select_displaynames
 
 
-class TestDisplaynameManager:
-    def test_upsert_name_insert(self, displayname_manager):
+class TestDisplaynameMapManager:
+    def test_upsert_create_name(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
         display_name = "Riccarton Garden Centre"
 
-        # WHEN I insert the pair
-        displayname_manager.upsert_display_name(name=name, display_name=display_name)
+        # WHEN I insert the pair in the DisplayNameMap table
+        displaynamemap_manager.upsert(name=name, display_name=display_name)
 
         # THEN the pair is inserted
-        display_names = select_displaynames(displayname_manager.db)
+        display_names = select_displaynames(displaynamemap_manager.db)
         assert display_names[0].name == name
         assert display_names[0].display_name == display_name
 
-    def test_upsert_name_update(self, displayname_manager):
+    def test_upsert_update_name(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
         name = "Riccarton Garden C"
         new_display_name = "Riccarton Garden Centre *MODIFIED*"
-        displayname_manager.upsert_display_name(
-            name=name, display_name=new_display_name
-        )
+        displaynamemap_manager.upsert(name=name, display_name=new_display_name)
 
         # THEN the pair is updated
-        display_names = select_displaynames(displayname_manager.db)
+        display_names = select_displaynames(displaynamemap_manager.db)
         assert display_names[0].display_name == new_display_name
 
-    def test_upsert_name_delete(self, displayname_manager):
+    def test_delete_name(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
 
         # WHEN I delete the pair
-        displayname_manager.delete_name(name)
+        displaynamemap_manager.delete(name)
 
         # THEN the pair is deleted
-        display_names = select_displaynames(displayname_manager.db)
+        display_names = select_displaynames(displaynamemap_manager.db)
         assert len(display_names) == 0
 
-
-class TestUpsertNameFragmentPairs:
-    @pytest.mark.skip(reason="need method to compare name_fragment")
-    def test_upsert_name_fragment_insert(self, tp_empty):
+    def test_name_fragment_upsert_create(self, displaynamemap_manager):
         # GIVEN an empty database and a name fragment / display name pair
         name_fragment = "dwp"
         display_name = "DWP"
 
-        # WHEN I insert the pair in the NameDisplayname table
-        tp_empty.upsert_display_name(
+        # WHEN I insert the pair in the DisplayNameMap table
+        displaynamemap_manager.upsert(
             name_fragment=name_fragment, display_name=display_name
         )
 
         # THEN the pair is inserted correctly
+        display_names = select_displaynames(displaynamemap_manager.db)
+        assert display_names[0].name_fragment == name_fragment
+        assert display_names[0].display_name == display_name
+
+
+class TestCategoryManager:
+    @pytest.mark.skip(reason="not iomplemented")
+    def test_insert_category_group(self, category_manager):
+        pass
+
+    @pytest.mark.skip(reason="not iomplemented")
+    def test_insert_category(self, category_manager):
         pass
 
 
