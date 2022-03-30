@@ -28,8 +28,7 @@ module default {
 
     type DisplayNameMap {
 
-         property name -> str {constraint exclusive};
-         property name_fragment -> str {constraint exclusive};
+         property fragment -> str {constraint exclusive};
          property display_name -> str;
     }
 

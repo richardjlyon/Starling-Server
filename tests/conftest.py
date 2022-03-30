@@ -408,8 +408,7 @@ def select_displaynames(db):
     displaynames = db.client.query(
         """
         select DisplayNameMap {
-            name,
-            name_fragment,
+            fragment,
             display_name
         };
         """

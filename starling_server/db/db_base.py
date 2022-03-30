@@ -22,13 +22,11 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def upsert_display_name_map(
-        self, name: str = None, name_fragment: str = None, display_name: str = None
-    ):
+    def upsert_display_name_map(self, fragment: str = None, display_name: str = None):
         pass
 
     @abstractmethod
-    def delete_display_name_map(self, display_name: str):
+    def delete_display_name_map(self, fragment: str):
         pass
 
     @abstractmethod

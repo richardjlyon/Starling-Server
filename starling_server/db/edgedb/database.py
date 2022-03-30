@@ -38,49 +38,30 @@ class Database(DBBase):
     def delete_bank(self, bank_name: str):
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
-    def upsert_display_name_map(
-        self, name: str = None, name_fragment: str = None, display_name: str = None
-    ):
-        if name is not None:
-            self.client.query(
-                """
-                insert DisplayNameMap {
-                    name := <str>$name,
+    def upsert_display_name_map(self, fragment: str = None, display_name: str = None):
+        self.client.query(
+            """
+            insert DisplayNameMap {
+                fragment := <str>$fragment,
+                display_name := <str>$display_name,
+            } unless conflict on .fragment else (
+                update DisplayNameMap
+                set {
                     display_name := <str>$display_name,
-                } unless conflict on .name else (
-                    update DisplayNameMap
-                    set {
-                        display_name := <str>$display_name,
-                    }
-                )
-                """,
-                name=name,
-                display_name=display_name,
+                }
             )
-        elif name_fragment is not None:
-            self.client.query(
-                """
-                insert DisplayNameMap {
-                    name_fragment := <str>$name_fragment,
-                    display_name := <str>$display_name,
-                } unless conflict on .name_fragment else (
-                    update DisplayNameMap
-                    set {
-                        display_name := <str>$display_name,
-                    }
-                )
-                """,
-                name_fragment=name_fragment,
-                display_name=display_name,
-            )
+            """,
+            fragment=fragment,
+            display_name=display_name,
+        )
 
-    def delete_display_name_map(self, display_name: str):
+    def delete_display_name_map(self, fragment: str):
         self.client.query(
             """
             delete DisplayNameMap
-            filter .display_name = <str>display_name
+            filter .fragment = <str>$fragment
             """,
-            display_name=display_name,
+            fragment=fragment,
         )
 
     def display_name_for_name(self, name: str):

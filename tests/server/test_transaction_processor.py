@@ -7,26 +7,26 @@ import pytest
 from tests.conftest import select_displaynames
 
 
-class TestDisplaynameMapManager:
-    def test_upsert_create_name(self, displaynamemap_manager):
+class TestDisplayNameMapManager:
+    def test_upsert_insert(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
-        name = "Riccarton Garden C"
+        fragment = "Riccarton Garden C"
         display_name = "Riccarton Garden Centre"
 
         # WHEN I insert the pair in the DisplayNameMap table
-        displaynamemap_manager.upsert(name=name, display_name=display_name)
+        displaynamemap_manager.upsert(fragment=fragment, display_name=display_name)
 
         # THEN the pair is inserted
         display_names = select_displaynames(displaynamemap_manager.db)
-        assert display_names[0].name == name
+        assert display_names[0].fragment == fragment
         assert display_names[0].display_name == display_name
 
-    def test_upsert_update_name(self, displaynamemap_manager):
+    def test_upsert_update(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
-        name = "Riccarton Garden C"
+        fragment = "Riccarton Garden C"
         new_display_name = "Riccarton Garden Centre *MODIFIED*"
-        displaynamemap_manager.upsert(name=name, display_name=new_display_name)
+        displaynamemap_manager.upsert(fragment=fragment, display_name=new_display_name)
 
         # THEN the pair is updated
         display_names = select_displaynames(displaynamemap_manager.db)
@@ -34,29 +34,18 @@ class TestDisplaynameMapManager:
 
     def test_delete_name(self, displaynamemap_manager):
         # GIVEN an empty database and a name / display_name pair
-        name = "Riccarton Garden C"
+        fragment = "Riccarton Garden C"
+        display_name = "Riccarton Garden Centre"
+        displaynamemap_manager.upsert(fragment=fragment, display_name=display_name)
+        display_names = select_displaynames(displaynamemap_manager.db)
+        assert len(display_names) == 1
 
         # WHEN I delete the pair
-        displaynamemap_manager.delete(name)
+        displaynamemap_manager.delete(fragment)
 
         # THEN the pair is deleted
         display_names = select_displaynames(displaynamemap_manager.db)
         assert len(display_names) == 0
-
-    def test_name_fragment_upsert_create(self, displaynamemap_manager):
-        # GIVEN an empty database and a name fragment / display name pair
-        name_fragment = "dwp"
-        display_name = "DWP"
-
-        # WHEN I insert the pair in the DisplayNameMap table
-        displaynamemap_manager.upsert(
-            name_fragment=name_fragment, display_name=display_name
-        )
-
-        # THEN the pair is inserted correctly
-        display_names = select_displaynames(displaynamemap_manager.db)
-        assert display_names[0].name_fragment == name_fragment
-        assert display_names[0].display_name == display_name
 
 
 class TestCategoryManager:

@@ -8,40 +8,38 @@ from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas import TransactionSchema
 
 
+def name_matcher(db: Database, name: str) -> Optional[str]:
+    """Returns the display name for a transaction name."""
+    pass
+
+
 class DisplayNameMapManager:
     """A class for managing entries in the DisplayNameMap table."""
 
     def __init__(self, db: Database):
         self.db = db
 
-    def upsert(
-        self, name: str = None, name_fragment: str = None, display_name: str = None
-    ) -> None:
+    def upsert(self, fragment: str = None, display_name: str = None) -> None:
         """
-        Insert the name / display_name pair in NameDisplayname database table.
+        Insert the fragment / display_name pair in NameDisplayname database table.
         Args:
-            name (str): the name to insert
-            name_fragment (str): the name fragment to insert
-            display_name (str): the display_name to insert
-
+            fragment (str): the name fragment to insert
+            display_name (str): the corresponding display_name to insert
         """
+        if fragment is None:
+            raise ValueError("Fragment cannot be None")
         if display_name is None:
-            raise ValueError("No display_name")
-        if name and name_fragment:
-            raise ValueError("name and name_fragment cannot both be specified")
-        if name is None and name_fragment is None:
-            raise ValueError("either name or name_fragment must be specified")
+            raise ValueError("Display name cannot be None")
 
-        self.db.upsert_display_name_map(name, name_fragment, display_name)
+        self.db.upsert_display_name_map(fragment, display_name)
 
-    def delete(self, name: str):
+    def delete(self, fragment: str):
         """
         Delete the name / display_name pair from NameDisplayname database table.
         Args:
-            name (str): the name to match
-
+            fragment (str): the fragment to match
         """
-        self.db.delete_display_name_map(name)
+        self.db.delete_display_name_map(fragment)
 
 
 class CategoryManager:
