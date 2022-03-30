@@ -260,7 +260,7 @@ class Database(DBBase):
         account_uuid: uuid.UUID,
         offset: int = 0,
         limit: int = cfg.default_transaction_limit,
-    ):
+    ) -> Optional[edgedb.Set]:
         transactions = self.client.query(
             """
             with account := (select Account filter .uuid = <uuid>$account_uuid)
@@ -280,7 +280,7 @@ class Database(DBBase):
             limit=limit,
         )
         self.client.close()
-        return transactions
+        return transactions if len(transactions) > 0 else None
 
     def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
         self.client.query(

@@ -7,6 +7,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+from loguru import logger
+
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
@@ -57,7 +59,7 @@ class RouteDispatcher:
         for account in self.accounts:
             new_transactions = await get_new_transactions(self.db, account)
             processed_transactions = process_new_transactions(self.db, new_transactions)
-            # insert new transactions into database
+            insert_new_transactions(self.db, processed_transactions)
 
         # return transactions between the given dates
         if end_date is None:
@@ -77,14 +79,15 @@ async def get_new_transactions(
 
     # compute the latest transaction time for the account, or the default time interval if none
     latest_transaction_time = get_latest_transaction_time(db, account.schema.uuid)
-    if latest_transaction_time is None:
-        latest_transaction_time = datetime.now() - timedelta(
-            days=cfg.default_interval_days
-        )
-
-    return await account.provider.get_transactions_between(
+    new_transactions = await account.provider.get_transactions_between(
         start_date=latest_transaction_time, end_date=datetime.now()
     )
+    logger.info(
+        f"Retrieved {len(new_transactions)} new transactions for {account.schema.account_name}"
+    )
+    logger.info(new_transactions)
+
+    return new_transactions
 
 
 def process_new_transactions(
@@ -93,20 +96,40 @@ def process_new_transactions(
 ) -> List[TransactionSchema]:
     """Process new transactions and add information to them."""
     processor = DisplayNameMap(db)
+
     for transaction in transactions:
+        # set display name
         transaction.counterparty.displayname = processor.displayname_for(
             transaction.counterparty.name
         )
-        print(transaction.counterparty)
+
+        # set category
+        pass  # TODO
 
     return transactions
+
+
+def insert_new_transactions(
+    db: Database, transactions: List[TransactionSchema]
+) -> None:
+    """Insert new transactions into the database."""
+    for transaction in transactions:
+        db.upsert_transaction(transaction)
 
 
 def get_latest_transaction_time(
     db: Database, account_uuid: uuid.UUID
 ) -> Optional[datetime]:
     """Returns the time of the latest transaction for the specified account."""
+
     transactions = db.select_transactions_for_account(account_uuid)
-    # transactions are sorted by time descending, so the first one is the latest
-    if len(transactions) > 0:
-        return transactions[0].time
+
+    if transactions is None:
+        # no transactions: compute from the default interval
+        transaction_time = datetime.now() - timedelta(days=cfg.default_interval_days)
+    else:
+        # transactions are sorted by time, so the last one is the latest
+        # add a millisecond to avoid retrieving it again
+        transaction_time = transactions[0].time + timedelta(milliseconds=1)
+
+    return transaction_time

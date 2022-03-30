@@ -3,7 +3,7 @@
 # Defines a base class for a database provider
 import uuid
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
@@ -70,7 +70,7 @@ class DBBase(ABC):
     @abstractmethod
     def select_transactions_for_account(
         self, account_uuid: uuid.UUID, offset: int, limit: int
-    ):
+    ) -> Optional[Any]:
         pass
 
     @abstractmethod

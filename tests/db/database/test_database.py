@@ -198,6 +198,11 @@ class TestTransaction:
         # THEN I get the transactions
         assert len(transactions) == 8
 
+    def test_select_transactions_returns_none(self, db_2_accounts):
+        accounts = select_accounts(db_2_accounts)
+        transactions = db_2_accounts.select_transactions_for_account(accounts[0].uuid)
+        assert transactions is None
+
     def test_delete_transactions_for_account_id(self, db_with_transactions):
         # GIVEN a database with transactions
         # WHEN I delete all transactions for a selected account
