@@ -6,7 +6,7 @@ import pathlib
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from random import random, choice
+from random import random
 from typing import List
 
 import pytest
@@ -22,7 +22,12 @@ from starling_server.providers.starling.schemas import (
 from starling_server.server.account import Account, get_provider_class, get_auth_token
 from starling_server.server.displayname_map import DisplayNameMap
 from starling_server.server.schemas import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
+from starling_server.server.schemas.transaction import (
+    TransactionSchema,
+    Counterparty,
+    Category,
+    CategoryGroup,
+)
 from .secrets import token_filepath
 
 testdb = Database(database="test")
@@ -366,11 +371,12 @@ def insert_transaction(db, account_uuid):
     counterparty_uuid = uuid.uuid4()
     counterparty = Counterparty(uuid=counterparty_uuid, name="DUMMY")
     upsert_counterparty(db, counterparty)
+    categories = make_categories()
     db.client.query(
         """
         with 
             account := (select Account filter .uuid = <uuid>$account_uuid),
-            category := (select Category filter .name = <str>$category),
+            category := (select Category filter .uuid = <uuid>$category_uuid),
             counterparty := (select Counterparty filter .uuid = <uuid>$counterparty_uuid),
         insert Transaction {
             account := account,
@@ -383,7 +389,7 @@ def insert_transaction(db, account_uuid):
         }
         """,
         account_uuid=account_uuid,
-        category=make_category(db),
+        category_uuid=categories[0].uuid,
         counterparty_uuid=counterparty_uuid,
         transaction_uuid=uuid.uuid4(),
         transaction_time=datetime.now(pytz.timezone("Europe/London")),
@@ -424,29 +430,44 @@ def select_displaynames(db):
     return displaynames
 
 
-def make_category(db):
-    categories = list(db.client.query("select Category.name"))
-    if len(categories) == 0:
-        return ""
-    else:
-        return choice(categories)
+def select_categories(db):
+    categories = db.client.query(
+        """
+        select Category {
+            uuid,
+            name,
+            category_group: { name }
+        };
+        """
+    )
+    db.client.close()
+    return categories
 
 
-def insert_categories(db) -> List[str]:
+def make_categories() -> List[Category]:
     data = {
         "Mandatory": ["Energy", "Food", "Insurance"],
         "Discretionary": ["Entertainment", "Hobbies", "Vacation"],
     }
-
     category_list = []
-
     for group_name, categories in data.items():
-        db.insert_category_group(group_name)
+        group = CategoryGroup(name=group_name)
         for category_name in categories:
-            db.upsert_category(group_name, category_name)
-            category_list.append(category_name)
+            category = Category(
+                name=category_name,
+                group=group,
+            )
+            category_list.append(category)
 
     return category_list
+
+
+def insert_categories(db) -> List[Category]:
+    categories = make_categories()
+    for category in categories:
+        db.upsert_category(category)
+
+    return categories
 
 
 def upsert_counterparty(db, counterparty: Counterparty):

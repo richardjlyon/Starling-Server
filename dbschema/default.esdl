@@ -53,16 +53,19 @@ module default {
     }
 
     type CategoryGroup {
-        required property name -> str {constraint exclusive};
+        required property uuid -> uuid {constraint exclusive};
+        required property name -> str;
 
         multi link categories := .<category_group[is Category];
     }
 
     type Category {
         required property uuid -> uuid {constraint exclusive};
-        required property name -> str {constraint exclusive};
+        required property name -> str;
 
-        link category_group -> CategoryGroup;
+        required link category_group -> CategoryGroup {
+            on target delete delete source;
+        };
         multi link transactions := .<category[is Transaction];
     }
 }

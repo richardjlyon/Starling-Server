@@ -12,7 +12,11 @@ from loguru import logger
 from starling_server import cfg
 from starling_server.db.db_base import DBBase
 from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
+from starling_server.server.schemas.transaction import (
+    TransactionSchema,
+    Counterparty,
+    Category,
+)
 
 
 class Database(DBBase):
@@ -346,20 +350,26 @@ class Database(DBBase):
 
     # CATEGORIES ======================================================================================================
 
-    def insert_category_group(self, group_name: str):
+    def upsert_categorygroup(self, category: Category) -> None:
         self.client.query(
             """
-            insert CategoryGroup { name := <str>$group_name }
+            insert CategoryGroup { uuid := <uuid>$uuid, name := <str>$name }
+            unless conflict on .uuid else (
+                update CategoryGroup
+                set { name := <str>$name }
+            )
             """,
-            group_name=group_name,
+            uuid=category.group.uuid,
+            name=category.group.name,
         )
 
-    def upsert_category(self, group_name: str, category_name: str):
+    def upsert_category(self, category: Category) -> None:
+        self.upsert_categorygroup(category)
         self.client.query(
             """
-            with category_group := (select CategoryGroup filter .name = <str>$group_name)
+            with category_group := (select CategoryGroup filter .uuid = <uuid>$group_uuid)
             insert Category {
-                uuid := <uuid>$uuid,
+                uuid := <uuid>$category_uuid,
                 name := <str>$category_name,
                 category_group := category_group
             } unless conflict on .uuid else (
@@ -370,9 +380,20 @@ class Database(DBBase):
                 }
             )
             """,
-            uuid=uuid.uuid4(),
-            group_name=group_name,
-            category_name=category_name,
+            group_uuid=category.group.uuid,
+            category_uuid=category.uuid,
+            category_name=category.name,
         )
 
         # noinspection SqlNoDataSourceInspection
+
+    def delete_category_group(self, group_name: str):
+        pass
+
+    def delete_category(self, category: Category) -> None:
+        self.client.query(
+            "delete Category filter .uuid = <uuid>$uuid", uuid=category.uuid
+        )
+
+    def select_categories(self) -> Optional[List[Category]]:
+        pass

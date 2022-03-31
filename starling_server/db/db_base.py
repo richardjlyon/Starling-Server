@@ -7,7 +7,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
+from starling_server.server.schemas.transaction import (
+    TransactionSchema,
+    Counterparty,
+    Category,
+)
 
 
 class DBBase(ABC):
@@ -93,9 +97,21 @@ class DBBase(ABC):
     # CATEGORIES ======================================================================================================
 
     @abstractmethod
-    def insert_category_group(self, group_name: str):
+    def upsert_categorygroup(self, category: Category) -> None:
         pass
 
     @abstractmethod
-    def upsert_category(self, group_name: str, category_name: str):
+    def upsert_category(self, category: Category) -> None:
+        pass
+
+    @abstractmethod
+    def delete_category(self, category: Category) -> None:
+        pass
+
+    @abstractmethod
+    def delete_category_group(self, group_name: str):
+        pass
+
+    @abstractmethod
+    def select_categories(self) -> Optional[List[Category]]:
         pass

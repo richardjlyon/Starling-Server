@@ -86,11 +86,11 @@ class TransactionHandler(Handler):
         self, transactions: List[TransactionSchema]
     ) -> List[TransactionSchema]:
         """Process transactions and add information to them."""
-        processor = DisplayNameMap(self.db)
+        name_processor = DisplayNameMap(self.db)
 
         for transaction in transactions:
             # set display name
-            transaction.counterparty.displayname = processor.displayname_for(
+            transaction.counterparty.displayname = name_processor.displayname_for(
                 transaction.counterparty.name
             )
 

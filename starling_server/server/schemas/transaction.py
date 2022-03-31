@@ -1,13 +1,12 @@
 """
 Define the schemas used for Server transaction data structures.
 """
-
 import re
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from pydantic.main import BaseModel
+from pydantic.main import BaseModel, Field
 
 
 class Counterparty(BaseModel):
@@ -19,13 +18,14 @@ class Counterparty(BaseModel):
 
 
 class CategoryGroup(BaseModel):
+    uuid: UUID = Field(default_factory=uuid4)
     name: str
 
 
 class Category(BaseModel):
-    uuid: UUID
+    uuid: UUID = Field(default_factory=uuid4)
     name: str
-    category_group: CategoryGroup
+    group: CategoryGroup
 
 
 class TransactionSchema(BaseModel):

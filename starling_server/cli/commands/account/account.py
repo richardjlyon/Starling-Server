@@ -22,6 +22,9 @@ class AccountCommand(Command):
 
         accounts = db.select_accounts()
 
+        if accounts is None:
+            return
+
         for idx, account in enumerate(accounts):
             # TODO add account balances
             self.line(

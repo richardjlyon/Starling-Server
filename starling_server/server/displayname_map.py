@@ -26,13 +26,13 @@ class DisplayNameMap:
 
         self.db.display_name_map_upsert(name, displayname)
 
-    def delete(self, fragment: str):
+    def delete(self, name: str):
         """
         Delete the name / display_name pair from NameDisplayname database table.
         Args:
-            fragment (str): the fragment to match
+            name (str): the fragment to match
         """
-        self.db.display_name_map_delete(fragment)
+        self.db.display_name_map_delete(name)
 
     def displayname_for(self, name: str) -> str:
         """

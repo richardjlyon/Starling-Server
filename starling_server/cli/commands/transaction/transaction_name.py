@@ -35,26 +35,28 @@ class TransactionName(Command):
 
     def delete_name(self) -> None:
         self.line(f"<info>Delete name...</info>")
-        fragment = self.ask("Display name fragment: ")
-        self.dnm.delete(fragment=fragment)
-        print(f"Removed {fragment}")
+        name = self.ask("Counterparty name: ")
+        self.dnm.delete(name=name)
+        print(f"Removed {name}")
 
     def insert_name(self) -> None:
         self.line(f"<info>Enter display name information...</info>")
-        fragment = self.ask("Display name fragment: ")
+        name = self.ask("Counterparty name: ")
         displayname = self.ask("Display name: ")
-        self.dnm.upsert(fragment=fragment, displayname=displayname)
-        self.line(f"<info>Added {fragment}->{displayname} </info>")
+        self.dnm.upsert(name=name, displayname=displayname)
+        self.line(f"<info>Added {name}->{displayname} </info>")
 
     def show_table(self):
         displaynames = self.dnm.get_all_displaynames()
-        if len(displaynames) > 0:
-            table = self.table()
-            table.set_header_row(["Fragment", "Display name"])
-            table.set_rows(
-                [
-                    [displayname.fragment, displayname.displayname]
-                    for displayname in displaynames
-                ]
-            )
-            table.render(self.io)
+        if len(displaynames) == 0:
+            return
+
+        table = self.table()
+        table.set_header_row(["Fragment", "Display name"])
+        table.set_rows(
+            [
+                [displayname.name, displayname.displayname]
+                for displayname in displaynames
+            ]
+        )
+        table.render(self.io)

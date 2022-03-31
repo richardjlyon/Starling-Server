@@ -1,4 +1,4 @@
-CREATE MIGRATION m1nt4wme7czzoa2gjiheweg6u7w66ux3c5redwdz2k3siqfnr7k57a
+CREATE MIGRATION m1wirdluqcbzb5dbxgyxvtzwkd6vwjitee23cacrz73djibwq66huq
     ONTO initial
 {
   CREATE TYPE default::Account {
@@ -10,7 +10,6 @@ CREATE MIGRATION m1nt4wme7czzoa2gjiheweg6u7w66ux3c5redwdz2k3siqfnr7k57a
       };
   };
   CREATE TYPE default::Bank {
-      CREATE REQUIRED PROPERTY auth_token_hash -> std::str;
       CREATE REQUIRED PROPERTY name -> std::str {
           CREATE CONSTRAINT std::exclusive;
       };
@@ -38,20 +37,21 @@ CREATE MIGRATION m1nt4wme7czzoa2gjiheweg6u7w66ux3c5redwdz2k3siqfnr7k57a
       CREATE MULTI LINK transactions := (.<account[IS default::Transaction]);
   };
   CREATE TYPE default::Category {
-      CREATE REQUIRED PROPERTY name -> std::str {
-          CREATE CONSTRAINT std::exclusive;
-      };
+      CREATE REQUIRED PROPERTY name -> std::str;
       CREATE REQUIRED PROPERTY uuid -> std::uuid {
           CREATE CONSTRAINT std::exclusive;
       };
   };
   CREATE TYPE default::CategoryGroup {
-      CREATE REQUIRED PROPERTY name -> std::str {
+      CREATE REQUIRED PROPERTY name -> std::str;
+      CREATE REQUIRED PROPERTY uuid -> std::uuid {
           CREATE CONSTRAINT std::exclusive;
       };
   };
   ALTER TYPE default::Category {
-      CREATE LINK category_group -> default::CategoryGroup;
+      CREATE REQUIRED LINK category_group -> default::CategoryGroup {
+          ON TARGET DELETE  DELETE SOURCE;
+      };
   };
   ALTER TYPE default::CategoryGroup {
       CREATE MULTI LINK categories := (.<category_group[IS default::Category]);
@@ -62,8 +62,13 @@ CREATE MIGRATION m1nt4wme7czzoa2gjiheweg6u7w66ux3c5redwdz2k3siqfnr7k57a
   ALTER TYPE default::Category {
       CREATE MULTI LINK transactions := (.<category[IS default::Transaction]);
   };
+  CREATE TYPE default::CategoryMap {
+      CREATE LINK category -> default::Category;
+      CREATE PROPERTY displayname -> std::str {
+          CREATE CONSTRAINT std::exclusive;
+      };
+  };
   CREATE TYPE default::Counterparty {
-      CREATE PROPERTY display_name -> std::str;
       CREATE REQUIRED PROPERTY name -> std::str;
       CREATE REQUIRED PROPERTY uuid -> std::uuid {
           CREATE CONSTRAINT std::exclusive;
@@ -76,5 +81,11 @@ CREATE MIGRATION m1nt4wme7czzoa2gjiheweg6u7w66ux3c5redwdz2k3siqfnr7k57a
   };
   ALTER TYPE default::Counterparty {
       CREATE MULTI LINK transactions := (.<counterparty[IS default::Transaction]);
+  };
+  CREATE TYPE default::DisplaynameMap {
+      CREATE PROPERTY displayname -> std::str;
+      CREATE PROPERTY name -> std::str {
+          CREATE CONSTRAINT std::exclusive;
+      };
   };
 };

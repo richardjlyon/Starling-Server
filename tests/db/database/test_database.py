@@ -11,6 +11,7 @@ from tests.conftest import (
     select_accounts,
     select_transactions,
     select_banks,
+    select_categories,
 )
 
 
@@ -48,14 +49,35 @@ class TestCategory:
         # GIVEN an empty database
         # WHEN I add categories
         insert_categories(empty_db)
-
         # THEN the categories are added
-        assert len(empty_db.client.query("select CategoryGroup")) > 0
-        assert len(empty_db.client.query("Select Category")) > 0
+        assert len(empty_db.client.query("select CategoryGroup")) == 2
+        assert len(empty_db.client.query("Select Category")) == 6
         categories = empty_db.client.query(
             "Select Category {name, category_group: { name }}"
         )
         assert categories[0].category_group.name == "Mandatory"
+
+    def test_update_category_name(self, empty_db):
+        # GIVEN a database with test categories
+        categories = insert_categories(empty_db)
+        # WHEN I update a category name
+        category = categories[0]
+        new_name = category.name + " (TEST)"
+        category.name = new_name
+        empty_db.upsert_category(category)
+        # THEN the category is updated
+        categories = select_categories(empty_db)
+        assert new_name in [c.name for c in categories]
+
+    def test_delete_category(self, empty_db):
+        # GIVEN a database with test categories
+        categories = insert_categories(empty_db)
+        # WHEN I delete a category
+        category = categories[0]
+        empty_db.delete_category(category)
+        # THEN the category is deleted
+        categories = select_categories(empty_db)
+        assert category.uuid not in [c.uuid for c in categories]
 
 
 class TestAccount:
