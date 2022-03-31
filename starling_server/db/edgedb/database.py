@@ -16,6 +16,7 @@ from starling_server.server.schemas.transaction import (
     TransactionSchema,
     Counterparty,
     Category,
+    CategoryGroup,
 )
 
 
@@ -387,8 +388,10 @@ class Database(DBBase):
 
         # noinspection SqlNoDataSourceInspection
 
-    def delete_category_group(self, group_name: str):
-        pass
+    def delete_category_group(self, category: Category):
+        self.client.query(
+            "delete CategoryGroup filter .uuid = <uuid>$uuid", uuid=category.group.uuid
+        )
 
     def delete_category(self, category: Category) -> None:
         self.client.query(
@@ -396,4 +399,29 @@ class Database(DBBase):
         )
 
     def select_categories(self) -> Optional[List[Category]]:
-        pass
+        categories = self.client.query(
+            """
+                select Category {
+                    uuid,
+                    name,
+                    category_group: {
+                        uuid,
+                        name
+                    }
+                }
+            """
+        )
+        if len(categories) == 0:
+            return None
+
+        return [
+            Category(
+                uuid=c.uuid,
+                name=c.name,
+                group=CategoryGroup(
+                    uuid=c.category_group.uuid,
+                    name=c.category_group.name,
+                ),
+            )
+            for c in categories
+        ]

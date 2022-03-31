@@ -8,6 +8,7 @@ from starling_server.cli.commands import (
     ServerCommand,
     AccountCommand,
     TransactionCommand,
+    CategoryCommand,
 )
 
 
@@ -20,6 +21,7 @@ class Application(BaseApplication):
             ServerCommand(),
             AccountCommand(),
             TransactionCommand(),
+            CategoryCommand(),
         ]
         for command in commands:
             self.add(command)

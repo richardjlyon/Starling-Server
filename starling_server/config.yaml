@@ -9,3 +9,17 @@ banks:
     token_name: STARLING_BUSINESS_TOKEN
 default_interval_days: 14
 default_transaction_limit: 20
+categories:
+  essential:
+    - "Groceries"
+    - "Household"
+    - "Transport"
+    - "Energy"
+    - "Phone/Internet"
+    - "Health"
+  discretionary:
+    - "Clothing"
+    - "Entertainment"
+    - "Garden"
+    - "Hobbies"
+    - "Other"

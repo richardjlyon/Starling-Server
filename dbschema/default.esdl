@@ -31,11 +31,7 @@ module default {
          property displayname -> str;
     }
 
-    type CategoryMap {
 
-        property displayname -> str {constraint exclusive};
-        link category -> Category;
-    }
 
     type Transaction {
         required link account -> Account {
@@ -67,5 +63,11 @@ module default {
             on target delete delete source;
         };
         multi link transactions := .<category[is Transaction];
+    }
+
+    type CategoryMap {
+
+        property displayname -> str {constraint exclusive};
+        link category -> Category;
     }
 }
