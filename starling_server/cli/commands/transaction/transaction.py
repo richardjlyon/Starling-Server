@@ -3,9 +3,6 @@
 """
 from cleo import Command
 
-from starling_server.cli.commands.transaction.transaction_category import (
-    TransactionCategory,
-)
 from starling_server.cli.commands.transaction.transaction_delete import (
     TransactionDelete,
 )
@@ -26,7 +23,6 @@ class TransactionCommand(Command):
         TransactionUpdate(),
         TransactionDelete(),
         TransactionName(),
-        TransactionCategory(),
     ]
 
     def handle(self):
