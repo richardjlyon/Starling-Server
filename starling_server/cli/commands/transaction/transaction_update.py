@@ -40,8 +40,8 @@ class TransactionUpdate(Command):
                     t.time.strftime("%m/%d/%Y, %H:%M:%S"),
                     account_names[t.account_uuid],
                     format_amount(t.amount),
-                    t.counterparty.name,
-                    t.counterparty.displayname,
+                    format_text(t.counterparty.name),
+                    format_text(t.counterparty.displayname),
                     t.reference,
                 ]
                 for t in transactions
@@ -52,3 +52,10 @@ class TransactionUpdate(Command):
 
 def format_amount(amount: float) -> str:
     return f"{amount:10.2f}"
+
+
+def format_text(text: str) -> str:
+    if text is None:
+        return ""
+    else:
+        return text

@@ -7,7 +7,7 @@ from starling_server.main import db
 
 class TransactionDelete(Command):
     """
-    Delete transactions from the specified account
+    Delete all transactions
 
     delete
     """
