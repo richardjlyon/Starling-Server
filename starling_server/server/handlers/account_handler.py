@@ -12,7 +12,7 @@ from starling_server.server.schemas import AccountSchema
 
 class AccountHandler(Handler):
     """
-    A class for fetching account data and returning it to a client.
+    A class for fetching account data from providers and returning it to a client.
     """
 
     def __init__(self, database: Database):

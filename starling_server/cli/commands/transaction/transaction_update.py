@@ -27,9 +27,8 @@ class TransactionUpdate(Command):
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
 
+        account_names = {a.schema.uuid: a.schema.account_name for a in handler.accounts}
         transactions = await handler.get_transactions_between(start_date, end_date)
-
-        account_info = {a.schema.uuid: a.schema.account_name for a in handler.accounts}
 
         table = self.table()
         table.set_header_row(
@@ -39,7 +38,7 @@ class TransactionUpdate(Command):
             [
                 [
                     t.time.strftime("%m/%d/%Y, %H:%M:%S"),
-                    account_info[t.account_uuid],
+                    account_names[t.account_uuid],
                     format_amount(t.amount),
                     t.counterparty.name,
                     t.counterparty.displayname,
