@@ -28,7 +28,7 @@ class TransactionDelete(Command):
             return
 
         # get the account from the user
-        accounts = db.select_accounts(as_schema=True)
+        accounts = db.select_accounts()
         for account in accounts:
             db.delete_transactions_for_account_id(account.uuid)
 

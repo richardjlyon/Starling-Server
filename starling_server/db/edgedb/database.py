@@ -82,7 +82,7 @@ class Database(DBBase):
         )
         self.client.close()
 
-    def select_accounts(self, as_schema: bool = False) -> Optional[List[AccountSchema]]:
+    def select_accounts(self, raw: bool = False) -> Optional[List[AccountSchema]]:
         accounts_db = self.client.query(
             """
             select Account {
@@ -97,24 +97,24 @@ class Database(DBBase):
         if len(accounts_db) == 0:
             return None
 
-        if as_schema:
-            return [
-                AccountSchema(
-                    uuid=account_db.uuid,
-                    bank_name=account_db.bank.name,
-                    account_name=account_db.name,
-                    currency=account_db.currency,
-                    created_at=account_db.created_at,
-                )
-                for account_db in accounts_db
-            ]
-        else:
+        if raw:
             return accounts_db
 
+        return [
+            AccountSchema(
+                uuid=account_db.uuid,
+                bank_name=account_db.bank.name,
+                account_name=account_db.name,
+                currency=account_db.currency,
+                created_at=account_db.created_at,
+            )
+            for account_db in accounts_db
+        ]
+
     def select_account_for_account_uuid(
-        self, account_uuid: uuid.UUID, as_schema: bool = False
+        self, account_uuid: uuid.UUID, raw: bool = False
     ) -> Optional[AccountSchema]:
-        accounts = self.select_accounts(as_schema=as_schema)
+        accounts = self.select_accounts(raw=raw)
         return next(account for account in accounts if account.uuid == account_uuid)
 
     def delete_account(self, account_uuid: uuid.UUID):

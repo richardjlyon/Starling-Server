@@ -20,7 +20,7 @@ class AccountCommand(Command):
 
     def handle(self):
 
-        accounts = db.select_accounts()
+        accounts = db.select_accounts(raw=True)
 
         for idx, account in enumerate(accounts):
             # TODO add account balances

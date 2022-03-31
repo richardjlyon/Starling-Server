@@ -112,7 +112,7 @@ class TestAccount:
         accounts = select_accounts(db_2_accounts)
         account_0_uuid = accounts[0].uuid
         account = db_2_accounts.select_account_for_account_uuid(
-            account_uuid=account_0_uuid, as_schema=True
+            account_uuid=account_0_uuid
         )
 
         # THEN I get the account

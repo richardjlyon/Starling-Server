@@ -27,7 +27,7 @@ class AccountDelete(Command):
             return
 
         # get the account from the user
-        accounts = db.select_accounts(as_schema=True)
+        accounts = db.select_accounts()
         valid_response = False
         response = None
 
