@@ -34,18 +34,29 @@ class TransactionHandler(Handler):
         transaction's counter party and category, then returns a list of transactions for the specified interval.
         """
 
-        for account in self.accounts:
-            new_transactions = await get_new_transactions(self.db, account)
-            processed_transactions = process_new_transactions(self.db, new_transactions)
-            insert_new_transactions(self.db, processed_transactions)
-
-        # return transactions between the given dates
         if end_date is None:
             end_date = datetime.now()
         if start_date is None:
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
-        return None
+        transactions = []
+
+        for account in self.accounts:
+            new_transactions = await get_new_transactions(self.db, account)
+            insert_new_transactions(self.db, new_transactions)
+            transactions.extend(
+                self.db.select_transactions_for_account(
+                    account.schema.uuid, start_date, end_date
+                )
+            )
+            # return transactions between the given dates
+
+            processed_transactions = process_new_transactions(self.db, new_transactions)
+
+        # sort
+        pass
+
+        return transactions
 
 
 async def get_new_transactions(
@@ -58,9 +69,6 @@ async def get_new_transactions(
     new_transactions = await account.provider.get_transactions_between(
         start_date=latest_transaction_time, end_date=datetime.now()
     )
-    # logger.debug(
-    #     f"Retrieved {len(new_transactions)} new transactions for {account.schema.account_name}"
-    # )
 
     return new_transactions
 

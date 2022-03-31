@@ -19,7 +19,17 @@ class Database(DBBase):
             database=database
         )  # defaults to database "edgedb"
 
-    def upsert_bank(self, bank_name: str):
+    def reset(self):
+        """Drop all Banks, Accounts, and Transacstions."""
+        self.client.query(
+            """
+            delete Bank;
+            """,
+        )
+
+    # BANKS ==========================================================================================================
+
+    def upsert_bank(self, bank_name: str) -> None:
         self.client.query(
             """
             insert Bank {
@@ -35,80 +45,16 @@ class Database(DBBase):
         )
 
     # noinspection SqlNoDataSourceInspection
-    def delete_bank(self, bank_name: str):
+    def delete_bank(self, bank_name: str) -> None:
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
-    def display_name_map_upsert(self, fragment: str = None, displayname: str = None):
-        self.client.query(
-            """
-            insert DisplayNameMap {
-                fragment := <str>$fragment,
-                displayname := <str>$displayname,
-            } unless conflict on .fragment else (
-                update DisplayNameMap
-                set {
-                    displayname := <str>$displayname,
-                }
-            )
-            """,
-            fragment=fragment,
-            displayname=displayname,
-        )
+    # ACCOUNTS ========================================================================================================
 
-    def display_name_map_delete(self, fragment: str):
-        self.client.query(
-            """
-            delete DisplayNameMap
-            filter .fragment = <str>$fragment
-            """,
-            fragment=fragment,
-        )
-
-    def display_name_map_select(self) -> Optional[set]:
-        results = self.client.query(
-            """
-            select DisplayNameMap {
-                fragment,
-                displayname
-            }
-            """
-        )
-        return results if len(results) > 0 else None
-
-    def insert_category_group(self, group_name: str):
-        self.client.query(
-            """
-            insert CategoryGroup { name := <str>$group_name }
-            """,
-            group_name=group_name,
-        )
-
-    def upsert_category(self, group_name: str, category_name: str):
-        self.client.query(
-            """
-            with category_group := (select CategoryGroup filter .name = <str>$group_name)
-            insert Category {
-                uuid := <uuid>$uuid,
-                name := <str>$category_name,
-                category_group := category_group
-            } unless conflict on .uuid else (
-                update Category
-                set {
-                    name := <str>$category_name,
-                    category_group := category_group
-                }
-            )
-            """,
-            uuid=uuid.uuid4(),
-            group_name=group_name,
-            category_name=category_name,
-        )
-
-    def upsert_account(self, token: str, account: AccountSchema):
+    def upsert_account(self, token: str, account: AccountSchema) -> None:
         # ensure Bank exists: note - this can probably be combined with the `insert Account` query
         self.upsert_bank(account.bank_name)
 
-        account_db = self.client.query(
+        self.client.query(
             """
                     with bank := (
                         select Bank filter .name = <str>$bank_name
@@ -135,11 +81,8 @@ class Database(DBBase):
             created_at=account.created_at,
         )
         self.client.close()
-        return account_db
 
-    # noinspection SqlNoDataSourceInspection
-
-    def select_accounts(self, as_schema: bool = False) -> List[AccountSchema]:
+    def select_accounts(self, as_schema: bool = False) -> Optional[List[AccountSchema]]:
         accounts_db = self.client.query(
             """
             select Account {
@@ -151,10 +94,13 @@ class Database(DBBase):
             }
             """
         )
+        if len(accounts_db) == 0:
+            return None
+
         if as_schema:
             return [
                 AccountSchema(
-                    uuid=str(account_db.uuid),
+                    uuid=account_db.uuid,
                     bank_name=account_db.bank.name,
                     account_name=account_db.name,
                     currency=account_db.currency,
@@ -167,7 +113,7 @@ class Database(DBBase):
 
     def select_account_for_account_uuid(
         self, account_uuid: uuid.UUID, as_schema: bool = False
-    ) -> AccountSchema:
+    ) -> Optional[AccountSchema]:
         accounts = self.select_accounts(as_schema=as_schema)
         return next(account for account in accounts if account.uuid == account_uuid)
 
@@ -179,48 +125,12 @@ class Database(DBBase):
             account_uuid=account_uuid,
         )
 
-        # noinspection SqlNoDataSourceInspection
+    # TRANSACTIONS ===================================================================================================
 
-    def upsert_counterparty(self, counterparty: Counterparty):
-        # FIXME find out how to handle 'Optional' inserts
-        if counterparty.displayname is None:
-            self.client.query(
-                """
-                insert Counterparty {
-                    uuid := <uuid>$uuid,
-                    name := <str>$name,
-                } unless conflict on .uuid else (
-                    update Counterparty
-                    set {
-                        name := <str>$name,
-                    }
-                )
-                """,
-                uuid=counterparty.uuid,
-                name=counterparty.name,
-            )
-        else:
-            self.client.query(
-                """
-                insert Counterparty {
-                    uuid := <uuid>$uuid,
-                    name := <str>$name,
-                    displayname := <str>$displayname
-                } unless conflict on .uuid else (
-                    update Counterparty
-                    set {
-                        name := <str>$name,
-                        displayname := <str>$displayname
-                    }
-                )
-                """,
-                uuid=counterparty.uuid,
-                name=counterparty.name,
-                displayname=counterparty.displayname,
-            )
+    def upsert_transaction(self, transaction: TransactionSchema) -> None:
 
-    def upsert_transaction(self, transaction: TransactionSchema):
         self.upsert_counterparty(transaction.counterparty)
+
         transaction_db = self.client.query(
             """
             with 
@@ -251,9 +161,6 @@ class Database(DBBase):
             reference=transaction.reference,
         )
         self.client.close()
-        return transaction_db
-
-        # noinspection SqlNoDataSourceInspection
 
     def select_transactions_for_account(
         self,
@@ -296,10 +203,112 @@ class Database(DBBase):
             account_uuid=account_uuid,
         )
 
-    def reset(self):
-        """Drop all Banks, Accounts, and Transacstions."""
+    # COUNTERPARTIES ================================================================================================
+
+    def upsert_counterparty(self, counterparty: Counterparty):
+        # FIXME find out how to handle 'Optional' inserts
+        if counterparty.displayname is None:
+            self.client.query(
+                """
+                insert Counterparty {
+                    uuid := <uuid>$uuid,
+                    name := <str>$name,
+                } unless conflict on .uuid else (
+                    update Counterparty
+                    set {
+                        name := <str>$name,
+                    }
+                )
+                """,
+                uuid=counterparty.uuid,
+                name=counterparty.name,
+            )
+        else:
+            self.client.query(
+                """
+                insert Counterparty {
+                    uuid := <uuid>$uuid,
+                    name := <str>$name,
+                    displayname := <str>$displayname
+                } unless conflict on .uuid else (
+                    update Counterparty
+                    set {
+                        name := <str>$name,
+                        displayname := <str>$displayname
+                    }
+                )
+                """,
+                uuid=counterparty.uuid,
+                name=counterparty.name,
+                displayname=counterparty.displayname,
+            )
+
+    def display_name_map_upsert(self, fragment: str = None, displayname: str = None):
         self.client.query(
             """
-            delete Bank;
+            insert DisplayNameMap {
+                fragment := <str>$fragment,
+                displayname := <str>$displayname,
+            } unless conflict on .fragment else (
+                update DisplayNameMap
+                set {
+                    displayname := <str>$displayname,
+                }
+            )
             """,
+            fragment=fragment,
+            displayname=displayname,
         )
+
+    def display_name_map_delete(self, fragment: str):
+        self.client.query(
+            """
+            delete DisplayNameMap
+            filter .fragment = <str>$fragment
+            """,
+            fragment=fragment,
+        )
+
+    def display_name_map_select(self) -> Optional[set]:
+        results = self.client.query(
+            """
+            select DisplayNameMap {
+                fragment,
+                displayname
+            }
+            """
+        )
+        return results if len(results) > 0 else None
+
+    # CATEGORIES ======================================================================================================
+
+    def insert_category_group(self, group_name: str):
+        self.client.query(
+            """
+            insert CategoryGroup { name := <str>$group_name }
+            """,
+            group_name=group_name,
+        )
+
+    def upsert_category(self, group_name: str, category_name: str):
+        self.client.query(
+            """
+            with category_group := (select CategoryGroup filter .name = <str>$group_name)
+            insert Category {
+                uuid := <uuid>$uuid,
+                name := <str>$category_name,
+                category_group := category_group
+            } unless conflict on .uuid else (
+                update Category
+                set {
+                    name := <str>$category_name,
+                    category_group := category_group
+                }
+            )
+            """,
+            uuid=uuid.uuid4(),
+            group_name=group_name,
+            category_name=category_name,
+        )
+
+        # noinspection SqlNoDataSourceInspection
