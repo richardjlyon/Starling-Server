@@ -20,11 +20,13 @@ class AccountCommand(Command):
 
     def handle(self):
 
-        accounts = db.select_accounts(raw=True)
+        accounts = db.select_accounts()
 
         for idx, account in enumerate(accounts):
             # TODO add account balances
-            self.line(f"<info>[{idx}] {account.bank.name}: {account.name}</info>")
+            self.line(
+                f"<info>[{idx}] {account.bank_name}: {account.account_name}</info>"
+            )
 
         if self.option("help"):
             return self.call("help", self._config.name)

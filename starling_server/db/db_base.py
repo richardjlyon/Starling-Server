@@ -34,12 +34,12 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def select_accounts(self, raw: bool = False) -> Optional[List[AccountSchema]]:
+    def select_accounts(self) -> Optional[List[AccountSchema]]:
         pass
 
     @abstractmethod
     def select_account_for_account_uuid(
-        self, account_uuid: uuid.UUID, raw: bool = False
+        self, account_uuid: uuid.UUID
     ) -> Optional[AccountSchema]:
         pass
 
