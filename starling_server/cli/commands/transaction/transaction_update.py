@@ -28,5 +28,28 @@ class TransactionUpdate(Command):
         start_date = end_date - timedelta(days=days)
 
         transactions = await handler.get_transactions_between(start_date, end_date)
-        if transactions:
-            self.line(f"<info>Added {len(transactions)} transactions.</info>")
+
+        account_info = {a.schema.uuid: a.schema.account_name for a in handler.accounts}
+
+        table = self.table()
+        table.set_header_row(
+            ["Date", "Account", "Amount", "Name", "Display Name", "Description"]
+        )
+        table.set_rows(
+            [
+                [
+                    t.time.strftime("%m/%d/%Y, %H:%M:%S"),
+                    account_info[t.account_uuid],
+                    format_amount(t.amount),
+                    t.counterparty.name,
+                    t.counterparty.displayname,
+                    t.reference,
+                ]
+                for t in transactions
+            ]
+        )
+        table.render(self.io)
+
+
+def format_amount(amount: float) -> str:
+    return f"{amount:10.2f}"
