@@ -3,7 +3,6 @@ The TransactionHandler coordinates fetching new transactions from the provider, 
 information, archiving to the database, and returning to the client.
 """
 
-import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -39,19 +38,13 @@ class TransactionHandler(Handler):
         if start_date is None:
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
-        transactions = []
-
+        # Fetch new transactions from the providers
         for account in self.accounts:
             new_transactions = await get_new_transactions(self.db, account)
             insert_new_transactions(self.db, new_transactions)
-            transactions.extend(
-                self.db.select_transactions_for_account(
-                    account.schema.uuid, start_date, end_date
-                )
-            )
-            # return transactions between the given dates
 
-            processed_transactions = process_new_transactions(self.db, new_transactions)
+        transactions = self.db.select_transactions_between(start_date, end_date)
+        # processed_transactions = process_new_transactions(self.db, new_transactions)
 
         # sort
         pass
@@ -63,14 +56,18 @@ async def get_new_transactions(
     db: Database, account: Account
 ) -> List[TransactionSchema]:
     """Get all transactions for the account since the last recorded transaction date."""
-
-    # compute the latest transaction time for the account, or the default time interval if none
-    latest_transaction_time = get_latest_transaction_time(db, account.schema.uuid)
-    new_transactions = await account.provider.get_transactions_between(
+    latest_transaction_time = get_latest_transaction_time(db, account)
+    return await account.provider.get_transactions_between(
         start_date=latest_transaction_time, end_date=datetime.now()
     )
 
-    return new_transactions
+
+def insert_new_transactions(
+    db: Database, transactions: List[TransactionSchema]
+) -> None:
+    """Insert new transactions into the database."""
+    for transaction in transactions:
+        db.upsert_transaction(transaction)
 
 
 def process_new_transactions(
@@ -92,20 +89,10 @@ def process_new_transactions(
     return transactions
 
 
-def insert_new_transactions(
-    db: Database, transactions: List[TransactionSchema]
-) -> None:
-    """Insert new transactions into the database."""
-    for transaction in transactions:
-        db.upsert_transaction(transaction)
-
-
-def get_latest_transaction_time(
-    db: Database, account_uuid: uuid.UUID
-) -> Optional[datetime]:
+def get_latest_transaction_time(db: Database, account: Account) -> Optional[datetime]:
     """Returns the time of the latest transaction for the specified account."""
 
-    transactions = db.select_transactions_for_account(account_uuid)
+    transactions = db.select_transactions_for_account(account.schema.uuid)
 
     if transactions is None:
         # no transactions: compute from the default interval

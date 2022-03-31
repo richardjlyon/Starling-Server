@@ -3,6 +3,7 @@
 # Defines a base class for a database provider
 import uuid
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
 
 from starling_server.server.schemas.account import AccountSchema
@@ -56,6 +57,12 @@ class DBBase(ABC):
     @abstractmethod
     def select_transactions_for_account(
         self, account_uuid: uuid.UUID, offset: int, limit: int
+    ) -> Optional[List[TransactionSchema]]:
+        pass
+
+    @abstractmethod
+    def select_transactions_between(
+        self, start_date: datetime, end_date: datetime
     ) -> Optional[List[TransactionSchema]]:
         pass
 

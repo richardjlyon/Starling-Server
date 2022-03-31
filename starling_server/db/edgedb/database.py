@@ -2,9 +2,12 @@
 #
 # Defines an edgedb database manager
 import uuid
+from datetime import datetime
 from typing import List, Optional
 
 import edgedb
+import pytz
+from loguru import logger
 
 from starling_server import cfg
 from starling_server.db.db_base import DBBase
@@ -151,6 +154,49 @@ class Database(DBBase):
             offset=offset,
             limit=limit,
         )
+        self.client.close()
+
+        if len(transactions) == 0:
+            return None
+
+        return [
+            TransactionSchema(
+                uuid=transaction.uuid,
+                account_uuid=transaction.account.uuid,
+                time=transaction.time,
+                counterparty=Counterparty(
+                    uuid=transaction.counterparty.uuid,
+                    name=transaction.counterparty.name,
+                    displayname=transaction.counterparty.displayname,
+                ),
+                amount=transaction.amount,
+                reference=transaction.reference,
+            )
+            for transaction in transactions
+        ]
+
+    def select_transactions_between(
+        self, start_date: datetime, end_date: datetime
+    ) -> Optional[List[TransactionSchema]]:
+        transactions = self.client.query(
+            """
+            select Transaction {
+                account: { uuid },
+                counterparty: { uuid, name, displayname },
+                uuid,
+                time,
+                amount,
+                reference,
+            }
+            filter
+                .time <= <datetime>$end_date and .time >= <datetime>$start_date
+            order by .time desc
+            """,
+            start_date=start_date.replace(tzinfo=pytz.UTC),
+            end_date=end_date.replace(tzinfo=pytz.UTC),
+        )
+
+        logger.info(f"{len(transactions)} transactions found")
         self.client.close()
 
         if len(transactions) == 0:
