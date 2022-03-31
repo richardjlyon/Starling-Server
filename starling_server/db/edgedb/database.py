@@ -94,6 +94,7 @@ class Database(DBBase):
             }
             """
         )
+        self.client.close()
         if len(accounts_db) == 0:
             return None
 
@@ -114,7 +115,7 @@ class Database(DBBase):
         accounts = self.select_accounts()
         return next(account for account in accounts if account.uuid == account_uuid)
 
-    def delete_account(self, account_uuid: uuid.UUID):
+    def delete_account(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
             delete Account filter .uuid = <uuid>$account_uuid;
@@ -164,15 +165,17 @@ class Database(DBBase):
         account_uuid: uuid.UUID,
         offset: int = 0,
         limit: int = cfg.default_transaction_limit,
-    ) -> Optional[edgedb.Set]:
+    ) -> Optional[List[TransactionSchema]]:
         transactions = self.client.query(
             """
             with account := (select Account filter .uuid = <uuid>$account_uuid)
             select Transaction {
+                account: { uuid },
+                counterparty: { uuid, name, displayname },
                 uuid,
                 time,
                 amount,
-                reference
+                reference,
             }
             filter .account = account
             order by .time desc
@@ -184,9 +187,27 @@ class Database(DBBase):
             limit=limit,
         )
         self.client.close()
-        return transactions if len(transactions) > 0 else None
 
-    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
+        if len(transactions) == 0:
+            return None
+
+        return [
+            TransactionSchema(
+                uuid=transaction.uuid,
+                account_uuid=transaction.account.uuid,
+                time=transaction.time,
+                counterparty=Counterparty(
+                    uuid=transaction.counterparty.uuid,
+                    name=transaction.counterparty.name,
+                    displayname=transaction.counterparty.displayname,
+                ),
+                amount=transaction.amount,
+                reference=transaction.reference,
+            )
+            for transaction in transactions
+        ]
+
+    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
             with account := (
@@ -202,7 +223,7 @@ class Database(DBBase):
 
     # COUNTERPARTIES ================================================================================================
 
-    def upsert_counterparty(self, counterparty: Counterparty):
+    def upsert_counterparty(self, counterparty: Counterparty) -> None:
         # FIXME find out how to handle 'Optional' inserts
         if counterparty.displayname is None:
             self.client.query(
@@ -240,7 +261,9 @@ class Database(DBBase):
                 displayname=counterparty.displayname,
             )
 
-    def display_name_map_upsert(self, fragment: str = None, displayname: str = None):
+    def display_name_map_upsert(
+        self, fragment: str = None, displayname: str = None
+    ) -> None:
         self.client.query(
             """
             insert DisplayNameMap {
@@ -257,7 +280,7 @@ class Database(DBBase):
             displayname=displayname,
         )
 
-    def display_name_map_delete(self, fragment: str):
+    def display_name_map_delete(self, fragment: str) -> None:
         self.client.query(
             """
             delete DisplayNameMap

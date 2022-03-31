@@ -44,7 +44,7 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def delete_account(self, account_uuid: uuid.UUID):
+    def delete_account(self, account_uuid: uuid.UUID) -> None:
         pass
 
     # TRANSACTIONS ===================================================================================================
@@ -60,21 +60,23 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID):
+    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
         pass
 
     # COUNTERPARTIES ================================================================================================
 
     @abstractmethod
-    def upsert_counterparty(self, counterparty: Counterparty):
+    def upsert_counterparty(self, counterparty: Counterparty) -> None:
         pass
 
     @abstractmethod
-    def display_name_map_upsert(self, fragment: str = None, display_name: str = None):
+    def display_name_map_upsert(
+        self, fragment: str = None, display_name: str = None
+    ) -> None:
         pass
 
     @abstractmethod
-    def display_name_map_delete(self, fragment: str):
+    def display_name_map_delete(self, fragment: str) -> None:
         pass
 
     @abstractmethod
