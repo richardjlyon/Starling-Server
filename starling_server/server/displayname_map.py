@@ -12,19 +12,19 @@ class DisplayNameMap:
     def __init__(self, db: Database):
         self.db = db
 
-    def upsert(self, fragment: str = None, displayname: str = None) -> None:
+    def upsert(self, name: str = None, displayname: str = None) -> None:
         """
         Insert the fragment / display_name pair in NameDisplayname database table.
         Args:
             fragment (str): the name fragment to insert
             display_name (str): the corresponding display_name to insert
         """
-        if fragment is None:
+        if name is None:
             raise ValueError("Fragment cannot be None")
         if displayname is None:
             raise ValueError("Display name cannot be None")
 
-        self.db.display_name_map_upsert(fragment, displayname)
+        self.db.display_name_map_upsert(name, displayname)
 
     def delete(self, fragment: str):
         """
@@ -46,7 +46,7 @@ class DisplayNameMap:
             return name
 
         for entry in entries:
-            if entry.fragment.lower() in name.lower():
+            if entry.name.lower() in name.lower():
                 return entry.displayname
         return name
 

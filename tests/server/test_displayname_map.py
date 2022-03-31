@@ -10,23 +10,23 @@ from tests.conftest import select_displaynames
 class TestDisplayNameMap:
     def test_upsert_insert(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
-        fragment = "Riccarton Garden C"
+        name = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
 
         # WHEN I insert the pair in the DisplayNameMap table
-        dmm_unpopulated.upsert(fragment=fragment, displayname=displayname)
+        dmm_unpopulated.upsert(name=name, displayname=displayname)
 
         # THEN the pair is inserted
         display_names = select_displaynames(dmm_unpopulated.db)
-        assert display_names[0].fragment == fragment
+        assert display_names[0].name == name
         assert display_names[0].displayname == displayname
 
     def test_upsert_update(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
-        fragment = "Riccarton Garden C"
+        name = "Riccarton Garden C"
         new_displayname = "Riccarton Garden Centre *MODIFIED*"
-        dmm_unpopulated.upsert(fragment=fragment, displayname=new_displayname)
+        dmm_unpopulated.upsert(name=name, displayname=new_displayname)
 
         # THEN the pair is updated
         displaynames = select_displaynames(dmm_unpopulated.db)
@@ -34,14 +34,14 @@ class TestDisplayNameMap:
 
     def test_delete_name(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
-        fragment = "Riccarton Garden C"
+        name = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
-        dmm_unpopulated.upsert(fragment=fragment, displayname=displayname)
+        dmm_unpopulated.upsert(name=name, displayname=displayname)
         displaynames = select_displaynames(dmm_unpopulated.db)
         assert len(displaynames) == 1
 
         # WHEN I delete the pair
-        dmm_unpopulated.delete(fragment)
+        dmm_unpopulated.delete(name)
 
         # THEN the pair is deleted
         displaynames = select_displaynames(dmm_unpopulated.db)

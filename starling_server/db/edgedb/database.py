@@ -139,7 +139,7 @@ class Database(DBBase):
             with account := (select Account filter .uuid = <uuid>$account_uuid)
             select Transaction {
                 account: { uuid },
-                counterparty: { uuid, name, displayname },
+                counterparty: { uuid, name },
                 uuid,
                 time,
                 amount,
@@ -167,7 +167,6 @@ class Database(DBBase):
                 counterparty=Counterparty(
                     uuid=transaction.counterparty.uuid,
                     name=transaction.counterparty.name,
-                    displayname=transaction.counterparty.displayname,
                 ),
                 amount=transaction.amount,
                 reference=transaction.reference,
@@ -182,7 +181,7 @@ class Database(DBBase):
             """
             select Transaction {
                 account: { uuid },
-                counterparty: { uuid, name, displayname },
+                counterparty: { uuid, name },
                 uuid,
                 time,
                 amount,
@@ -210,7 +209,6 @@ class Database(DBBase):
                 counterparty=Counterparty(
                     uuid=transaction.counterparty.uuid,
                     name=transaction.counterparty.name,
-                    displayname=transaction.counterparty.displayname,
                 ),
                 amount=transaction.amount,
                 reference=transaction.reference,
@@ -272,8 +270,8 @@ class Database(DBBase):
     def display_name_map_select(self) -> Optional[set]:
         results = self.client.query(
             """
-            select DisplayNameMap {
-                fragment,
+            select DisplaynameMap {
+                name,
                 displayname
             }
             """
@@ -319,31 +317,31 @@ class Database(DBBase):
             )
 
     def display_name_map_upsert(
-        self, fragment: str = None, displayname: str = None
+        self, name: str = None, displayname: str = None
     ) -> None:
         self.client.query(
             """
-            insert DisplayNameMap {
-                fragment := <str>$fragment,
+            insert DisplaynameMap {
+                name := <str>$name,
                 displayname := <str>$displayname,
-            } unless conflict on .fragment else (
-                update DisplayNameMap
+            } unless conflict on .name else (
+                update DisplaynameMap
                 set {
                     displayname := <str>$displayname,
                 }
             )
             """,
-            fragment=fragment,
+            name=name,
             displayname=displayname,
         )
 
-    def display_name_map_delete(self, fragment: str) -> None:
+    def display_name_map_delete(self, name: str) -> None:
         self.client.query(
             """
-            delete DisplayNameMap
-            filter .fragment = <str>$fragment
+            delete DisplaynameMap
+            filter .name = <str>$name
             """,
-            fragment=fragment,
+            name=name,
         )
 
     # CATEGORIES ======================================================================================================

@@ -30,6 +30,8 @@ class TransactionUpdate(Command):
         account_names = {a.schema.uuid: a.schema.account_name for a in handler.accounts}
         transactions = await handler.get_transactions_between(start_date, end_date)
 
+        print(transactions)
+
         table = self.table()
         table.set_header_row(
             ["Date", "Account", "Amount", "Name", "Display Name", "Description"]

@@ -37,6 +37,7 @@ class TransactionSchema(BaseModel):
     counterparty: Counterparty
     amount: float
     reference: Optional[str]
+    category: Optional[Category]
 
 
 def clean_string(the_string: Optional[str]) -> Optional[str]:

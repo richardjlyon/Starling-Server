@@ -21,15 +21,20 @@ module default {
 
         required property uuid -> uuid {constraint exclusive};
         required property name -> str;
-        property displayname -> str;
 
         multi link transactions := .<counterparty[is Transaction];
     }
 
-    type DisplayNameMap {
+    type DisplaynameMap {
 
-         property fragment -> str {constraint exclusive};
+         property name -> str {constraint exclusive};
          property displayname -> str;
+    }
+
+    type CategoryMap {
+
+        property displayname -> str {constraint exclusive};
+        link category -> Category;
     }
 
     type Transaction {

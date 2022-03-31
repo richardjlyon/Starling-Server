@@ -160,11 +160,9 @@ def unpopulated_displaynamemap_manager(empty_db):
 @pytest.fixture(name="dmm_populated")
 def populated_displaynamemap_manager(dmm_unpopulated):
     """Returns a displayname manager with sample entries."""
-    dmm_unpopulated.upsert(fragment="Waterstones", displayname="Waterstones")
-    dmm_unpopulated.upsert(
-        fragment="Acme coffee biz", displayname="Wee cafe at bus stop"
-    )
-    dmm_unpopulated.upsert(fragment="BP", displayname="BP Petrol")
+    dmm_unpopulated.upsert(name="Waterstones", displayname="Waterstones")
+    dmm_unpopulated.upsert(name="Acme coffee biz", displayname="Wee cafe at bus stop")
+    dmm_unpopulated.upsert(name="BP", displayname="BP Petrol")
     return dmm_unpopulated
 
 
@@ -243,7 +241,12 @@ def reset(client):
     )
     client.query(
         """
-        delete DisplayNameMap;
+        delete DisplaynameMap;
+        """
+    )
+    client.query(
+        """
+        delete CategoryMap;
         """
     )
     client.close()
@@ -361,9 +364,7 @@ def make_transactions(number: int, account_uuid: uuid.UUID) -> List[TransactionS
 
 def insert_transaction(db, account_uuid):
     counterparty_uuid = uuid.uuid4()
-    counterparty = Counterparty(
-        uuid=counterparty_uuid, name="DUMMY", displayname="DUMMY"
-    )
+    counterparty = Counterparty(uuid=counterparty_uuid, name="DUMMY")
     upsert_counterparty(db, counterparty)
     db.client.query(
         """
@@ -399,7 +400,7 @@ def select_transactions(db):
             uuid,
             time,
             counterparty: {
-                uuid, name, displayname
+                uuid, name
             },
             amount,
             reference
@@ -413,8 +414,8 @@ def select_transactions(db):
 def select_displaynames(db):
     displaynames = db.client.query(
         """
-        select DisplayNameMap {
-            fragment,
+        select DisplaynameMap {
+            name,
             displayname
         };
         """
@@ -454,18 +455,15 @@ def upsert_counterparty(db, counterparty: Counterparty):
         insert Counterparty {
             uuid := <uuid>$uuid,
             name := <str>$name,
-            displayname := <str>$displayname
         } unless conflict on .uuid else (
             update Counterparty
             set {
                 name := <str>$name,
-                displayname := <str>$displayname
             }
         )
         """,
         uuid=counterparty.uuid,
         name=counterparty.name,
-        displayname=counterparty.displayname,
     )
 
 

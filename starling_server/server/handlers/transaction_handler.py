@@ -42,10 +42,7 @@ class TransactionHandler(Handler):
         new_transactions = await self.get_new_transactions()
         self.insert_transactions(new_transactions)
         transactions = self.db.select_transactions_between(start_date, end_date)
-        # processed_transactions = process_new_transactions(self.db, new_transactions)
-
-        # sort
-        pass
+        transactions = self.apply_displayname_and_category(transactions)
 
         return transactions
 
@@ -85,21 +82,19 @@ class TransactionHandler(Handler):
 
         return transaction_time
 
+    def apply_displayname_and_category(
+        self, transactions: List[TransactionSchema]
+    ) -> List[TransactionSchema]:
+        """Process transactions and add information to them."""
+        processor = DisplayNameMap(self.db)
 
-def process_new_transactions(
-    db: Database,
-    transactions: List[TransactionSchema],
-) -> List[TransactionSchema]:
-    """Process new transactions and add information to them."""
-    processor = DisplayNameMap(db)
+        for transaction in transactions:
+            # set display name
+            transaction.counterparty.displayname = processor.displayname_for(
+                transaction.counterparty.name
+            )
 
-    for transaction in transactions:
-        # set display name
-        transaction.counterparty.displayname = processor.displayname_for(
-            transaction.counterparty.name
-        )
+            # set category
+            pass  # TODO
 
-        # set category
-        pass  # TODO
-
-    return transactions
+        return transactions
