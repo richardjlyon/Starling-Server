@@ -50,38 +50,6 @@ class Database(DBBase):
 
     # ACCOUNTS ========================================================================================================
 
-    def upsert_account(self, token: str, account: AccountSchema) -> None:
-        # ensure Bank exists: note - this can probably be combined with the `insert Account` query
-        self.upsert_bank(account.bank_name)
-
-        self.client.query(
-            """
-                    with bank := (
-                        select Bank filter .name = <str>$bank_name
-                    )
-                    insert Account {
-                        bank := bank,
-                        uuid := <uuid>$uuid,
-                        name := <str>$name,
-                        currency := <str>$currency,
-                        created_at := <datetime>$created_at
-                    } unless conflict on .uuid else (
-                        update Account 
-                        set {
-                            name := <str>$name,
-                            currency := <str>$currency,
-                            created_at := <datetime>$created_at,
-                        }
-                    );
-                    """,
-            bank_name=account.bank_name,
-            uuid=account.uuid,
-            name=account.account_name,
-            currency=account.currency,
-            created_at=account.created_at,
-        )
-        self.client.close()
-
     def select_accounts(self) -> Optional[List[AccountSchema]]:
         accounts_db = self.client.query(
             """
@@ -115,6 +83,38 @@ class Database(DBBase):
         accounts = self.select_accounts()
         return next(account for account in accounts if account.uuid == account_uuid)
 
+    def upsert_account(self, token: str, account: AccountSchema) -> None:
+        # ensure Bank exists: note - this can probably be combined with the `insert Account` query
+        self.upsert_bank(account.bank_name)
+
+        self.client.query(
+            """
+                    with bank := (
+                        select Bank filter .name = <str>$bank_name
+                    )
+                    insert Account {
+                        bank := bank,
+                        uuid := <uuid>$uuid,
+                        name := <str>$name,
+                        currency := <str>$currency,
+                        created_at := <datetime>$created_at
+                    } unless conflict on .uuid else (
+                        update Account 
+                        set {
+                            name := <str>$name,
+                            currency := <str>$currency,
+                            created_at := <datetime>$created_at,
+                        }
+                    );
+                    """,
+            bank_name=account.bank_name,
+            uuid=account.uuid,
+            name=account.account_name,
+            currency=account.currency,
+            created_at=account.created_at,
+        )
+        self.client.close()
+
     def delete_account(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
@@ -124,41 +124,6 @@ class Database(DBBase):
         )
 
     # TRANSACTIONS ===================================================================================================
-
-    def upsert_transaction(self, transaction: TransactionSchema) -> None:
-
-        self.upsert_counterparty(transaction.counterparty)
-
-        transaction_db = self.client.query(
-            """
-            with 
-                account := ( select Account filter .uuid = <uuid>$account_uuid),
-                counterparty := (select Counterparty filter .uuid = <uuid>$counterparty_uuid)
-            insert Transaction {
-                account := account,
-                uuid := <uuid>$uuid,
-                time := <datetime>$time,
-                counterparty := counterparty,
-                amount := <float32>$amount,
-                reference := <str>$reference
-            } unless conflict on .uuid else (
-                update Transaction
-                set {
-                    time := <datetime>$time,
-                    counterparty := counterparty,
-                    amount := <float32>$amount,
-                    reference := <str>$reference
-                }
-            )
-            """,
-            account_uuid=transaction.account_uuid,
-            uuid=transaction.uuid,
-            time=transaction.time,
-            counterparty_uuid=transaction.counterparty.uuid,
-            amount=transaction.amount,
-            reference=transaction.reference,
-        )
-        self.client.close()
 
     def select_transactions_for_account(
         self,
@@ -207,6 +172,41 @@ class Database(DBBase):
             for transaction in transactions
         ]
 
+    def upsert_transaction(self, transaction: TransactionSchema) -> None:
+
+        self.upsert_counterparty(transaction.counterparty)
+
+        transaction_db = self.client.query(
+            """
+            with 
+                account := ( select Account filter .uuid = <uuid>$account_uuid),
+                counterparty := (select Counterparty filter .uuid = <uuid>$counterparty_uuid)
+            insert Transaction {
+                account := account,
+                uuid := <uuid>$uuid,
+                time := <datetime>$time,
+                counterparty := counterparty,
+                amount := <float32>$amount,
+                reference := <str>$reference
+            } unless conflict on .uuid else (
+                update Transaction
+                set {
+                    time := <datetime>$time,
+                    counterparty := counterparty,
+                    amount := <float32>$amount,
+                    reference := <str>$reference
+                }
+            )
+            """,
+            account_uuid=transaction.account_uuid,
+            uuid=transaction.uuid,
+            time=transaction.time,
+            counterparty_uuid=transaction.counterparty.uuid,
+            amount=transaction.amount,
+            reference=transaction.reference,
+        )
+        self.client.close()
+
     def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
@@ -222,6 +222,17 @@ class Database(DBBase):
         )
 
     # COUNTERPARTIES ================================================================================================
+
+    def display_name_map_select(self) -> Optional[set]:
+        results = self.client.query(
+            """
+            select DisplayNameMap {
+                fragment,
+                displayname
+            }
+            """
+        )
+        return results if len(results) > 0 else None
 
     def upsert_counterparty(self, counterparty: Counterparty) -> None:
         # FIXME find out how to handle 'Optional' inserts
@@ -288,17 +299,6 @@ class Database(DBBase):
             """,
             fragment=fragment,
         )
-
-    def display_name_map_select(self) -> Optional[set]:
-        results = self.client.query(
-            """
-            select DisplayNameMap {
-                fragment,
-                displayname
-            }
-            """
-        )
-        return results if len(results) > 0 else None
 
     # CATEGORIES ======================================================================================================
 

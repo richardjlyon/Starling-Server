@@ -182,7 +182,6 @@ class TestTransaction:
 
         # THEN transaction is updated
         transactions = select_transactions(db_with_transactions)
-        print(transactions)
         transaction = next(t for t in transactions if t.uuid == modified_uuid)
         assert "**MODIFIED**" in transaction.reference
 
