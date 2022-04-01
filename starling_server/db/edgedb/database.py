@@ -398,6 +398,12 @@ class Database(DBBase):
             "delete Category filter .uuid = <uuid>$uuid", uuid=category.uuid
         )
 
+    def select_category_groups(self) -> Optional[List[CategoryGroup]]:
+        groups = self.client.query("select CategoryGroup {uuid, name}")
+        if len(groups) == 0:
+            return None
+        return [CategoryGroup(uuid=group.uuid, name=group.name) for group in groups]
+
     def select_categories(self) -> Optional[List[Category]]:
         categories = self.client.query(
             """
@@ -425,3 +431,24 @@ class Database(DBBase):
             )
             for c in categories
         ]
+
+    def get_all_name_categories(self) -> Optional[List[edgedb.Set]]:
+        results = self.client.query(
+            """
+            select CategoryMap {
+                displayname,
+                category: {
+                    uuid,
+                    name,
+                    category_group: {
+                        uuid,
+                        name
+                    }
+                }
+            }
+            """
+        )
+        if len(results) == 0:
+            return None
+
+        return results

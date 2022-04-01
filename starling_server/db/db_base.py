@@ -4,13 +4,14 @@
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import (
     TransactionSchema,
     Counterparty,
     Category,
+    CategoryGroup,
 )
 
 
@@ -113,5 +114,13 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
+    def select_category_groups(self) -> Optional[List[CategoryGroup]]:
+        pass
+
+    @abstractmethod
     def select_categories(self) -> Optional[List[Category]]:
+        pass
+
+    @abstractmethod
+    def get_all_name_categories(self) -> Optional[List[Any]]:
         pass

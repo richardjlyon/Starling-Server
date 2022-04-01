@@ -50,7 +50,7 @@ module default {
 
     type CategoryGroup {
         required property uuid -> uuid {constraint exclusive};
-        required property name -> str;
+        required property name -> str {constraint exclusive};
 
         multi link categories := .<category_group[is Category];
     }

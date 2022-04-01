@@ -3,10 +3,17 @@ Categories are mapped to category groups, and to a table of mappings between dis
 This class manages both of those relationships.
 """
 import uuid
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 
 from starling_server.db.edgedb.database import Database
-from starling_server.server.schemas.transaction import Category
+from starling_server.server.schemas.transaction import Category, CategoryGroup
+
+
+@dataclass
+class NameCategory:
+    displayname: str
+    category: Category
 
 
 class CategoryMap:
@@ -30,6 +37,23 @@ class CategoryMap:
     def delete_categorymap(self, displayname: str) -> None:
         """Delete a displayname to category mapping from the database."""
 
-    def select_categories(self) -> List[Category]:
+    def select_name_categories(self) -> Optional[List[NameCategory]]:
         """Return all categories in the database."""
-        pass
+        results = self.db.get_all_name_categories()
+        if results is None:
+            return None
+
+        return [
+            NameCategory(
+                displayname=r.displayname,
+                category=Category(
+                    uuid=r.category.uuid,
+                    name=r.category.name,
+                    group=CategoryGroup(
+                        uuid=r.category.category_group.uuid,
+                        name=r.category.category_group.name,
+                    ),
+                ),
+            )
+            for r in results
+        ]

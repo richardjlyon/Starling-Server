@@ -30,6 +30,7 @@ class CategoryInit(Command):
 
         delete_all_categories()
         categories = insert_categories()
+        # TODO delete CategoryMap table
 
         self.line("<info>Added these categories from config...</info>")
         self.show_table(categories)
@@ -53,10 +54,10 @@ def delete_all_categories():
 def insert_categories() -> List[Category]:
     category_list = []
     for group_name, categories in cfg.categories.items():
-        group = CategoryGroup(name=group_name)
+        group = CategoryGroup(name=group_name.capitalize())
         for category_name in categories:
             category = Category(
-                name=category_name,
+                name=category_name.capitalize(),
                 group=group,
             )
             db.upsert_category(category)
