@@ -1,18 +1,7 @@
 # db/db_base.py
 #
 # Defines a base class for a database provider
-import uuid
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import List, Optional, Any
-
-from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import (
-    TransactionSchema,
-    Counterparty,
-    Category,
-    CategoryGroup,
-)
 
 
 class DBBase(ABC):
@@ -26,103 +15,99 @@ class DBBase(ABC):
     # BANKS ==========================================================================================================
 
     @abstractmethod
-    def upsert_bank(self, bank_name: str) -> None:
+    def upsert_bank(self, bank_name):
         pass
 
     @abstractmethod
-    def delete_bank(self, bank_name: str) -> None:
+    def delete_bank(self, bank_name):
         pass
 
     # ACCOUNTS ========================================================================================================
 
     @abstractmethod
-    def upsert_account(self, token: str, account: AccountSchema) -> None:
+    def upsert_account(self, token, account):
         pass
 
     @abstractmethod
-    def select_accounts(self) -> Optional[List[AccountSchema]]:
+    def select_accounts(self):
         pass
 
     @abstractmethod
-    def select_account_for_account_uuid(
-        self, account_uuid: uuid.UUID
-    ) -> Optional[AccountSchema]:
+    def select_account_for_account_uuid(self, account_uuid):
         pass
 
     @abstractmethod
-    def delete_account(self, account_uuid: uuid.UUID) -> None:
+    def delete_account(self, account_uuid):
         pass
 
     # TRANSACTIONS ===================================================================================================
 
     @abstractmethod
-    def upsert_transaction(self, transaction: TransactionSchema) -> None:
+    def upsert_transaction(self, transaction):
         pass
 
     @abstractmethod
-    def select_transactions_for_account(
-        self, account_uuid: uuid.UUID, offset: int, limit: int
-    ) -> Optional[List[TransactionSchema]]:
+    def select_transactions_for_account(self, account_uuid, offset, limit):
         pass
 
     @abstractmethod
-    def select_transactions_between(
-        self, start_date: datetime, end_date: datetime
-    ) -> Optional[List[TransactionSchema]]:
+    def select_transactions_between(self, start_date, end_date):
         pass
 
     @abstractmethod
-    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
+    def delete_transactions_for_account_id(self, account_uuid):
         pass
 
     # COUNTERPARTIES ==========================================================
 
     @abstractmethod
-    def upsert_counterparty(self, counterparty: Counterparty) -> None:
+    def upsert_counterparty(self, counterparty):
         pass
 
     # DISPLAY NAMES ================================================================================================
 
     @abstractmethod
-    def display_name_map_upsert(
-        self, fragment: str = None, display_name: str = None
-    ) -> None:
+    def display_name_map_upsert(self, name, displayname):
         pass
 
     @abstractmethod
-    def display_name_map_delete(self, fragment: str) -> None:
+    def display_name_map_delete(self, name):
         pass
 
     @abstractmethod
-    def display_name_map_select(self) -> Optional[set]:
+    def display_name_map_select(self):
         pass
 
     # CATEGORIES ======================================================================================================
 
     @abstractmethod
-    def upsert_categorygroup(self, category: Category) -> None:
+    def upsert_categorygroup(self, category):
         pass
 
     @abstractmethod
-    def upsert_category(self, category: Category) -> None:
+    def upsert_category(self, category):
         pass
 
     @abstractmethod
-    def delete_category(self, category: Category) -> None:
+    def delete_category(self, category):
         pass
 
     @abstractmethod
-    def delete_category_group(self, group_name: str):
+    def delete_category_group(self, group_name):
         pass
 
     @abstractmethod
-    def select_category_groups(self) -> Optional[List[CategoryGroup]]:
+    def select_category_groups(self):
         pass
 
     @abstractmethod
-    def select_categories(self) -> Optional[List[Category]]:
+    def select_categories(self):
         pass
 
     @abstractmethod
-    def get_all_name_categories(self) -> Optional[List[Any]]:
+    def get_all_name_categories(self):
+        pass
+
+    @abstractmethod
+    def upsert_name_category(self, name_category):
         pass
