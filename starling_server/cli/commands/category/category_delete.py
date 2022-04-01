@@ -29,13 +29,19 @@ class CategoryDelete(Command):
             return
 
         try:
-            category_mapper.delete_category(group_name, category_name)
+            category = category_mapper.find_category_from_names(
+                group_name, category_name
+            )
         except ValueError as e:
             self.line(f"<error>ERROR: {e}</error>")
+            return
+
+        try:
+            category_mapper.delete_category(category)
         except DatabaseError as e:
             self.line(f"<error>ERROR: {e}</error>")
             return
 
         self.line(
-            f"<info>Category `{group_name.capitalize()}:{category_name.capitalize()}` deleted</info>"
+            f"<info>Category `{category.group.name}:{category.name}` deleted</info>"
         )

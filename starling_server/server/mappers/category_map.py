@@ -29,10 +29,11 @@ class CategoryMap:
         # TODO delete CategoryMap table
         return categories
 
-    def upsert_category(
-        self, group_name: str, category_name: str
-    ) -> Optional[Category]:
-        """Insert or update category in the database."""
+    def make_category(self, group_name: str, category_name: str) -> Category:
+        """Insert a category in the database."""
+
+        if self.find_category_from_names(group_name, category_name):
+            raise ValueError(f"Category `{group_name}:{category_name}` already exists")
 
         categories = self.db.select_categories()
 
@@ -54,17 +55,29 @@ class CategoryMap:
 
         return category
 
-    def delete_category(self, group_name: str, category_name: str) -> None:
+    def delete_category(self, category: Category) -> None:
         """Delete category from the database."""
-        try:
-            category = self._find_category_from_names(group_name, category_name)
-        except ValueError as e:
-            raise ValueError(f"{e}") from e
-
         try:
             self.db.delete_category(category)
         except DatabaseError as e:
             raise ValueError(f"{e}") from e
+
+    def rename_category(
+        self, category: Category, new_group_name: str, new_category_name: str
+    ) -> Category:
+        """Rename a category in the database."""
+        category.group.name = new_group_name.capitalize()
+        category.name = new_category_name.capitalize()
+        self.db.upsert_category(category)
+        return category
+
+    def change_category_group(
+        self, category: Category, new_group: CategoryGroup
+    ) -> Category:
+        """Change the category group of a category."""
+        category.group = new_group
+        self.db.upsert_category(category)
+        return category
 
     def upsert_categorymap(self, displayname: str, category: Category) -> None:
         """Insert or update a displayname to category mapping in the database."""
@@ -135,9 +148,8 @@ class CategoryMap:
 
         return result
 
-    def _find_category_from_names(
-        self, group_name: str, category_name: str
-    ) -> Category:
+    def find_category_from_names(self, group_name: str, category_name: str) -> Category:
+        """Returns a category identified by its group and category name."""
 
         # find the group
         group = self._find_category_group_from_name(group_name)
@@ -155,6 +167,8 @@ class CategoryMap:
                 if c.name.lower() == category_name.lower() and c.group == group
             )
         except StopIteration:
-            raise ValueError(f"Category `{category_name.capitalize()}` does not exist")
+            raise ValueError(
+                f"Category name `{category_name.capitalize()}` does not exist"
+            )
 
         return category

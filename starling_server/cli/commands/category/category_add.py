@@ -28,7 +28,7 @@ class CategoryAdd(Command):
         )
 
         try:
-            category = category_mapper.upsert_category(
+            category = category_mapper.make_category(
                 group_name=group_name, category_name=category_name
             )
         except ValueError as e:
