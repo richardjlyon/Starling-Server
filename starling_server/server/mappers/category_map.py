@@ -2,12 +2,11 @@
 Categories are mapped to category groups, and to a table of mappings between display names and categories.
 This class manages both of those relationships.
 """
-import uuid
 from dataclasses import dataclass
 from typing import List, Optional
 
 from starling_server import cfg
-from starling_server.db.edgedb.database import Database
+from starling_server.db.edgedb.database import Database, DatabaseError
 from starling_server.server.schemas.transaction import Category, CategoryGroup
 
 
@@ -38,13 +37,8 @@ class CategoryMap:
         categories = self.db.select_categories()
 
         # find or create the group
-        try:
-            group = next(
-                c.group
-                for c in categories
-                if c.group.name.lower() == group_name.lower()
-            )
-        except StopIteration:
+        group = self._find_category_group_from_name(group_name)
+        if group is None:
             group = CategoryGroup(name=group_name)
 
         # if `category` name already exists in group, fail
@@ -60,9 +54,17 @@ class CategoryMap:
 
         return category
 
-    def delete_category(self, category_uuid: uuid.UUID) -> None:
+    def delete_category(self, group_name: str, category_name: str) -> None:
         """Delete category from the database."""
-        pass
+        try:
+            category = self._find_category_from_names(group_name, category_name)
+        except ValueError as e:
+            raise ValueError(f"{e}") from e
+
+        try:
+            self.db.delete_category(category)
+        except DatabaseError as e:
+            raise ValueError(f"{e}") from e
 
     def upsert_categorymap(self, displayname: str, category: Category) -> None:
         """Insert or update a displayname to category mapping in the database."""
@@ -116,3 +118,43 @@ class CategoryMap:
             return category_list
         else:
             return None
+
+    def _find_category_group_from_name(
+        self, group_name: str
+    ) -> Optional[CategoryGroup]:
+        """Find a category group from its name."""
+        categories = self.db.select_categories()
+        try:
+            result = next(
+                c.group
+                for c in categories
+                if c.group.name.lower() == group_name.lower()
+            )
+        except StopIteration:
+            result = None
+
+        return result
+
+    def _find_category_from_names(
+        self, group_name: str, category_name: str
+    ) -> Category:
+
+        # find the group
+        group = self._find_category_group_from_name(group_name)
+        if group is None:
+            raise ValueError(
+                f"Category group `{group_name.capitalize()}` does not exist"
+            )
+
+        # find the category
+        categories = self.db.select_categories()
+        try:
+            category = next(
+                c
+                for c in categories
+                if c.name.lower() == category_name.lower() and c.group == group
+            )
+        except StopIteration:
+            raise ValueError(f"Category `{category_name.capitalize()}` does not exist")
+
+        return category

@@ -20,6 +20,10 @@ from starling_server.server.schemas.transaction import (
 )
 
 
+class DatabaseError(Exception):
+    pass
+
+
 class Database(DBBase):
     def __init__(self, database: str = None):
         super().__init__()

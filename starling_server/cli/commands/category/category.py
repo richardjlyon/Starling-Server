@@ -4,6 +4,7 @@ from cleo import Command
 
 from starling_server.cli.commands.category.category_add import CategoryAdd
 from starling_server.cli.commands.category.category_assign import CategoryAssign
+from starling_server.cli.commands.category.category_delete import CategoryDelete
 from starling_server.cli.commands.category.category_init import CategoryInit
 from starling_server.main import db
 from starling_server.server.schemas.transaction import Category
@@ -16,7 +17,7 @@ class CategoryCommand(Command):
     category
     """
 
-    commands = [CategoryAdd(), CategoryInit(), CategoryAssign()]
+    commands = [CategoryAdd(), CategoryDelete(), CategoryInit(), CategoryAssign()]
 
     def handle(self):
 
