@@ -3,7 +3,7 @@ To support customising the display name of a counterparty, a table of customisat
 DisplayNameMap is a class for managing its entries.
 """
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
@@ -61,6 +61,18 @@ class NameMapper:
         """Change the name"""
         self.db.display_name_map_upsert(name.name, name.displayname)
 
+    def get_all_displaynames(self) -> Optional[List[NameDisplayname]]:
+        """
+        Returns all the display names in the database.
+        """
+        entries = self.db.display_name_map_select()
+        if entries is None:
+            return None
+
+        return [
+            NameDisplayname(name=e.name, displayname=e.displayname) for e in entries
+        ]
+
     def displayname_for(self, name: str) -> str:
         """
         Returns the display name for a fragment.
@@ -76,15 +88,3 @@ class NameMapper:
             if entry.name.lower() in name.lower():
                 return entry.displayname
         return name
-
-    def get_all_displaynames(self) -> list:
-        """
-        Returns all the display names in the database.
-        """
-        entries = self.db.display_name_map_select()
-        if entries is None:
-            return None
-
-        return [
-            NameDisplayname(name=e.name, displayname=e.displayname) for e in entries
-        ]

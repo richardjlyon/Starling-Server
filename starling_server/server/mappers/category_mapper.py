@@ -79,13 +79,6 @@ class CategoryMapper:
         self.db.upsert_category(category)
         return category
 
-    def upsert_categorymap(self, displayname: str, category: Category) -> None:
-        """Insert or update a displayname to category mapping in the database."""
-        pass
-
-    def delete_categorymap(self, displayname: str) -> None:
-        """Delete a displayname to category mapping from the database."""
-
     def select_name_categories(self) -> Optional[List[NameCategory]]:
         """Return all categories in the database."""
         results = self.db.get_all_name_categories()
