@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
+from pydantic import validator
 from pydantic.main import BaseModel, Field
 
 
@@ -21,11 +22,21 @@ class CategoryGroup(BaseModel):
     uuid: UUID = Field(default_factory=uuid4)
     name: str
 
+    @validator("name")
+    def validate_name(cls, v):
+        """Validate that the name is not empty."""
+        return v.capitalize()
+
 
 class Category(BaseModel):
     uuid: UUID = Field(default_factory=uuid4)
     name: str
     group: CategoryGroup
+
+    @validator("name")
+    def validate_name(cls, v):
+        """Validate that the name is not empty."""
+        return v.capitalize()
 
 
 class TransactionSchema(BaseModel):
