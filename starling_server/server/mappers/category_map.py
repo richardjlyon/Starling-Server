@@ -6,6 +6,7 @@ import uuid
 from dataclasses import dataclass
 from typing import List, Optional
 
+from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.schemas.transaction import Category, CategoryGroup
 
@@ -21,6 +22,13 @@ class CategoryMap:
 
     def __init__(self, db: Database) -> None:
         self.db = db
+
+    def initialise_categories(self) -> Optional[List[Category]]:
+        """Create the initial set of categories in the database from config data."""
+        self._delete_all_categories()
+        categories = self._insert_categories()
+        # TODO delete CategoryMap table
+        return categories
 
     def upsert_category(self, category: Category) -> None:
         """Insert or update category in the database."""
@@ -57,3 +65,28 @@ class CategoryMap:
             )
             for r in results
         ]
+
+    def _delete_all_categories(self):
+        categories = self.db.select_categories()
+        if categories:
+            for category in categories:
+                self.db.delete_category(category)
+                self.db.delete_category_group(category)
+
+    def _insert_categories(self) -> Optional[List[Category]]:
+        category_list = []
+
+        for group_name, categories in cfg.categories.items():
+            group = CategoryGroup(name=group_name.capitalize())
+            for category_name in categories:
+                category = Category(
+                    name=category_name.capitalize(),
+                    group=group,
+                )
+                self.db.upsert_category(category)
+                category_list.append(category)
+
+        if len(category_list) > 0:
+            return category_list
+        else:
+            return None

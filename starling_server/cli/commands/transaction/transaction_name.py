@@ -3,7 +3,7 @@ import asyncio
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.displayname_map import DisplayNameMap
+from starling_server.server.mappers.displayname_map import DisplayNameMap
 
 
 class TransactionName(Command):

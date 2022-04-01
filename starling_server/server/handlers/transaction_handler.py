@@ -9,8 +9,8 @@ from typing import List, Optional
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
-from starling_server.server.displayname_map import DisplayNameMap
 from starling_server.server.handlers.handler import Handler
+from starling_server.server.mappers.displayname_map import DisplayNameMap
 from starling_server.server.schemas import TransactionSchema
 
 

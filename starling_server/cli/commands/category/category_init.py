@@ -3,9 +3,11 @@ from typing import List
 
 from cleo import Command
 
-from starling_server import cfg
 from starling_server.main import db
-from starling_server.server.schemas.transaction import Category, CategoryGroup
+from starling_server.server.mappers.category_map import CategoryMap
+from starling_server.server.schemas.transaction import Category
+
+category_mapper = CategoryMap(db=db)
 
 
 class CategoryInit(Command):
@@ -28,9 +30,7 @@ class CategoryInit(Command):
             self.line("<info>Exit</info>")
             return
 
-        delete_all_categories()
-        categories = insert_categories()
-        # TODO delete CategoryMap table
+        categories = category_mapper.initialise_categories()
 
         self.line("<info>Added these categories from config...</info>")
         self.show_table(categories)
@@ -41,26 +41,3 @@ class CategoryInit(Command):
         if categories:
             table.set_rows([c.group.name, c.name] for c in categories)
         table.render(self.io)
-
-
-def delete_all_categories():
-    categories = db.select_categories()
-    if categories:
-        for category in categories:
-            db.delete_category(category)
-            db.delete_category_group(category)
-
-
-def insert_categories() -> List[Category]:
-    category_list = []
-    for group_name, categories in cfg.categories.items():
-        group = CategoryGroup(name=group_name.capitalize())
-        for category_name in categories:
-            category = Category(
-                name=category_name.capitalize(),
-                group=group,
-            )
-            db.upsert_category(category)
-            category_list.append(category)
-
-    return category_list
