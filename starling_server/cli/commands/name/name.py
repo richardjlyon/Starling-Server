@@ -4,10 +4,9 @@
 from cleo import Command
 
 from starling_server.cli.commands.name.name_add import NameAdd
+from starling_server.cli.commands.name.name_change import NameChange
+from starling_server.cli.commands.name.name_delete import NameDelete
 from starling_server.cli.commands.name.name_init import NameInit
-from starling_server.cli.commands.name.name_reset import (
-    NameReset,
-)
 
 
 class NameCommand(Command):
@@ -17,7 +16,7 @@ class NameCommand(Command):
     name
     """
 
-    commands = [NameReset(), NameAdd(), NameInit()]
+    commands = [NameAdd(), NameInit(), NameDelete(), NameChange()]
 
     def handle(self):
         # TODO list names

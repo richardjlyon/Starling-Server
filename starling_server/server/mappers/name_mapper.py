@@ -12,7 +12,7 @@ from starling_server.db.edgedb.database import Database
 @dataclass
 class NameDisplayname:
     name: str
-    displayname: str
+    displayname: str = None
 
 
 class NameMapper:
@@ -42,7 +42,7 @@ class NameMapper:
 
         return names
 
-    def upsert(self, name: NameDisplayname) -> None:
+    def insert(self, name: NameDisplayname) -> None:
         """
         Insert the name / displayname pair in NameDisplayname database table.
         """
@@ -56,6 +56,10 @@ class NameMapper:
             name (str): the fragment to match
         """
         self.db.display_name_map_delete(name.name)
+
+    def change(self, name: NameDisplayname):
+        """Change the name"""
+        self.db.display_name_map_upsert(name.name, name.displayname)
 
     def displayname_for(self, name: str) -> str:
         """
@@ -78,4 +82,9 @@ class NameMapper:
         Returns all the display names in the database.
         """
         entries = self.db.display_name_map_select()
-        return entries if entries is not None else None
+        if entries is None:
+            return None
+
+        return [
+            NameDisplayname(name=e.name, displayname=e.displayname) for e in entries
+        ]

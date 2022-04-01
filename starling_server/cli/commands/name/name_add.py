@@ -24,27 +24,13 @@ class NameAdd(Command):
             f"<info>  Adding display name '{name.name}'-> '{name.displayname}'...</info>"
         )
 
-        name_mapper.add(name)
+        name_mapper.insert(name)
+        names = name_mapper.get_all_displaynames()
+        self.show_table(names)
 
-    #     self.show_table()
-    #
-    #     if self.option("delete"):
-    #         self.delete_name()
-    #
-    #     elif self.option("add"):
-    #         self.insert_name()
-    #
-    #     self.show_table()
-    #
-    # def delete_name(self) -> None:
-    #     self.line(f"<info>Delete name...</info>")
-    #     name = self.ask("Counterparty name: ")
-    #     self.dnm.delete(name=name)
-    #     print(f"Removed {name}")
-    #
-    # def insert_name(self) -> None:
-    #     self.line(f"<info>Enter display name information...</info>")
-    #     name = self.ask("Counterparty name: ")
-    #     displayname = self.ask("Display name: ")
-    #     self.dnm.upsert(name=name, displayname=displayname)
-    #     self.line(f"<info>Added {name}->{displayname} </info>")
+    def show_table(self, names):
+        table = self.table()
+        table.set_header_row(["Name", "Display name"])
+        if names:
+            table.set_rows([n.name, n.displayname] for n in names)
+        table.render(self.io)
