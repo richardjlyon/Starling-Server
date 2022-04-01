@@ -3,7 +3,10 @@ from typing import List
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.schemas.transaction import Category, CategoryGroup
+from starling_server.server.mappers.category_map import CategoryMap
+from starling_server.server.schemas.transaction import Category
+
+category_mapper = CategoryMap(db=db)
 
 
 class CategoryAdd(Command):
@@ -17,31 +20,20 @@ class CategoryAdd(Command):
 
     def handle(self) -> None:
 
-        self.line("<info>Add a category...</info>")
-        categories = db.select_categories()
+        group_name = self.argument("group")
+        category_name = self.argument("category")
 
-        group = self.argument("group")
-        category = self.argument("category")
+        self.line(
+            f"<info>  Adding category `{group_name.capitalize()}:{category_name.capitalize()}`...</info>"
+        )
 
-        # find or create the group
         try:
-            group = next(
-                c.group for c in categories if c.group.name.lower() == group.lower()
+            category = category_mapper.upsert_category(
+                group_name=group_name, category_name=category_name
             )
-        except StopIteration:
-            group = CategoryGroup(name=group)
-
-        # if `category` name already exists in group, fail
-        category_names = [c.name.lower() for c in categories if c.group == group]
-        if category.lower() in category_names:
-            self.line(
-                f"<error>Category `{category.capitalize()}` already exists in group `{group.name}`</error>"
-            )
-            return  # exit
-
-        # insert the new category
-        category = Category(name=category, group=group)
-        db.upsert_category(category)
+        except ValueError as e:
+            self.line(f"<error>ERROR: {e}</error>")
+            return
 
         categories = db.select_categories()
         categories.sort(key=lambda c: (c.group.name, c.name))

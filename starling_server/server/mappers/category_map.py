@@ -30,9 +30,35 @@ class CategoryMap:
         # TODO delete CategoryMap table
         return categories
 
-    def upsert_category(self, category: Category) -> None:
+    def upsert_category(
+        self, group_name: str, category_name: str
+    ) -> Optional[Category]:
         """Insert or update category in the database."""
-        pass
+
+        categories = self.db.select_categories()
+
+        # find or create the group
+        try:
+            group = next(
+                c.group
+                for c in categories
+                if c.group.name.lower() == group_name.lower()
+            )
+        except StopIteration:
+            group = CategoryGroup(name=group_name)
+
+        # if `category` name already exists in group, fail
+        category_names = [c.name.lower() for c in categories if c.group == group]
+        if category_name.lower() in category_names:
+            raise ValueError(
+                f"Category {category_name} already exists in group {group_name}"
+            )
+
+        # insert the new category
+        category = Category(name=category_name, group=group)
+        self.db.upsert_category(category)
+
+        return category
 
     def delete_category(self, category_uuid: uuid.UUID) -> None:
         """Delete category from the database."""
