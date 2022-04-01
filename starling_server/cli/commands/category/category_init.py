@@ -1,13 +1,12 @@
-import asyncio
 from typing import List
 
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.category_map import CategoryMap
+from starling_server.server.mappers.category_mapper import CategoryMapper
 from starling_server.server.schemas.transaction import Category
 
-category_mapper = CategoryMap(db=db)
+category_mapper = CategoryMapper(db=db)
 
 
 class CategoryInit(Command):
@@ -18,10 +17,7 @@ class CategoryInit(Command):
     """
 
     def handle(self) -> None:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.handle_async())
 
-    async def handle_async(self):
         self.line("<info>Initialising categories from config</info>")
         self.line(
             "<error>WARNING: This removes current categories and cannot be undone. Proceed?</error>"

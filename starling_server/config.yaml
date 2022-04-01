@@ -23,5 +23,13 @@ categories:
     - "Hobbies"
     - "Other"
 
+names:
+  - name: "Shell"
+    displayname: "Shell"
+  - name: "Riccarton Garden C"
+    displayname: "Riccarton Garden Centre"
+  - name: "J Parker"
+    displayname: "Parkers"
+
 default_interval_days: 14
 default_transaction_limit: 20

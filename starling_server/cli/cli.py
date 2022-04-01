@@ -7,9 +7,10 @@ from starling_server import __version__
 from starling_server.cli.commands import (
     ServerCommand,
     AccountCommand,
-    TransactionCommand,
+    NameCommand,
     CategoryCommand,
 )
+from starling_server.cli.commands.transactions import TransactionsCommand
 
 
 class Application(BaseApplication):
@@ -18,10 +19,11 @@ class Application(BaseApplication):
     def __init__(self):
         super(Application, self).__init__("bank_server", __version__)
         commands = [
-            ServerCommand(),
             AccountCommand(),
-            TransactionCommand(),
             CategoryCommand(),
+            NameCommand(),
+            ServerCommand(),
+            TransactionsCommand(),
         ]
         for command in commands:
             self.add(command)

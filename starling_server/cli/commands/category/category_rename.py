@@ -1,9 +1,9 @@
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.category_map import CategoryMap
+from starling_server.server.mappers.category_mapper import CategoryMapper
 
-category_mapper = CategoryMap(db=db)
+category_mapper = CategoryMapper(db=db)
 
 
 class CategoryRename(Command):

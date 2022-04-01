@@ -16,7 +16,7 @@ class NameCategory:
     category: Category
 
 
-class CategoryMap:
+class CategoryMapper:
     """A class to manage the mapping between categories and category groups, and display names."""
 
     def __init__(self, db: Database) -> None:

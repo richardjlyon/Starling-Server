@@ -3,10 +3,10 @@ from typing import List
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.category_map import CategoryMap
+from starling_server.server.mappers.category_mapper import CategoryMapper
 from starling_server.server.schemas.transaction import Category
 
-category_mapper = CategoryMap(db=db)
+category_mapper = CategoryMapper(db=db)
 
 
 class CategoryAdd(Command):

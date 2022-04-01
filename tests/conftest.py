@@ -20,7 +20,7 @@ from starling_server.providers.starling.schemas import (
     StarlingTransactionSchema,
 )
 from starling_server.server.account import Account, get_provider_class, get_auth_token
-from starling_server.server.mappers.displayname_map import DisplayNameMap
+from starling_server.server.mappers.name_mapper import NameMapper
 from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import (
     TransactionSchema,
@@ -159,7 +159,7 @@ def mock_transactions() -> List[TransactionSchema]:
 @pytest.fixture(name="dmm_unpopulated")
 def unpopulated_displaynamemap_manager(empty_db):
     """Returns an unpopulated displayname manager."""
-    return DisplayNameMap(empty_db)
+    return NameMapper(empty_db)
 
 
 @pytest.fixture(name="dmm_populated")

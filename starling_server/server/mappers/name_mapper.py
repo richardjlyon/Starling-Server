@@ -2,15 +2,45 @@
 To support customising the display name of a counterparty, a table of customisations is stored in the database.
 DisplayNameMap is a class for managing its entries.
 """
+from dataclasses import dataclass
+from typing import List
 
+from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 
 
-class DisplayNameMap:
-    """A class for managing entries in the DisplayNameMap table."""
+@dataclass
+class NameDisplayname:
+    name: str
+    displayname: str
+
+
+class NameMapper:
+    """A class for managing entries in the NameMapper table."""
 
     def __init__(self, db: Database):
         self.db = db
+
+    def initialise_names(self) -> List[NameDisplayname]:
+        """Create a list of names and display names to be used in the database."""
+
+        # load the names from configuration
+        try:
+            names = [NameDisplayname(**n) for n in cfg.names]
+        except AttributeError:
+            raise RuntimeError("Unable to load names from config file")
+
+        # remove the old names if there are any
+        old_names = self.db.display_name_map_select()
+        if old_names:
+            for name in old_names:
+                self.db.display_name_map_delete(name.name)
+
+        # insert the new ones
+        for name in names:
+            self.db.display_name_map_upsert(name.name, name.displayname)
+
+        return names
 
     def upsert(self, name: str = None, displayname: str = None) -> None:
         """

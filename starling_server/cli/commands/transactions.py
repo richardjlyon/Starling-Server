@@ -7,11 +7,11 @@ from starling_server.main import db
 from starling_server.server.handlers.transaction_handler import TransactionHandler
 
 
-class TransactionUpdate(Command):
+class TransactionsCommand(Command):
     """
-    Update transactions
+    Show transactions
 
-    update
+    transactions
         {--d|days=30 : Number of days to update}
     """
 
@@ -29,8 +29,6 @@ class TransactionUpdate(Command):
 
         account_names = {a.schema.uuid: a.schema.account_name for a in handler.accounts}
         transactions = await handler.get_transactions_between(start_date, end_date)
-
-        print(transactions)
 
         table = self.table()
         table.set_header_row(
