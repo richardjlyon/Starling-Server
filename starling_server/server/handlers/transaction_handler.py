@@ -10,6 +10,7 @@ from starling_server import cfg
 from starling_server.db.edgedb.database import Database
 from starling_server.server.account import Account
 from starling_server.server.handlers.handler import Handler
+from starling_server.server.mappers.category_mapper import CategoryMapper
 from starling_server.server.mappers.name_mapper import NameMapper
 from starling_server.server.schemas import TransactionSchema
 
@@ -86,11 +87,15 @@ class TransactionHandler(Handler):
         self, transactions: List[TransactionSchema]
     ) -> List[TransactionSchema]:
         """Process transactions and add information to them."""
-        name_processor = NameMapper(self.db)
+        name_mapper = NameMapper(self.db)
+        category_mapper = CategoryMapper(self.db)
 
         for transaction in transactions:
             # set display name
-            transaction.counterparty.displayname = name_processor.displayname_for(
+            transaction.counterparty.displayname = name_mapper.displayname_for(
+                transaction.counterparty.name
+            )
+            transaction.category = category_mapper.category_for(
                 transaction.counterparty.name
             )
 

@@ -29,6 +29,12 @@ class CategoryMapper:
         # TODO delete CategoryMap table
         return categories
 
+    def list_categories(self) -> List[Category]:
+        """Return a list of all categories in the database."""
+        categories = self.db.select_categories()
+        categories.sort(key=lambda c: (c.group.name, c.name))
+        return categories
+
     def make_category(self, group_name: str, category_name: str) -> Category:
         """Insert a category in the database."""
 
@@ -78,6 +84,10 @@ class CategoryMapper:
         category.group = new_group
         self.db.upsert_category(category)
         return category
+
+    def insert_name_category(self, name_category: NameCategory) -> None:
+        """Insert a name-category mapping in the database."""
+        self.db.upsert_name_category(name_category)
 
     def select_name_categories(self) -> Optional[List[NameCategory]]:
         """Return all categories in the database."""
@@ -165,3 +175,6 @@ class CategoryMapper:
             )
 
         return category
+
+    def category_for(self, display_name: str) -> Category:
+        """Returns a category identified by its display name."""

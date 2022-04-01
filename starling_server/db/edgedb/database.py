@@ -11,6 +11,8 @@ from loguru import logger
 
 from starling_server import cfg
 from starling_server.db.db_base import DBBase
+
+# from starling_server.server.mappers.category_mapper import NameCategory
 from starling_server.server.schemas.account import AccountSchema
 from starling_server.server.schemas.transaction import (
     TransactionSchema,
@@ -458,3 +460,23 @@ class Database(DBBase):
             return None
 
         return results
+
+    def upsert_name_category(self, name_category):
+        """Insert or update a name category into the CategoryMap table.
+        FIXME: Importing NameCategory for Type causes circular import - find out why
+        """
+        self.client.query(
+            """
+            insert CategoryMap {
+                displayname := <str>$displayname,
+                category := (select Category filter .uuid = <uuid>$category_uuid)
+            } unless conflict on .displayname else (
+                update CategoryMap
+                set {
+                    category := (select Category filter .uuid = <uuid>$category_uuid)
+                } 
+            )
+            """,
+            displayname=name_category.displayname,
+            category_uuid=name_category.category.uuid,
+        )
