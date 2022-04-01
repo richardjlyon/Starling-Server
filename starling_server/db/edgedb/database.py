@@ -274,18 +274,7 @@ class Database(DBBase):
             account_uuid=account_uuid,
         )
 
-    # COUNTERPARTIES ================================================================================================
-
-    def display_name_map_select(self) -> Optional[set]:
-        results = self.client.query(
-            """
-            select DisplaynameMap {
-                name,
-                displayname
-            }
-            """
-        )
-        return results if len(results) > 0 else None
+    # COUNTERPARTIES ==========================================================
 
     def upsert_counterparty(self, counterparty: Counterparty) -> None:
         # FIXME find out how to handle 'Optional' inserts
@@ -324,6 +313,19 @@ class Database(DBBase):
                 name=counterparty.name,
                 displayname=counterparty.displayname,
             )
+
+    # DISPLAY NAMES ================================================================================================
+
+    def display_name_map_select(self) -> Optional[set]:
+        results = self.client.query(
+            """
+            select DisplaynameMap {
+                name,
+                displayname
+            }
+            """
+        )
+        return results if len(results) > 0 else None
 
     def display_name_map_upsert(
         self, name: str = None, displayname: str = None

@@ -25,7 +25,9 @@ categories:
 
 names:
   - name: "Shell"
-    displayname: "Shell"
+    displayname: "Shell Petrol"
+  - name: "BP"
+    displayname: "BP Petrol"
   - name: "Riccarton Garden C"
     displayname: "Riccarton Garden Centre"
   - name: "J Parker"

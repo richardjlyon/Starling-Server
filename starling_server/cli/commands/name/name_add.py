@@ -1,7 +1,7 @@
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.name_mapper import NameMapper
+from starling_server.server.mappers.name_mapper import NameMapper, NameDisplayname
 
 name_mapper = NameMapper(db)
 
@@ -18,8 +18,13 @@ class NameAdd(Command):
     def handle(self) -> None:
         name = self.argument("name")
         displayname = self.argument("displayname")
+        name = NameDisplayname(name, displayname)
 
-        self.line(f"<info>  Adding display name '{name}'-> '{displayname}'...</info>")
+        self.line(
+            f"<info>  Adding display name '{name.name}'-> '{name.displayname}'...</info>"
+        )
+
+        name_mapper.add(name)
 
     #     self.show_table()
     #

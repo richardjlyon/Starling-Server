@@ -42,27 +42,20 @@ class NameMapper:
 
         return names
 
-    def upsert(self, name: str = None, displayname: str = None) -> None:
+    def upsert(self, name: NameDisplayname) -> None:
         """
-        Insert the fragment / display_name pair in NameDisplayname database table.
-        Args:
-            fragment (str): the name fragment to insert
-            display_name (str): the corresponding display_name to insert
+        Insert the name / displayname pair in NameDisplayname database table.
         """
-        if name is None:
-            raise ValueError("Fragment cannot be None")
-        if displayname is None:
-            raise ValueError("Display name cannot be None")
 
-        self.db.display_name_map_upsert(name, displayname)
+        self.db.display_name_map_upsert(name.name, name.displayname)
 
-    def delete(self, name: str):
+    def delete(self, name: NameDisplayname):
         """
         Delete the name / display_name pair from NameDisplayname database table.
         Args:
             name (str): the fragment to match
         """
-        self.db.display_name_map_delete(name)
+        self.db.display_name_map_delete(name.name)
 
     def displayname_for(self, name: str) -> str:
         """

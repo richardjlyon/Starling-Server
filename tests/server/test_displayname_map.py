@@ -4,6 +4,7 @@ general couterparty display name lookup, and transaction-specific counterparty
 """
 import pytest
 
+from starling_server.server.mappers.name_mapper import NameDisplayname
 from tests.conftest import select_displaynames
 
 
@@ -12,21 +13,22 @@ class TestDisplayNameMap:
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
-
+        name = NameDisplayname(name, displayname)
         # WHEN I insert the pair in the DisplayNameMap table
-        dmm_unpopulated.upsert(name=name, displayname=displayname)
+        dmm_unpopulated.upsert(name)
 
         # THEN the pair is inserted
         display_names = select_displaynames(dmm_unpopulated.db)
-        assert display_names[0].name == name
-        assert display_names[0].displayname == displayname
+        assert display_names[0].name == name.name
+        assert display_names[0].displayname == name.displayname
 
     def test_upsert_update(self, dmm_unpopulated):
         # GIVEN an empty database and a name / display_name pair
         # WHEN I update the pair
         name = "Riccarton Garden C"
         new_displayname = "Riccarton Garden Centre *MODIFIED*"
-        dmm_unpopulated.upsert(name=name, displayname=new_displayname)
+        name = NameDisplayname(name, new_displayname)
+        dmm_unpopulated.upsert(name)
 
         # THEN the pair is updated
         displaynames = select_displaynames(dmm_unpopulated.db)
@@ -36,7 +38,8 @@ class TestDisplayNameMap:
         # GIVEN an empty database and a name / display_name pair
         name = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
-        dmm_unpopulated.upsert(name=name, displayname=displayname)
+        name = NameDisplayname(name, displayname)
+        dmm_unpopulated.upsert(name)
         displaynames = select_displaynames(dmm_unpopulated.db)
         assert len(displaynames) == 1
 

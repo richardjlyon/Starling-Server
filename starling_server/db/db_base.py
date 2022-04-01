@@ -75,11 +75,13 @@ class DBBase(ABC):
     def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
         pass
 
-    # COUNTERPARTIES ================================================================================================
+    # COUNTERPARTIES ==========================================================
 
     @abstractmethod
     def upsert_counterparty(self, counterparty: Counterparty) -> None:
         pass
+
+    # DISPLAY NAMES ================================================================================================
 
     @abstractmethod
     def display_name_map_upsert(

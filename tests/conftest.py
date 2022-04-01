@@ -20,7 +20,7 @@ from starling_server.providers.starling.schemas import (
     StarlingTransactionSchema,
 )
 from starling_server.server.account import Account, get_provider_class, get_auth_token
-from starling_server.server.mappers.name_mapper import NameMapper
+from starling_server.server.mappers.name_mapper import NameMapper, NameDisplayname
 from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import (
     TransactionSchema,
@@ -165,9 +165,13 @@ def unpopulated_displaynamemap_manager(empty_db):
 @pytest.fixture(name="dmm_populated")
 def populated_displaynamemap_manager(dmm_unpopulated):
     """Returns a displayname manager with sample entries."""
-    dmm_unpopulated.upsert(name="Waterstones", displayname="Waterstones")
-    dmm_unpopulated.upsert(name="Acme coffee biz", displayname="Wee cafe at bus stop")
-    dmm_unpopulated.upsert(name="BP", displayname="BP Petrol")
+    dmm_unpopulated.upsert(
+        NameDisplayname(name="Waterstones", displayname="Waterstones")
+    )
+    dmm_unpopulated.upsert(
+        NameDisplayname(name="Acme coffee biz", displayname="Wee cafe at bus stop")
+    )
+    dmm_unpopulated.upsert(NameDisplayname(name="BP", displayname="BP Petrol"))
     return dmm_unpopulated
 
 
