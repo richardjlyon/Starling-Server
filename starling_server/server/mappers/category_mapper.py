@@ -5,6 +5,8 @@ This class manages both of those relationships.
 from dataclasses import dataclass
 from typing import List, Optional
 
+import edgedb
+
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database, DatabaseError
 from starling_server.server.schemas.transaction import Category, CategoryGroup
@@ -184,5 +186,32 @@ class CategoryMapper:
         except ValueError:
             return False
 
-    def category_for(self, display_name: str) -> Category:
-        """Returns a category identified by its display name."""
+    def category_for(self, displayname: str) -> Optional[Category]:
+        """Matches a category to a displayname and returns it."""
+
+        def to_category(category: edgedb.Set) -> Category:
+            return Category(
+                uuid=category.uuid,
+                name=category.name,
+                group=CategoryGroup(
+                    uuid=category.category_group.uuid,
+                    name=category.category_group.name,
+                ),
+            )
+
+        entries = self.db.get_all_name_categories()
+
+        if entries is None:
+            return None
+
+        # get any specific matches
+        for entry in entries:
+            if entry.displayname.lower() == displayname.lower():
+                return to_category(entry.category)
+
+        # get any generic matches
+        for entry in entries:
+            if entry.displayname.lower() in displayname.lower():
+                return to_category(entry.category)
+
+        return None

@@ -105,9 +105,13 @@ class DBBase(ABC):
         pass
 
     @abstractmethod
-    def get_all_name_categories(self):
+    def upsert_name_category(self, name_category):
         pass
 
     @abstractmethod
-    def upsert_name_category(self, name_category):
+    def get_category_for_name(self, name):
+        pass
+
+    @abstractmethod
+    def get_all_name_categories(self):
         pass

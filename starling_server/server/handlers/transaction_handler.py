@@ -91,15 +91,8 @@ class TransactionHandler(Handler):
         category_mapper = CategoryMapper(self.db)
 
         for transaction in transactions:
-            # set display name
-            transaction.counterparty.displayname = name_mapper.displayname_for(
-                transaction.counterparty.name
-            )
-            transaction.category = category_mapper.category_for(
-                transaction.counterparty.name
-            )
-
-            # set category
-            pass  # TODO
+            name = transaction.counterparty.name
+            transaction.counterparty.displayname = name_mapper.displayname_for(name)
+            transaction.category = category_mapper.category_for(name)
 
         return transactions

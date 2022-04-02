@@ -15,6 +15,7 @@ class CategoryAssign(Command):
     """
 
     def handle(self) -> None:
+
         displayname = self.argument("counterparty")
 
         categories = category_mapper.list_categories()
@@ -39,18 +40,3 @@ class CategoryAssign(Command):
         category = categories[int(option)]
         name_category = NameCategory(displayname, category)
         category_mapper.insert_name_category(name_category)
-
-    def show_table(self):
-        name_categories = self.category_map.select_name_categories()
-        if name_categories is None:
-            return
-
-        table = self.table()
-        table.set_header_row(["Name", "Category"])
-        table.set_rows(
-            [
-                [n.displayname, f"{n.category.group.name}:{n.category.name}"]
-                for n in name_categories
-            ]
-        )
-        table.render(self.io)

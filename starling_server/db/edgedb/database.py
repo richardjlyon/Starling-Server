@@ -349,12 +349,13 @@ class Database(DBBase):
         )
 
     def display_name_map_delete(self, name: str) -> None:
+        logger.info(f"Deleting display name map for {name}")
         self.client.query(
             """
             delete DisplaynameMap
-            filter .name = <str>$name
+            filter str_lower(.name) = <str>$name
             """,
-            name=name,
+            name=name.lower(),
         )
 
     # CATEGORIES ======================================================================================================
@@ -440,6 +441,49 @@ class Database(DBBase):
             for c in categories
         ]
 
+    def upsert_name_category(self, name_category):
+        """Insert or update a name category into the CategoryMap table.
+        FIXME: Importing NameCategory for Type causes circular import - find out why
+        """
+        self.client.query(
+            """
+            insert CategoryMap {
+                displayname := <str>$displayname,
+                category := (select Category filter .uuid = <uuid>$category_uuid)
+            } unless conflict on .displayname else (
+                update CategoryMap
+                set {
+                    category := (select Category filter .uuid = <uuid>$category_uuid)
+                } 
+            )
+            """,
+            displayname=name_category.displayname,
+            category_uuid=name_category.category.uuid,
+        )
+
+    def get_category_for_name(self, name: str) -> Optional[Category]:
+        """Get the category for a name."""
+        result = self.client.query(
+            """
+            select CategoryMap {
+                displayname,
+                category: {
+                    uuid,
+                    name,
+                    category_group: {
+                        uuid,
+                        name
+                    }
+                }
+            } filter .displayname = <str>$name
+            """,
+            name=name,
+        )
+        if len(result) == 0:
+            return None
+
+        return result
+
     def get_all_name_categories(self) -> Optional[List[edgedb.Set]]:
         results = self.client.query(
             """
@@ -460,23 +504,3 @@ class Database(DBBase):
             return None
 
         return results
-
-    def upsert_name_category(self, name_category):
-        """Insert or update a name category into the CategoryMap table.
-        FIXME: Importing NameCategory for Type causes circular import - find out why
-        """
-        self.client.query(
-            """
-            insert CategoryMap {
-                displayname := <str>$displayname,
-                category := (select Category filter .uuid = <uuid>$category_uuid)
-            } unless conflict on .displayname else (
-                update CategoryMap
-                set {
-                    category := (select Category filter .uuid = <uuid>$category_uuid)
-                } 
-            )
-            """,
-            displayname=name_category.displayname,
-            category_uuid=name_category.category.uuid,
-        )
