@@ -10,3 +10,5 @@ notes.taskpaper
 *.log
 
 tests/test_config.yaml.rsls
+
+*.rsls
