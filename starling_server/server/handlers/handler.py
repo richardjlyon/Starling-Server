@@ -2,7 +2,7 @@ import sys
 from typing import List
 
 from starling_server.db.edgedb.database import Database
-from starling_server.server.account import Account
+from starling_server.server.handlers.account import Account
 
 
 class Handler:

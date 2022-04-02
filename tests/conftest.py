@@ -19,7 +19,11 @@ from starling_server.providers.starling.schemas import (
     StarlingTransactionsSchema,
     StarlingTransactionSchema,
 )
-from starling_server.server.account import Account, get_provider_class, get_auth_token
+from starling_server.server.handlers.account import (
+    Account,
+    get_provider_class,
+    get_auth_token,
+)
 from starling_server.server.mappers.name_mapper import NameMapper, NameDisplayname
 from starling_server.server.schemas import AccountSchema
 from starling_server.server.schemas.transaction import (

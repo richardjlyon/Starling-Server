@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from starling_server.providers.starling.api import StarlingProvider
-from starling_server.server.account import Account
+from starling_server.server.handlers.account import Account
 from starling_server.server.schemas import AccountSchema
 
 test_schema = AccountSchema(

@@ -4,7 +4,7 @@
 
 import pytest
 
-from starling_server.server.account import Account
+from starling_server.server.handlers.account import Account
 from starling_server.server.handlers.account_handler import AccountHandler
 from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
 

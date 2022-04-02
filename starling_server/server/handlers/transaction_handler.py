@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
-from starling_server.server.account import Account
+from starling_server.server.handlers.account import Account
 from starling_server.server.handlers.handler import Handler
 from starling_server.server.mappers.category_mapper import CategoryMapper
 from starling_server.server.mappers.name_mapper import NameMapper
