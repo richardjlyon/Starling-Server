@@ -6,7 +6,7 @@ These tests require Accounts to be present in the live database
 
 from fastapi.testclient import TestClient
 
-from starling_server.server.app import app
+from starling_server.app import app
 
 client = TestClient(app)
 

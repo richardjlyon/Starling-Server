@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
+from starling_server.schemas import AccountSchema, AccountBalanceSchema
 
 
 def test_account_schema():

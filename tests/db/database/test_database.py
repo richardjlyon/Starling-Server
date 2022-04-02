@@ -2,8 +2,9 @@
 These tests verify the functionality of the EdgeDB Class. They require database "test" in the edgedb instance.
 """
 
-from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
+from starling_server.schemas import AccountSchema
+from starling_server.schemas import TransactionSchema
+from starling_server.schemas.transaction import Counterparty
 from tests.conftest import (
     make_accounts,
     make_transactions,

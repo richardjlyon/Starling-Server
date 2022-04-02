@@ -2,7 +2,7 @@ from cleo import Command
 
 from starling_server.db.edgedb.database import DatabaseError
 from starling_server.main import db
-from starling_server.server.mappers.category_mapper import CategoryMapper
+from starling_server.mappers.category_mapper import CategoryMapper
 
 category_mapper = CategoryMapper(db=db)
 

@@ -6,8 +6,8 @@ import asyncio
 from typing import List
 
 from starling_server.db.edgedb.database import Database
-from starling_server.server.handlers.handler import Handler
-from starling_server.server.schemas import AccountSchema
+from starling_server.handlers.handler import Handler
+from starling_server.schemas import AccountSchema
 
 
 class AccountHandler(Handler):

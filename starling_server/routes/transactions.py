@@ -8,7 +8,7 @@ from typing import List, Optional
 from fastapi import APIRouter
 
 from starling_server.main import transaction_handler
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.schemas.transaction import TransactionSchema
 
 router = APIRouter()
 

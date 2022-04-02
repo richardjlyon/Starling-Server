@@ -9,8 +9,9 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 # = ACCOUNTS ==========================================================================================================
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema, Counterparty
+from starling_server.schemas import AccountSchema, AccountBalanceSchema
+from starling_server.schemas import TransactionSchema
+from starling_server.schemas.transaction import Counterparty
 
 
 class StarlingAccountSchema(BaseModel):

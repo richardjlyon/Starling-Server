@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional
 
-from starling_server.server.schemas import (
+from starling_server.schemas import (
     AccountSchema,
     AccountBalanceSchema,
     TransactionSchema,

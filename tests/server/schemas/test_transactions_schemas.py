@@ -1,11 +1,10 @@
 import uuid
 from datetime import datetime
 
-from starling_server.server.schemas.transaction import (
+from starling_server.schemas import (
     TransactionSchema,
-    Counterparty,
-    clean_string,
 )
+from starling_server.schemas.transaction import Counterparty, clean_string
 
 
 def test_transaction_schema():

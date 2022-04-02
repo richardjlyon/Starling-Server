@@ -17,6 +17,4 @@ class ServerCommand(Command):
         import uvicorn
 
         port = int(self.option("port"))
-        uvicorn.run(
-            "starling_server.server.app:app", host="0.0.0.0", port=port, reload=True
-        )
+        uvicorn.run("starling_server.app:app", host="0.0.0.0", port=port, reload=True)

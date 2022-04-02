@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 import pytest
 
 from starling_server.providers.starling.api import StarlingProvider
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.schemas import AccountSchema, AccountBalanceSchema
+from starling_server.schemas import TransactionSchema
 
 
 class TestInitialisation:

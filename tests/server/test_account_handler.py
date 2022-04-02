@@ -4,9 +4,9 @@
 
 import pytest
 
-from starling_server.server.handlers.account import Account
-from starling_server.server.handlers.account_handler import AccountHandler
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
+from starling_server.handlers.account import Account
+from starling_server.handlers.account_handler import AccountHandler
+from starling_server.schemas import AccountSchema, AccountBalanceSchema
 
 
 class TestInitialise:

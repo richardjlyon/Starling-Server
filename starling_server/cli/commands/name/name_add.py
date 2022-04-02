@@ -1,7 +1,7 @@
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.name_mapper import NameMapper, NameDisplayname
+from starling_server.mappers.name_mapper import NameMapper, NameDisplayname
 
 name_mapper = NameMapper(db)
 

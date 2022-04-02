@@ -11,7 +11,7 @@ from starling_server.cli.commands.category.category_delete import CategoryDelete
 from starling_server.cli.commands.category.category_init import CategoryInit
 from starling_server.cli.commands.category.category_rename import CategoryRename
 from starling_server.main import db
-from starling_server.server.schemas.transaction import Category
+from starling_server.schemas.transaction import Category
 
 
 class CategoryCommand(Command):

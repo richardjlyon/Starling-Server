@@ -9,7 +9,7 @@ import edgedb
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database, DatabaseError
-from starling_server.server.schemas.transaction import Category, CategoryGroup
+from starling_server.schemas.transaction import Category, CategoryGroup
 
 
 @dataclass

@@ -1,7 +1,7 @@
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.category_mapper import CategoryMapper, NameCategory
+from starling_server.mappers.category_mapper import NameCategory, CategoryMapper
 
 category_mapper = CategoryMapper(db=db)
 

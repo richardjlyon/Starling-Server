@@ -15,23 +15,17 @@ from pydantic import parse_obj_as, PydanticTypeError
 
 from starling_server import cfg
 from starling_server.db.edgedb.database import Database
+from starling_server.handlers.account import Account, get_provider_class, get_auth_token
+from starling_server.mappers.name_mapper import NameMapper, NameDisplayname
 from starling_server.providers.starling.schemas import (
     StarlingTransactionsSchema,
     StarlingTransactionSchema,
 )
-from starling_server.server.handlers.account import (
-    Account,
-    get_provider_class,
-    get_auth_token,
-)
-from starling_server.server.mappers.name_mapper import NameMapper, NameDisplayname
-from starling_server.server.schemas import AccountSchema
-from starling_server.server.schemas.transaction import (
+from starling_server.schemas import AccountSchema
+from starling_server.schemas import (
     TransactionSchema,
-    Counterparty,
-    Category,
-    CategoryGroup,
 )
+from starling_server.schemas.transaction import Counterparty, Category, CategoryGroup
 from .secrets import token_filepath
 
 testdb = Database(database="test")

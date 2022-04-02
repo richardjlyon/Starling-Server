@@ -7,7 +7,7 @@ from typing import List
 from fastapi import APIRouter
 
 from starling_server.main import account_handler
-from starling_server.server.schemas.account import AccountBalanceSchema, AccountSchema
+from starling_server.schemas.account import AccountBalanceSchema, AccountSchema
 
 router = APIRouter()
 

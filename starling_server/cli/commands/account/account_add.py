@@ -5,9 +5,9 @@ from typing import Type, Optional
 from cleo import Command
 
 from starling_server import cfg
+from starling_server.handlers.account import get_provider_class, get_auth_token
 from starling_server.main import db
 from starling_server.providers.provider import Provider
-from starling_server.server.handlers.account import get_provider_class, get_auth_token
 
 
 @dataclass

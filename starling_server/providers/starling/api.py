@@ -23,8 +23,8 @@ from starling_server.providers.starling.schemas import (
     StarlingTransactionsSchema,
     StarlingTransactionSchema,
 )
-from starling_server.server.schemas.account import AccountSchema, AccountBalanceSchema
-from starling_server.server.schemas.transaction import TransactionSchema
+from starling_server.schemas import AccountSchema, AccountBalanceSchema
+from starling_server.schemas import TransactionSchema
 
 API_VERSION = "v2"
 API_BASE_URL = f"https://api.starlingbank.com/api/{API_VERSION}"

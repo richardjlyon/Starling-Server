@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 
+from starling_server.handlers.account import Account
 from starling_server.providers.starling.api import StarlingProvider
-from starling_server.server.handlers.account import Account
-from starling_server.server.schemas import AccountSchema
+from starling_server.schemas import AccountSchema
 
 test_schema = AccountSchema(
     uuid=uuid.UUID("5b692051-b699-40f8-a48b-d14d554a9bd1"),

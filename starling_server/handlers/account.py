@@ -9,7 +9,7 @@ from typing import Type
 
 from starling_server import cfg
 from starling_server.providers.provider import Provider
-from starling_server.server.schemas import AccountSchema
+from starling_server.schemas import AccountSchema
 
 
 @dataclass

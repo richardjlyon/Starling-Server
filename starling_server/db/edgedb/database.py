@@ -13,13 +13,11 @@ from starling_server import cfg
 from starling_server.db.db_base import DBBase
 
 # from starling_server.server.mappers.category_mapper import NameCategory
-from starling_server.server.schemas.account import AccountSchema
-from starling_server.server.schemas.transaction import (
+from starling_server.schemas import AccountSchema
+from starling_server.schemas import (
     TransactionSchema,
-    Counterparty,
-    Category,
-    CategoryGroup,
 )
+from starling_server.schemas.transaction import Counterparty, Category, CategoryGroup
 
 
 class DatabaseError(Exception):

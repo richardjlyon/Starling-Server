@@ -3,7 +3,7 @@ These tests verify the integrity of the EdgeDB schema. They require database "te
 """
 import uuid
 
-from starling_server.server.schemas.transaction import Counterparty
+from starling_server.schemas.transaction import Counterparty
 from tests.conftest import (
     test_bank_name,
     insert_bank,

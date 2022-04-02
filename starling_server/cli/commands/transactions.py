@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from cleo import Command
 
+from starling_server.handlers.transaction_handler import TransactionHandler
 from starling_server.main import db
-from starling_server.server.handlers.transaction_handler import TransactionHandler
 
 
 class TransactionsCommand(Command):

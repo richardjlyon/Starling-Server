@@ -4,7 +4,7 @@ general couterparty display name lookup, and transaction-specific counterparty
 """
 import pytest
 
-from starling_server.server.mappers.name_mapper import NameDisplayname
+from starling_server.mappers.name_mapper import NameDisplayname
 from tests.conftest import select_displaynames
 
 

@@ -3,8 +3,8 @@ from typing import List
 from cleo import Command
 
 from starling_server.main import db
-from starling_server.server.mappers.category_mapper import CategoryMapper
-from starling_server.server.schemas.transaction import Category
+from starling_server.mappers.category_mapper import CategoryMapper
+from starling_server.schemas.transaction import Category
 
 category_mapper = CategoryMapper(db=db)
 
