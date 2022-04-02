@@ -127,12 +127,6 @@ def account():
     )
 
 
-@pytest.fixture()
-def empty_dispatcher(empty_db):
-    """Provides a dispatcher with no banks or accounts and a live helper."""
-    return RouteDispatcher(database=empty_db)
-
-
 @pytest.fixture
 def mock_transactions() -> List[TransactionSchema]:
     """Generate a list of transactions from a file to avoid an api call."""
@@ -173,33 +167,6 @@ def populated_displaynamemap_manager(dmm_unpopulated):
     )
     dmm_unpopulated.insert(NameDisplayname(name="BP", displayname="BP Petrol"))
     return dmm_unpopulated
-
-
-@pytest.fixture()
-def category_manager(empty_db):
-    """Returns a category manager."""
-    return CategoryManager(empty_db)
-
-
-@pytest.fixture()
-def tp_empty(empty_db):
-    """A transaction processor with an empty database"""
-    return TransactionProcessor(empty_db)
-
-
-# @pytest.fixture()
-# def tp_two_pairs(tp_empty):
-#     """A transaction processor with a name_fragment pair"""
-#     name = "Riccarton Garden C"
-#     display_name = "Riccarton Garden Centre"
-#
-#     tp_empty.upsert_display_name(name=name, display_name=display_name)
-#
-#     name_fragment = "dwp"
-#     display_name = "Department of Work and Pensions"
-#     tp_empty.upsert_display_name(name_fragment=name_fragment, display_name=display_name)
-#
-#     return tp_empty
 
 
 # Route Dispatcher fixtures ===========================================================================================
