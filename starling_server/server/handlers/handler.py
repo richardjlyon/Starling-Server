@@ -15,7 +15,7 @@ class Handler:
 
     def __init__(self, database: Database):
         self.db = database
-        account_schemas = database.select_accounts()
+        account_schemas = database.accounts_select()
         if account_schemas:
             self.accounts = [
                 Account(account_schema) for account_schema in account_schemas

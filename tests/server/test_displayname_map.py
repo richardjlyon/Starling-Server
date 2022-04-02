@@ -15,7 +15,7 @@ class TestDisplayNameMap:
         displayname = "Riccarton Garden Centre"
         name = NameDisplayname(name, displayname)
         # WHEN I insert the pair in the DisplayNameMap table
-        dmm_unpopulated.upsert(name)
+        dmm_unpopulated.insert(name)
 
         # THEN the pair is inserted
         display_names = select_displaynames(dmm_unpopulated.db)
@@ -28,7 +28,7 @@ class TestDisplayNameMap:
         name = "Riccarton Garden C"
         new_displayname = "Riccarton Garden Centre *MODIFIED*"
         name = NameDisplayname(name, new_displayname)
-        dmm_unpopulated.upsert(name)
+        dmm_unpopulated.insert(name)
 
         # THEN the pair is updated
         displaynames = select_displaynames(dmm_unpopulated.db)
@@ -39,7 +39,7 @@ class TestDisplayNameMap:
         name = "Riccarton Garden C"
         displayname = "Riccarton Garden Centre"
         name = NameDisplayname(name, displayname)
-        dmm_unpopulated.upsert(name)
+        dmm_unpopulated.insert(name)
         displaynames = select_displaynames(dmm_unpopulated.db)
         assert len(displaynames) == 1
 

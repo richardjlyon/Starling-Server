@@ -15,53 +15,53 @@ class DBBase(ABC):
     # BANKS ==========================================================================================================
 
     @abstractmethod
-    def upsert_bank(self, bank_name):
+    def bank_upsert(self, bank_name):
         pass
 
     @abstractmethod
-    def delete_bank(self, bank_name):
+    def bank_delete(self, bank_name):
         pass
 
     # ACCOUNTS ========================================================================================================
 
     @abstractmethod
-    def upsert_account(self, token, account):
+    def account_upsert(self, token, account):
         pass
 
     @abstractmethod
-    def select_accounts(self):
+    def accounts_select(self):
         pass
 
     @abstractmethod
-    def select_account_for_account_uuid(self, account_uuid):
+    def account_select_for_uuid(self, account_uuid):
         pass
 
     @abstractmethod
-    def delete_account(self, account_uuid):
+    def account_delete(self, account_uuid):
         pass
 
     # TRANSACTIONS ===================================================================================================
 
     @abstractmethod
-    def upsert_transaction(self, transaction):
+    def transaction_upsert(self, transaction):
         pass
 
     @abstractmethod
-    def select_transactions_for_account(self, account_uuid, offset, limit):
+    def transactions_select_for_account_uuid(self, account_uuid, offset, limit):
         pass
 
     @abstractmethod
-    def select_transactions_between(self, start_date, end_date):
+    def transactions_select_between(self, start_date, end_date):
         pass
 
     @abstractmethod
-    def delete_transactions_for_account_id(self, account_uuid):
+    def transactions_delete_for_account_uuid(self, account_uuid):
         pass
 
     # COUNTERPARTIES ==========================================================
 
     @abstractmethod
-    def upsert_counterparty(self, counterparty):
+    def counterparty_upsert(self, counterparty):
         pass
 
     # DISPLAY NAMES ================================================================================================
@@ -81,37 +81,29 @@ class DBBase(ABC):
     # CATEGORIES ======================================================================================================
 
     @abstractmethod
-    def upsert_categorygroup(self, category):
+    def categorygroup_upsert(self, category):
         pass
 
     @abstractmethod
-    def upsert_category(self, category):
+    def category_upsert(self, category):
         pass
 
     @abstractmethod
-    def delete_category(self, category):
+    def category_delete(self, category):
         pass
 
     @abstractmethod
-    def delete_category_group(self, group_name):
+    def categorygroup_delete(self, group_name):
         pass
 
     @abstractmethod
-    def select_category_groups(self):
+    def categories_select(self):
         pass
 
     @abstractmethod
-    def select_categories(self):
+    def categorymap_upsert(self, name_category):
         pass
 
     @abstractmethod
-    def upsert_name_category(self, name_category):
-        pass
-
-    @abstractmethod
-    def get_category_for_name(self, name):
-        pass
-
-    @abstractmethod
-    def get_all_name_categories(self):
+    def categorymap_select_all(self):
         pass

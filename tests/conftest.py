@@ -84,7 +84,7 @@ def db_2_accounts(empty_db, config):
     """Inserts two test accounts."""
     accounts = make_accounts(2)
     for account in accounts:
-        empty_db.upsert_account(config.token, account)
+        empty_db.account_upsert(config.token, account)
     return empty_db
 
 
@@ -106,7 +106,7 @@ def db_with_transactions(db_2_accounts):
     for account_db in accounts_db:
         transactions = make_transactions(8, account_uuid=account_db.uuid)
         for transaction in transactions:
-            db_2_accounts.upsert_transaction(transaction)
+            db_2_accounts.transaction_upsert(transaction)
 
     return db_2_accounts
 
@@ -165,13 +165,13 @@ def unpopulated_displaynamemap_manager(empty_db):
 @pytest.fixture(name="dmm_populated")
 def populated_displaynamemap_manager(dmm_unpopulated):
     """Returns a displayname manager with sample entries."""
-    dmm_unpopulated.upsert(
+    dmm_unpopulated.insert(
         NameDisplayname(name="Waterstones", displayname="Waterstones")
     )
-    dmm_unpopulated.upsert(
+    dmm_unpopulated.insert(
         NameDisplayname(name="Acme coffee biz", displayname="Wee cafe at bus stop")
     )
-    dmm_unpopulated.upsert(NameDisplayname(name="BP", displayname="BP Petrol"))
+    dmm_unpopulated.insert(NameDisplayname(name="BP", displayname="BP Petrol"))
     return dmm_unpopulated
 
 
@@ -308,7 +308,7 @@ async def initialise_accounts(empty_db) -> None:
         )
         accounts = await provider.get_accounts()
         for account in accounts:
-            empty_db.upsert_account(provider.auth_token, account)
+            empty_db.account_upsert(provider.auth_token, account)
 
     return empty_db
 
@@ -469,7 +469,7 @@ def make_categories() -> List[Category]:
 def insert_categories(db) -> List[Category]:
     categories = make_categories()
     for category in categories:
-        db.upsert_category(category)
+        db.category_upsert(category)
 
     return categories
 

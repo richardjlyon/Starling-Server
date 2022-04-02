@@ -20,7 +20,7 @@ class AccountCommand(Command):
 
     def handle(self):
 
-        accounts = db.select_accounts()
+        accounts = db.accounts_select()
 
         if accounts is None:
             return

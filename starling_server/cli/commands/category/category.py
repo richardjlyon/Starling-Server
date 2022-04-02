@@ -32,7 +32,7 @@ class CategoryCommand(Command):
 
     def handle(self):
 
-        categories = db.select_categories()
+        categories = db.categories_select()
         self.show_category_table(categories)
 
         if categories is None:

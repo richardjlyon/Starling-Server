@@ -42,11 +42,11 @@ class AccountAdd(Command):
         # insert the accounts into the database
         if len(accounts) > 0:
             # upsert the bank in the database
-            db.upsert_bank(provider.bank_name)
+            db.bank_upsert(provider.bank_name)
 
         for account in accounts:
             self.line(f"Adding account {account.account_name}")
-            db.upsert_account(provider.auth_token, account)
+            db.account_upsert(provider.auth_token, account)
 
     def get_bank_provider(self) -> Optional[Provider]:
         """Get the bank provider class and authentication token."""

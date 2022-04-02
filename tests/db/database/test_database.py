@@ -19,7 +19,7 @@ class TestBank:
     def test_insert_bank(self, empty_db):
         # GIVEN an empty database
         # WHEN I insert a bank
-        empty_db.upsert_bank(bank_name="Starling Personal (TEST)")
+        empty_db.bank_upsert(bank_name="Starling Personal (TEST)")
 
         # THEN the bank is inserted
         bank_db = empty_db.client.query("select Bank {name}")
@@ -35,7 +35,7 @@ class TestBank:
 
         # WHEN I delete a bank
         bank_name = banks[0].name
-        db_2_accounts.delete_bank(bank_name)
+        db_2_accounts.bank_delete(bank_name)
 
         # THEN the bank and its accounts and transactions are deleted
         banks = select_banks(db_2_accounts)
@@ -64,7 +64,7 @@ class TestCategory:
         category = categories[0]
         new_name = category.name + " (TEST)"
         category.name = new_name
-        empty_db.upsert_category(category)
+        empty_db.category_upsert(category)
         # THEN the category is updated
         categories = select_categories(empty_db)
         assert new_name in [c.name for c in categories]
@@ -74,7 +74,7 @@ class TestCategory:
         categories = insert_categories(empty_db)
         # WHEN I delete a category
         category = categories[0]
-        empty_db.delete_category(category)
+        empty_db.category_delete(category)
         # THEN the category is deleted
         categories = select_categories(empty_db)
         assert category.uuid not in [c.uuid for c in categories]
@@ -87,7 +87,7 @@ class TestAccount:
         # WHEN I add two accounts
         accounts = make_accounts(2)
         for account in accounts:
-            empty_db.upsert_account(config.token, account)
+            empty_db.account_upsert(config.token, account)
 
         # THEN two accounts are added
         accounts_db = select_accounts(empty_db)
@@ -109,7 +109,7 @@ class TestAccount:
             currency=a.currency,
             created_at=a.created_at,
         )
-        db_2_accounts.upsert_account(config.token, account)
+        db_2_accounts.account_upsert(config.token, account)
 
         # THEN the account name is updated
         accounts_db = select_accounts(db_2_accounts)
@@ -122,7 +122,7 @@ class TestAccount:
     def test_select_accounts(self, db_2_accounts):
         # GIVEN a database with 2 accounts
         # WHEN I select the accounts
-        accounts = db_2_accounts.select_accounts()
+        accounts = db_2_accounts.accounts_select()
         # THEN I get 2 accounts
         assert len(accounts) == 2
 
@@ -133,9 +133,7 @@ class TestAccount:
         # WHEN I select an account
         accounts = select_accounts(db_2_accounts)
         account_0_uuid = accounts[0].uuid
-        account = db_2_accounts.select_account_for_account_uuid(
-            account_uuid=account_0_uuid
-        )
+        account = db_2_accounts.account_select_for_uuid(account_uuid=account_0_uuid)
 
         # THEN I get the account
         assert account.uuid == account_0_uuid
@@ -150,7 +148,7 @@ class TestAccount:
         # WHEN I delete a selected account
         accounts = select_accounts(db_with_transactions)
         account_0_uuid = accounts[0].uuid
-        db_with_transactions.delete_account(account_uuid=account_0_uuid)
+        db_with_transactions.account_delete(account_uuid=account_0_uuid)
 
         # THEN that account and its transactions (only) are deleted
         accounts = select_accounts(db_with_transactions)
@@ -168,7 +166,7 @@ class TestTransaction:
         for account_db in select_accounts(db_2_accounts):
             transactions = make_transactions(2, account_uuid=account_db.uuid)
             for transaction in transactions:
-                db_2_accounts.upsert_transaction(transaction)
+                db_2_accounts.transaction_upsert(transaction)
 
         # THEN the transactions are inserted
         transactions_db = select_transactions(db_2_accounts)
@@ -199,7 +197,7 @@ class TestTransaction:
             amount=t.amount,
             reference=modified_reference,
         )
-        db_with_transactions.upsert_transaction(transaction)
+        db_with_transactions.transaction_upsert(transaction)
 
         # THEN transaction is updated
         transactions = select_transactions(db_with_transactions)
@@ -211,7 +209,7 @@ class TestTransaction:
         # GIVEN a database with 2 accounts of 8 transactions each
         # WHEN I select the transactions for the personal account
         accounts = select_accounts(db_with_transactions)
-        transactions = db_with_transactions.select_transactions_for_account(
+        transactions = db_with_transactions.transactions_select_for_account_uuid(
             accounts[0].uuid
         )
 
@@ -220,7 +218,9 @@ class TestTransaction:
 
     def test_select_transactions_returns_none(self, db_2_accounts):
         accounts = select_accounts(db_2_accounts)
-        transactions = db_2_accounts.select_transactions_for_account(accounts[0].uuid)
+        transactions = db_2_accounts.transactions_select_for_account_uuid(
+            accounts[0].uuid
+        )
         assert transactions is None
 
     def test_delete_transactions_for_account_id(self, db_with_transactions):
@@ -228,7 +228,7 @@ class TestTransaction:
         # WHEN I delete all transactions for a selected account
         accounts = select_accounts(db_with_transactions)
         account_uuid = accounts[0].uuid
-        db_with_transactions.delete_transactions_for_account_id(account_uuid)
+        db_with_transactions.transactions_delete_for_account_uuid(account_uuid)
 
         # THEN all transactions for that account (only) are deleted
         accounts = select_accounts(db_with_transactions)

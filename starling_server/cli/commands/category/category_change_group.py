@@ -31,7 +31,7 @@ class CategoryChangeGroup(Command):
             f"<info>  Changing category group for`{group_name.capitalize()}:{category_name.capitalize()}`...</info>"
         )
 
-        categories = db.select_categories()
+        categories = db.categories_select()
 
         groups = []
         for c in categories:

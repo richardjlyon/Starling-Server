@@ -35,7 +35,7 @@ class CategoryAdd(Command):
             self.line(f"<error>ERROR: {e}</error>")
             return
 
-        categories = db.select_categories()
+        categories = db.categories_select()
         categories.sort(key=lambda c: (c.group.name, c.name))
         for c in categories:
             if c.name == category.name:

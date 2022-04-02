@@ -43,7 +43,7 @@ class Database(DBBase):
 
     # BANKS ==========================================================================================================
 
-    def upsert_bank(self, bank_name: str) -> None:
+    def bank_upsert(self, bank_name: str) -> None:
         self.client.query(
             """
             insert Bank {
@@ -59,12 +59,12 @@ class Database(DBBase):
         )
 
     # noinspection SqlNoDataSourceInspection
-    def delete_bank(self, bank_name: str) -> None:
+    def bank_delete(self, bank_name: str) -> None:
         self.client.query("delete Bank filter .name = <str>$name", name=bank_name)
 
     # ACCOUNTS ========================================================================================================
 
-    def select_accounts(self) -> Optional[List[AccountSchema]]:
+    def accounts_select(self) -> Optional[List[AccountSchema]]:
         accounts_db = self.client.query(
             """
             select Account {
@@ -91,15 +91,15 @@ class Database(DBBase):
             for account_db in accounts_db
         ]
 
-    def select_account_for_account_uuid(
+    def account_select_for_uuid(
         self, account_uuid: uuid.UUID
     ) -> Optional[AccountSchema]:
-        accounts = self.select_accounts()
+        accounts = self.accounts_select()
         return next(account for account in accounts if account.uuid == account_uuid)
 
-    def upsert_account(self, token: str, account: AccountSchema) -> None:
+    def account_upsert(self, token: str, account: AccountSchema) -> None:
         # ensure Bank exists: note - this can probably be combined with the `insert Account` query
-        self.upsert_bank(account.bank_name)
+        self.bank_upsert(account.bank_name)
 
         self.client.query(
             """
@@ -129,7 +129,7 @@ class Database(DBBase):
         )
         self.client.close()
 
-    def delete_account(self, account_uuid: uuid.UUID) -> None:
+    def account_delete(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
             delete Account filter .uuid = <uuid>$account_uuid;
@@ -139,7 +139,7 @@ class Database(DBBase):
 
     # TRANSACTIONS ===================================================================================================
 
-    def select_transactions_for_account(
+    def transactions_select_for_account_uuid(
         self,
         account_uuid: uuid.UUID,
         offset: int = 0,
@@ -185,7 +185,7 @@ class Database(DBBase):
             for transaction in transactions
         ]
 
-    def select_transactions_between(
+    def transactions_select_between(
         self, start_date: datetime, end_date: datetime
     ) -> Optional[List[TransactionSchema]]:
         transactions = self.client.query(
@@ -227,9 +227,9 @@ class Database(DBBase):
             for transaction in transactions
         ]
 
-    def upsert_transaction(self, transaction: TransactionSchema) -> None:
+    def transaction_upsert(self, transaction: TransactionSchema) -> None:
 
-        self.upsert_counterparty(transaction.counterparty)
+        self.counterparty_upsert(transaction.counterparty)
 
         transaction_db = self.client.query(
             """
@@ -262,7 +262,7 @@ class Database(DBBase):
         )
         self.client.close()
 
-    def delete_transactions_for_account_id(self, account_uuid: uuid.UUID) -> None:
+    def transactions_delete_for_account_uuid(self, account_uuid: uuid.UUID) -> None:
         self.client.query(
             """
             with account := (
@@ -278,7 +278,7 @@ class Database(DBBase):
 
     # COUNTERPARTIES ==========================================================
 
-    def upsert_counterparty(self, counterparty: Counterparty) -> None:
+    def counterparty_upsert(self, counterparty: Counterparty) -> None:
         # FIXME find out how to handle 'Optional' inserts
         if counterparty.displayname is None:
             self.client.query(
@@ -360,7 +360,7 @@ class Database(DBBase):
 
     # CATEGORIES ======================================================================================================
 
-    def upsert_categorygroup(self, category: Category) -> None:
+    def categorygroup_upsert(self, category: Category) -> None:
         self.client.query(
             """
             insert CategoryGroup { uuid := <uuid>$uuid, name := <str>$name }
@@ -373,8 +373,8 @@ class Database(DBBase):
             name=category.group.name,
         )
 
-    def upsert_category(self, category: Category) -> None:
-        self.upsert_categorygroup(category)
+    def category_upsert(self, category: Category) -> None:
+        self.categorygroup_upsert(category)
         self.client.query(
             """
             with category_group := (select CategoryGroup filter .uuid = <uuid>$group_uuid)
@@ -397,23 +397,17 @@ class Database(DBBase):
 
         # noinspection SqlNoDataSourceInspection
 
-    def delete_category_group(self, category: Category):
+    def categorygroup_delete(self, category: Category):
         self.client.query(
             "delete CategoryGroup filter .uuid = <uuid>$uuid", uuid=category.group.uuid
         )
 
-    def delete_category(self, category: Category) -> None:
+    def category_delete(self, category: Category) -> None:
         self.client.query(
             "delete Category filter .uuid = <uuid>$uuid", uuid=category.uuid
         )
 
-    def select_category_groups(self) -> Optional[List[CategoryGroup]]:
-        groups = self.client.query("select CategoryGroup {uuid, name}")
-        if len(groups) == 0:
-            return None
-        return [CategoryGroup(uuid=group.uuid, name=group.name) for group in groups]
-
-    def select_categories(self) -> Optional[List[Category]]:
+    def categories_select(self) -> Optional[List[Category]]:
         categories = self.client.query(
             """
                 select Category {
@@ -441,7 +435,7 @@ class Database(DBBase):
             for c in categories
         ]
 
-    def upsert_name_category(self, name_category):
+    def categorymap_upsert(self, name_category):
         """Insert or update a name category into the CategoryMap table.
         FIXME: Importing NameCategory for Type causes circular import - find out why
         """
@@ -461,30 +455,7 @@ class Database(DBBase):
             category_uuid=name_category.category.uuid,
         )
 
-    def get_category_for_name(self, name: str) -> Optional[Category]:
-        """Get the category for a name."""
-        result = self.client.query(
-            """
-            select CategoryMap {
-                displayname,
-                category: {
-                    uuid,
-                    name,
-                    category_group: {
-                        uuid,
-                        name
-                    }
-                }
-            } filter .displayname = <str>$name
-            """,
-            name=name,
-        )
-        if len(result) == 0:
-            return None
-
-        return result
-
-    def get_all_name_categories(self) -> Optional[List[edgedb.Set]]:
+    def categorymap_select_all(self) -> Optional[List[edgedb.Set]]:
         results = self.client.query(
             """
             select CategoryMap {

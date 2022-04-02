@@ -42,7 +42,7 @@ class TransactionHandler(Handler):
         # Fetch new transactions from the providers and insert them into the database
         new_transactions = await self.get_new_transactions()
         self.insert_transactions(new_transactions)
-        transactions = self.db.select_transactions_between(start_date, end_date)
+        transactions = self.db.transactions_select_between(start_date, end_date)
         transactions = self.apply_displayname_and_category(transactions)
 
         return transactions
@@ -64,12 +64,12 @@ class TransactionHandler(Handler):
     def insert_transactions(self, transactions: List[TransactionSchema]) -> None:
         """Insert transactions into the database."""
         for transaction in transactions:
-            self.db.upsert_transaction(transaction)
+            self.db.transaction_upsert(transaction)
 
     def get_latest_transaction_time(self, account: Account) -> Optional[datetime]:
         """Returns the time of the latest transaction for the specified account."""
 
-        transactions = self.db.select_transactions_for_account(account.schema.uuid)
+        transactions = self.db.transactions_select_for_account_uuid(account.schema.uuid)
 
         if transactions is None:
             # no transactions: compute from the default interval

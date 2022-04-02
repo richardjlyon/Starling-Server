@@ -33,7 +33,7 @@ class CategoryMapper:
 
     def list_categories(self) -> List[Category]:
         """Return a list of all categories in the database."""
-        categories = self.db.select_categories()
+        categories = self.db.categories_select()
         categories.sort(key=lambda c: (c.group.name, c.name))
         return categories
 
@@ -43,7 +43,7 @@ class CategoryMapper:
         if self.category_exists(group_name, category_name):
             raise ValueError(f"Category `{group_name}:{category_name}` already exists")
 
-        categories = self.db.select_categories()
+        categories = self.db.categories_select()
 
         # find or create the group
         group = self._find_category_group_from_name(group_name)
@@ -59,14 +59,14 @@ class CategoryMapper:
 
         # insert the new category
         category = Category(name=category_name, group=group)
-        self.db.upsert_category(category)
+        self.db.category_upsert(category)
 
         return category
 
     def delete_category(self, category: Category) -> None:
         """Delete category from the database."""
         try:
-            self.db.delete_category(category)
+            self.db.category_delete(category)
         except DatabaseError as e:
             raise ValueError(f"{e}") from e
 
@@ -76,7 +76,7 @@ class CategoryMapper:
         """Rename a category in the database."""
         category.group.name = new_group_name.capitalize()
         category.name = new_category_name.capitalize()
-        self.db.upsert_category(category)
+        self.db.category_upsert(category)
         return category
 
     def change_category_group(
@@ -84,16 +84,16 @@ class CategoryMapper:
     ) -> Category:
         """Change the category group of a category."""
         category.group = new_group
-        self.db.upsert_category(category)
+        self.db.category_upsert(category)
         return category
 
     def insert_name_category(self, name_category: NameCategory) -> None:
         """Insert a name-category mapping in the database."""
-        self.db.upsert_name_category(name_category)
+        self.db.categorymap_upsert(name_category)
 
     def select_name_categories(self) -> Optional[List[NameCategory]]:
         """Return all categories in the database."""
-        results = self.db.get_all_name_categories()
+        results = self.db.categorymap_select_all()
         if results is None:
             return None
 
@@ -113,11 +113,11 @@ class CategoryMapper:
         ]
 
     def _delete_all_categories(self):
-        categories = self.db.select_categories()
+        categories = self.db.categories_select()
         if categories:
             for category in categories:
-                self.db.delete_category(category)
-                self.db.delete_category_group(category)
+                self.db.category_delete(category)
+                self.db.categorygroup_delete(category)
 
     def _insert_categories(self) -> Optional[List[Category]]:
         category_list = []
@@ -129,7 +129,7 @@ class CategoryMapper:
                     name=category_name.capitalize(),
                     group=group,
                 )
-                self.db.upsert_category(category)
+                self.db.category_upsert(category)
                 category_list.append(category)
 
         if len(category_list) > 0:
@@ -141,7 +141,7 @@ class CategoryMapper:
         self, group_name: str
     ) -> Optional[CategoryGroup]:
         """Find a category group from its name."""
-        categories = self.db.select_categories()
+        categories = self.db.categories_select()
         try:
             result = next(
                 c.group
@@ -164,7 +164,7 @@ class CategoryMapper:
             )
 
         # find the category
-        categories = self.db.select_categories()
+        categories = self.db.categories_select()
         try:
             category = next(
                 c
@@ -199,7 +199,7 @@ class CategoryMapper:
                 ),
             )
 
-        entries = self.db.get_all_name_categories()
+        entries = self.db.categorymap_select_all()
 
         if entries is None:
             return None

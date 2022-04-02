@@ -27,7 +27,7 @@ class AccountDelete(Command):
             return
 
         # get the account from the user
-        accounts = db.select_accounts()
+        accounts = db.accounts_select()
         valid_response = False
         response = None
 
@@ -52,5 +52,5 @@ class AccountDelete(Command):
         account = accounts[int(response)]
         account_uuid = account.uuid
         account_name = f"{account.bank_name}: {account.account_name}"
-        db.delete_account(account_uuid)
+        db.account_delete(account_uuid)
         self.line(f"<info>Account '{account_name}' deleted</info>")
