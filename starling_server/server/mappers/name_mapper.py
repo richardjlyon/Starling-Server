@@ -31,14 +31,14 @@ class NameMapper:
             raise RuntimeError("Unable to load names from config file")
 
         # remove the old names if there are any
-        old_names = self.db.display_name_map_select()
+        old_names = self.db.displaynamemap_select()
         if old_names:
             for name in old_names:
-                self.db.display_name_map_delete(name.name)
+                self.db.displaynamemap_delete(name.name)
 
         # insert the new ones
         for name in names:
-            self.db.display_name_map_upsert(name.name, name.displayname)
+            self.db.displaynamemap_upsert(name.name, name.displayname)
 
         return names
 
@@ -47,7 +47,7 @@ class NameMapper:
         Insert the name / displayname pair in NameDisplayname database table.
         """
 
-        self.db.display_name_map_upsert(name.name, name.displayname)
+        self.db.displaynamemap_upsert(name.name, name.displayname)
 
     def delete(self, name: NameDisplayname):
         """
@@ -55,17 +55,17 @@ class NameMapper:
         Args:
             name (str): the fragment to match
         """
-        self.db.display_name_map_delete(name.name)
+        self.db.displaynamemap_delete(name.name)
 
     def change(self, name: NameDisplayname):
         """Change the name"""
-        self.db.display_name_map_upsert(name.name, name.displayname)
+        self.db.displaynamemap_upsert(name.name, name.displayname)
 
     def get_all_displaynames(self) -> Optional[List[NameDisplayname]]:
         """
         Returns all the display names in the database.
         """
-        entries = self.db.display_name_map_select()
+        entries = self.db.displaynamemap_select()
         if entries is None:
             return None
 
@@ -79,7 +79,7 @@ class NameMapper:
         Args:
             name (str): the name to match
         """
-        entries = self.db.display_name_map_select()
+        entries = self.db.displaynamemap_select()
 
         if entries is None:
             return name

@@ -67,15 +67,15 @@ class DBBase(ABC):
     # DISPLAY NAMES ================================================================================================
 
     @abstractmethod
-    def display_name_map_upsert(self, name, displayname):
+    def displaynamemap_upsert(self, name, displayname):
         pass
 
     @abstractmethod
-    def display_name_map_delete(self, name):
+    def displaynamemap_delete(self, name):
         pass
 
     @abstractmethod
-    def display_name_map_select(self):
+    def displaynamemap_select(self):
         pass
 
     # CATEGORIES ======================================================================================================

@@ -318,7 +318,7 @@ class Database(DBBase):
 
     # DISPLAY NAMES ================================================================================================
 
-    def display_name_map_select(self) -> Optional[set]:
+    def displaynamemap_select(self) -> Optional[set]:
         results = self.client.query(
             """
             select DisplaynameMap {
@@ -329,9 +329,7 @@ class Database(DBBase):
         )
         return results if len(results) > 0 else None
 
-    def display_name_map_upsert(
-        self, name: str = None, displayname: str = None
-    ) -> None:
+    def displaynamemap_upsert(self, name: str = None, displayname: str = None) -> None:
         self.client.query(
             """
             insert DisplaynameMap {
@@ -348,7 +346,7 @@ class Database(DBBase):
             displayname=displayname,
         )
 
-    def display_name_map_delete(self, name: str) -> None:
+    def displaynamemap_delete(self, name: str) -> None:
         logger.info(f"Deleting display name map for {name}")
         self.client.query(
             """
@@ -371,6 +369,11 @@ class Database(DBBase):
             """,
             uuid=category.group.uuid,
             name=category.group.name,
+        )
+
+    def categorygroup_delete(self, category: Category):
+        self.client.query(
+            "delete CategoryGroup filter .uuid = <uuid>$uuid", uuid=category.group.uuid
         )
 
     def category_upsert(self, category: Category) -> None:
@@ -396,11 +399,6 @@ class Database(DBBase):
         )
 
         # noinspection SqlNoDataSourceInspection
-
-    def categorygroup_delete(self, category: Category):
-        self.client.query(
-            "delete CategoryGroup filter .uuid = <uuid>$uuid", uuid=category.group.uuid
-        )
 
     def category_delete(self, category: Category) -> None:
         self.client.query(
