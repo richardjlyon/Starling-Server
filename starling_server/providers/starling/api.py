@@ -65,7 +65,7 @@ class StarlingProvider(Provider):
         )
 
         if category_check is True and account_uuid is not None:
-            default_category = CategoryHelper().category_for_account_id(account_uuid)
+            default_category = CategoryHelper()._category_for_account_id(account_uuid)
             if default_category is None:
                 raise RuntimeError(
                     f"No default category for {bank_name} account {account_uuid} - check configuration"
@@ -83,13 +83,13 @@ class StarlingProvider(Provider):
         """
 
         response = await self.get_accounts_raw()
-        return self.to_account_schema_list(response)
+        return self._to_account_schema_list(response)
 
     async def get_account_balance(self) -> AccountBalanceSchema:
         """Get the account balance associated with the account id."""
         path = f"/accounts/{self.account_uuid}/balance"
-        response = await self.get_endpoint(path)
-        return self.to_account_balance_schema(response)
+        response = await self._get_endpoint(path)
+        return self._to_account_balance_schema(response)
 
     async def get_transactions_between(
         self, start_date: datetime, end_date: datetime
@@ -100,12 +100,12 @@ class StarlingProvider(Provider):
             "minTransactionTimestamp": start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "maxTransactionTimestamp": end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }
-        response = await self.get_endpoint(path, params)
-        return self.to_transaction_schema_list(response)
+        response = await self._get_endpoint(path, params)
+        return self._to_transaction_schema_list(response)
 
     # = SCHEMA CONVERTORS =============================================================================================
 
-    def to_account_schema_list(self, response: dict) -> List[AccountSchema]:
+    def _to_account_schema_list(self, response: dict) -> List[AccountSchema]:
         """Validate response and convert to a list of AccountSchema."""
         try:
             parsed_response = parse_obj_as(StarlingAccountsSchema, response)
@@ -122,7 +122,7 @@ class StarlingProvider(Provider):
 
         return accounts
 
-    def to_account_balance_schema(self, response: dict) -> AccountBalanceSchema:
+    def _to_account_balance_schema(self, response: dict) -> AccountBalanceSchema:
         """Validate response and convert to a AccountBalanceSchema."""
         try:
             parsed_response = parse_obj_as(StarlingBalanceSchema, response)
@@ -134,7 +134,7 @@ class StarlingProvider(Provider):
             self.account_uuid, balance
         )
 
-    def to_transaction_schema_list(self, response: dict) -> List[TransactionSchema]:
+    def _to_transaction_schema_list(self, response: dict) -> List[TransactionSchema]:
         """Validate response and convert to a list of TransactionSchema."""
         try:
             parsed_response = parse_obj_as(StarlingTransactionsSchema, response)
@@ -153,7 +153,7 @@ class StarlingProvider(Provider):
 
     # = UTILITIES =====================================================================================================
 
-    async def get_endpoint(self, path: str, params: dict = None) -> dict:
+    async def _get_endpoint(self, path: str, params: dict = None) -> dict:
         """Get an api endpoint."""
 
         headers = {
@@ -175,7 +175,7 @@ class StarlingProvider(Provider):
     async def get_accounts_raw(self) -> dict:
         """Get all of the accounts associated with the authorisation token as a raw json response."""
         path = "/accounts"
-        return await self.get_endpoint(path)
+        return await self._get_endpoint(path)
 
 
 class CategoryHelper:
@@ -226,7 +226,7 @@ class CategoryHelper:
             del config_file[str(account_uuid)]
             self._save(config_file)
 
-    def category_for_account_id(self, account_uuid: uuid.UUID) -> uuid.UUID:
+    def _category_for_account_id(self, account_uuid: uuid.UUID) -> uuid.UUID:
         """Retrieve the category for the account id."""
         if account_uuid is not None:
             config_file = self._load()

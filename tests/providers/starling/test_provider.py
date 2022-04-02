@@ -118,7 +118,7 @@ class TestCategoryHelper:
         await helper.insert(config.token, config.account_uuid, config.bank_name)
 
         # WHEN I get the default category
-        default_category = helper.category_for_account_id(config.account_uuid)
+        default_category = helper._category_for_account_id(config.account_uuid)
 
         # THEN the default category is correct
         expected_default_category = uuid.UUID("b23c9e8b-4377-4d9a-bce3-e7ee5477af50")
@@ -131,7 +131,7 @@ class TestCategoryHelper:
         await helper.insert(config.token, config.account_uuid, config.bank_name)
 
         # WHEN I get the default category for None
-        default_category = helper.category_for_account_id(account_uuid=None)
+        default_category = helper._category_for_account_id(account_uuid=None)
 
         # THEN
         default_category = None

@@ -40,7 +40,7 @@ class CategoryMapper:
     def make_category(self, group_name: str, category_name: str) -> Category:
         """Insert a category in the database."""
 
-        if self.category_exists(group_name, category_name):
+        if self._category_exists(group_name, category_name):
             raise ValueError(f"Category `{group_name}:{category_name}` already exists")
 
         categories = self.db.categories_select()
@@ -178,7 +178,7 @@ class CategoryMapper:
 
         return category
 
-    def category_exists(self, group_name: str, category_name: str) -> bool:
+    def _category_exists(self, group_name: str, category_name: str) -> bool:
         """Returns true if the category exists."""
         try:
             self.find_category_from_names(group_name, category_name)
@@ -186,7 +186,7 @@ class CategoryMapper:
         except ValueError:
             return False
 
-    def category_for(self, displayname: str) -> Optional[Category]:
+    def _category_for(self, displayname: str) -> Optional[Category]:
         """Matches a category to a displayname and returns it."""
 
         def to_category(category: edgedb.Set) -> Category:

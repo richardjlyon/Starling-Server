@@ -40,19 +40,19 @@ class TransactionHandler(Handler):
             start_date = end_date - timedelta(days=cfg.default_interval_days)
 
         # Fetch new transactions from the providers and insert them into the database
-        new_transactions = await self.get_new_transactions()
-        self.insert_transactions(new_transactions)
+        new_transactions = await self._get_new_transactions()
+        self._insert_transactions(new_transactions)
         transactions = self.db.transactions_select_between(start_date, end_date)
-        transactions = self.apply_displayname_and_category(transactions)
+        transactions = self._apply_displayname_and_category(transactions)
 
         return transactions
 
-    async def get_new_transactions(self) -> Optional[List[TransactionSchema]]:
+    async def _get_new_transactions(self) -> Optional[List[TransactionSchema]]:
         """Get all transactions for each account since the last recorded transaction date and insert in the database."""
         transactions = []
 
         for account in self.accounts:
-            latest_transaction_time = self.get_latest_transaction_time(account)
+            latest_transaction_time = self._get_latest_transaction_time(account)
             new_transactions = await account.provider.get_transactions_between(
                 start_date=latest_transaction_time, end_date=datetime.now()
             )
@@ -61,12 +61,12 @@ class TransactionHandler(Handler):
 
         return transactions
 
-    def insert_transactions(self, transactions: List[TransactionSchema]) -> None:
+    def _insert_transactions(self, transactions: List[TransactionSchema]) -> None:
         """Insert transactions into the database."""
         for transaction in transactions:
             self.db.transaction_upsert(transaction)
 
-    def get_latest_transaction_time(self, account: Account) -> Optional[datetime]:
+    def _get_latest_transaction_time(self, account: Account) -> Optional[datetime]:
         """Returns the time of the latest transaction for the specified account."""
 
         transactions = self.db.transactions_select_for_account_uuid(account.schema.uuid)
@@ -83,7 +83,7 @@ class TransactionHandler(Handler):
 
         return transaction_time
 
-    def apply_displayname_and_category(
+    def _apply_displayname_and_category(
         self, transactions: List[TransactionSchema]
     ) -> List[TransactionSchema]:
         """Process transactions and add information to them."""
@@ -93,6 +93,6 @@ class TransactionHandler(Handler):
         for transaction in transactions:
             name = transaction.counterparty.name
             transaction.counterparty.displayname = name_mapper.displayname_for(name)
-            transaction.category = category_mapper.category_for(name)
+            transaction.category = category_mapper._category_for(name)
 
         return transactions
