@@ -24,7 +24,7 @@ class CategoryAdd(Command):
         category_name = self.argument("category")
 
         self.line(
-            f"<info>  Adding category `{group_name.capitalize()}:{category_name.capitalize()}`...</info>"
+            f"<info>Adding category `{group_name.capitalize()}:{category_name.capitalize()}`...</info>"
         )
 
         try:

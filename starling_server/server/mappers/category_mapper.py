@@ -38,7 +38,7 @@ class CategoryMapper:
     def make_category(self, group_name: str, category_name: str) -> Category:
         """Insert a category in the database."""
 
-        if self.find_category_from_names(group_name, category_name):
+        if self.category_exists(group_name, category_name):
             raise ValueError(f"Category `{group_name}:{category_name}` already exists")
 
         categories = self.db.select_categories()
@@ -175,6 +175,14 @@ class CategoryMapper:
             )
 
         return category
+
+    def category_exists(self, group_name: str, category_name: str) -> bool:
+        """Returns true if the category exists."""
+        try:
+            self.find_category_from_names(group_name, category_name)
+            return True
+        except ValueError:
+            return False
 
     def category_for(self, display_name: str) -> Category:
         """Returns a category identified by its display name."""
